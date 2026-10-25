@@ -29,6 +29,8 @@ export function ChatPage() {
   const removeFile = useConversationStore((s) => s.removeFile);
   const togglePin = useConversationStore((s) => s.togglePin);
   const toggleInProject = useConversationStore((s) => s.toggleInProject);
+  const deleteConversation = useConversationStore((s) => s.deleteConversation);
+  const renameConversation = useConversationStore((s) => s.renameConversation);
 
   const [draft, setDraft] = useState('');
 
@@ -82,6 +84,10 @@ export function ChatPage() {
         activeId={conv?.id}
         onNewChat={() => createConversation(user.id)}
         onSelect={(id) => setActive(user.id, id)}
+        onDeleteRecent={(id) => deleteConversation(user.id, id)}
+        onPinRecent={(id) => togglePin(user.id, id)}
+        onMoveRecentToProject={(id) => toggleInProject(user.id, id)}
+        onRenameRecent={(id, title) => renameConversation(user.id, id, title)}
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">

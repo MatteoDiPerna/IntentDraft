@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { AuthPageShell } from '@/components/landing/AuthPageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -36,40 +37,58 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center w-full">
-      <div className="mx-auto w-full max-w-md space-y-6">
+    <AuthPageShell>
       <div>
-        <h1 className="text-2xl font-bold">{t('auth.register')}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t('auth.mockNotice')}</p>
+        <h1 className="text-2xl font-bold tracking-tight text-brand-gradient sm:text-3xl">
+          {t('auth.register')}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t('auth.mockNotice')}</p>
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="displayName">{t('auth.displayName')}</Label>
-          <Input id="displayName" {...register('displayName')} />
-          {errors.displayName && <p className="text-sm text-destructive">{errors.displayName.message}</p>}
+          <Input id="displayName" className="bg-background/80" {...register('displayName')} />
+          {errors.displayName && (
+            <p className="text-sm text-destructive">{errors.displayName.message}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">{t('auth.email')}</Label>
-          <Input id="email" type="email" autoComplete="email" {...register('email')} />
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            className="bg-background/80"
+            {...register('email')}
+          />
           {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">{t('auth.password')}</Label>
-          <Input id="password" type="password" autoComplete="new-password" {...register('password')} />
+          <Input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            className="bg-background/80"
+            {...register('password')}
+          />
           {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
         </div>
         {errors.root && <p className="text-sm text-destructive">{errors.root.message}</p>}
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="w-full shadow-lg shadow-primary/25"
+          disabled={isSubmitting}
+        >
           {t('auth.register')}
         </Button>
       </form>
-      <p className="text-sm text-center">
+      <p className="text-center text-sm text-muted-foreground">
         {t('auth.hasAccount')}{' '}
-        <Link to="/login" className="text-primary underline-offset-4 hover:underline">
+        <Link to="/login" className="font-medium text-primary underline-offset-4 hover:underline">
           {t('auth.login')}
         </Link>
       </p>
-      </div>
-    </div>
+    </AuthPageShell>
   );
 }

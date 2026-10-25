@@ -57,6 +57,8 @@ interface ConversationState {
   regeneratePrompt: (userId: string, conversationId: string, locale: Locale) => Promise<void>;
   togglePin: (userId: string, conversationId: string) => void;
   toggleInProject: (userId: string, conversationId: string) => void;
+  deleteConversation: (userId: string, conversationId: string) => void;
+  renameConversation: (userId: string, conversationId: string, title: string) => void;
 }
 
 function patchConversation(
@@ -311,6 +313,26 @@ export const useConversationStore = create<ConversationState>()(
         set(
           patchConversation(get(), userId, conversationId, {
             inProject: !normalizeConversation(conv).inProject,
+          }),
+        );
+      },
+      deleteConversation: (userId, conversationId) => {
+        const list = get().byUser[userId] ?? [];
+        const next = list.filter((c) => c.id !== conversationId);
+        if (next.length === list.length) return;
+
+        const wasActive = get().activeId[userId] === conversationId;
+        const nextActive = wasActive ? (next[0]?.id ?? null) : get().activeId[userId];
+
+        set({
+          byUser: { ...get().byUser, [userId]: next },
+          activeId: { ...get().activeId, [userId]: nextActive },
+        });
+      },
+      renameConversation: (userId, conversationId, title) => {
+        set(
+          patchConversation(get(), userId, conversationId, {
+            title: title.trim(),
           }),
         );
       },

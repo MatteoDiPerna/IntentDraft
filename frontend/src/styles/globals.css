@@ -100,4 +100,26 @@
       var(--brand-gradient) border-box;
     border: 1px solid transparent;
   }
+
+  .landing-grid {
+    background-image:
+      linear-gradient(hsl(var(--brand-blue) / 0.22) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--brand-blue) / 0.22) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 75% 55% at 50% 38%, black 20%, transparent 72%);
+  }
+
+  .landing-glow {
+    animation: landing-glow 8s ease-in-out infinite;
+  }
+
+  @keyframes landing-glow {
+    0%,
+    100% {
+      opacity: 0.75;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 }

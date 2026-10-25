@@ -6,6 +6,10 @@ const en: TranslationSchema = {
     tagline:
       'Describe what you want to achieve. We help you prepare clear instructions for your AI.',
   },
+  landing: {
+    badge: 'AI prompt assistant',
+    features: ['Guided conversation', 'Clearer instructions', 'Ready for your LLM'],
+  },
   nav: {
     limits: 'Limits & privacy',
     newChat: 'New chat',
@@ -40,6 +44,11 @@ const en: TranslationSchema = {
     defaultProject: 'Main folder',
     emptyPinned: 'No pinned chats',
     emptyRecent: 'No recent chats',
+    deleteChat: 'Delete chat',
+    pinChat: 'Pin chat',
+    renameChat: 'Rename chat',
+    moveToProject: 'Move to project',
+    renamePlaceholder: 'Chat title',
   },
   chat: {
     emptyTitle: 'Describe in a few sentences what you need.',

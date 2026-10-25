@@ -4,6 +4,14 @@ const it = {
     tagline:
       'Descrivi cosa vuoi ottenere. Ti aiutiamo a preparare istruzioni chiare per il tuo AI.',
   },
+  landing: {
+    badge: 'Assistente prompt per l’AI',
+    features: [
+      'Conversazione guidata',
+      'Istruzioni più chiare',
+      'Pronto per il tuo LLM',
+    ],
+  },
   nav: {
     limits: 'Limiti e privacy',
     newChat: 'Nuova chat',
@@ -38,6 +46,11 @@ const it = {
     defaultProject: 'Cartella principale',
     emptyPinned: 'Nessuna chat fissata',
     emptyRecent: 'Nessuna chat recente',
+    deleteChat: 'Elimina chat',
+    pinChat: 'Fissa chat',
+    renameChat: 'Rinomina chat',
+    moveToProject: 'Sposta in progetto',
+    renamePlaceholder: 'Titolo chat',
   },
   chat: {
     emptyTitle: 'Descrivi in poche frasi cosa ti serve.',

@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Link, Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { AuthPageShell } from '@/components/landing/AuthPageShell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,43 +40,59 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center w-full">
-      <div className="mx-auto w-full max-w-md space-y-6">
+    <AuthPageShell>
       <div>
-        <h1 className="text-2xl font-bold">{t('auth.login')}</h1>
-        <p className="text-sm text-muted-foreground mt-1">{t('auth.mockNotice')}</p>
+        <h1 className="text-2xl font-bold tracking-tight text-brand-gradient sm:text-3xl">
+          {t('auth.login')}
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t('auth.mockNotice')}</p>
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">{t('auth.email')}</Label>
-          <Input id="email" type="email" autoComplete="email" {...register('email')} />
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            className="bg-background/80"
+            {...register('email')}
+          />
           {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">{t('auth.password')}</Label>
-          <Input id="password" type="password" autoComplete="current-password" {...register('password')} />
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            className="bg-background/80"
+            {...register('password')}
+          />
           {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
         </div>
         {errors.root && <p className="text-sm text-destructive">{errors.root.message}</p>}
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          className="w-full shadow-lg shadow-primary/25"
+          disabled={isSubmitting}
+        >
           {t('auth.login')}
         </Button>
       </form>
       {appConfig.useMock && (
-        <div className="space-y-2 pt-2 border-t">
+        <div className="space-y-2 border-t border-primary/15 pt-4">
           <Button type="button" variant="secondary" className="w-full" onClick={loginDemo}>
             {t('auth.demoLogin')}
           </Button>
-          <p className="text-xs text-center text-muted-foreground">{t('auth.demoHint')}</p>
+          <p className="text-center text-xs text-muted-foreground">{t('auth.demoHint')}</p>
         </div>
       )}
-      <p className="text-sm text-center">
+      <p className="text-center text-sm text-muted-foreground">
         {t('auth.noAccount')}{' '}
-        <Link to="/register" className="text-primary underline-offset-4 hover:underline">
+        <Link to="/register" className="font-medium text-primary underline-offset-4 hover:underline">
           {t('auth.register')}
         </Link>
       </p>
-      </div>
-    </div>
+    </AuthPageShell>
   );
 }
