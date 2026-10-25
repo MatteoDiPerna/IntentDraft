@@ -1,0 +1,3 @@
+## Various scripts used to manage the repository
+.scripts/
+.scripts/align_markdown_tables.py
