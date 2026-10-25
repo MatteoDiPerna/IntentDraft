@@ -101,19 +101,11 @@
     border: 1px solid transparent;
   }
 
-  .landing-grid {
-    background-image:
-      linear-gradient(hsl(var(--brand-blue) / 0.22) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--brand-blue) / 0.22) 1px, transparent 1px);
-    background-size: 56px 56px;
-    mask-image: radial-gradient(ellipse 75% 55% at 50% 38%, black 20%, transparent 72%);
+  .brand-scene-glow-pulse {
+    animation: brand-scene-glow-pulse 8s ease-in-out infinite;
   }
 
-  .landing-glow {
-    animation: landing-glow 8s ease-in-out infinite;
-  }
-
-  @keyframes landing-glow {
+  @keyframes brand-scene-glow-pulse {
     0%,
     100% {
       opacity: 0.75;
@@ -121,5 +113,83 @@
     50% {
       opacity: 1;
     }
+  }
+}
+
+@layer components {
+  .brand-scene-grid {
+    background-image:
+      linear-gradient(hsl(var(--brand-blue) / 0.22) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--brand-blue) / 0.22) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 75% 55% at 50% 38%, black 20%, transparent 72%);
+  }
+
+  .brand-scene-subtle .brand-scene-grid {
+    opacity: 0.22;
+  }
+
+  .dark .brand-scene-subtle .brand-scene-grid {
+    opacity: 0.14;
+  }
+
+  .brand-scene-subtle .brand-scene-glow-main {
+    opacity: 0.45;
+  }
+
+  .page-frame-public {
+    @apply relative -mx-[30px] -my-6 flex min-h-[calc(100dvh-7.5rem)] flex-1 flex-col items-center justify-center px-[30px] py-10 sm:py-14;
+  }
+
+  .page-content-layer {
+    @apply relative z-10;
+  }
+
+  .surface-glass {
+    @apply rounded-2xl border border-primary/20 bg-background/55 shadow-xl shadow-primary/10 backdrop-blur-md;
+  }
+
+  .surface-glass-compact {
+    @apply rounded-xl border border-primary/20 bg-background/60 shadow-md shadow-primary/5 backdrop-blur-sm;
+  }
+
+  .brand-badge {
+    @apply inline-flex items-center gap-2 rounded-full border border-primary/25 bg-brand-gradient-subtle px-3.5 py-1.5 text-xs font-medium tracking-wide text-muted-foreground backdrop-blur-sm;
+  }
+
+  .brand-heading-display {
+    @apply text-4xl font-bold tracking-tight text-brand-gradient sm:text-5xl sm:leading-tight;
+  }
+
+  .brand-heading-page {
+    @apply text-2xl font-bold tracking-tight text-brand-gradient sm:text-3xl;
+  }
+
+  .brand-heading-hero {
+    @apply text-xl font-bold tracking-tight text-brand-gradient sm:text-2xl;
+  }
+
+  .brand-btn-glow {
+    @apply shadow-lg shadow-primary/25;
+  }
+
+  .brand-btn-outline-glass {
+    @apply border-primary/30 bg-background/40 backdrop-blur-sm hover:bg-accent/70;
+  }
+
+  .brand-field {
+    @apply bg-background/80;
+  }
+
+  .brand-divider {
+    @apply border-t border-primary/15;
+  }
+
+  .brand-shell-header {
+    @apply border-b bg-background/70 backdrop-blur-md;
+  }
+
+  .brand-feature-item {
+    @apply inline-flex items-center justify-center gap-2 text-sm text-muted-foreground;
   }
 }

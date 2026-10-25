@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
-import { AuthPageShell } from '@/components/landing/AuthPageShell';
+import { AuthPageShell } from '@/components/brand';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,15 +39,13 @@ export function RegisterPage() {
   return (
     <AuthPageShell>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-brand-gradient sm:text-3xl">
-          {t('auth.register')}
-        </h1>
+        <h1 className="brand-heading-page">{t('auth.register')}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{t('auth.mockNotice')}</p>
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="displayName">{t('auth.displayName')}</Label>
-          <Input id="displayName" className="bg-background/80" {...register('displayName')} />
+          <Input id="displayName" className="brand-field" {...register('displayName')} />
           {errors.displayName && (
             <p className="text-sm text-destructive">{errors.displayName.message}</p>
           )}
@@ -58,7 +56,7 @@ export function RegisterPage() {
             id="email"
             type="email"
             autoComplete="email"
-            className="bg-background/80"
+            className="brand-field"
             {...register('email')}
           />
           {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
@@ -69,7 +67,7 @@ export function RegisterPage() {
             id="password"
             type="password"
             autoComplete="new-password"
-            className="bg-background/80"
+            className="brand-field"
             {...register('password')}
           />
           {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
@@ -77,7 +75,7 @@ export function RegisterPage() {
         {errors.root && <p className="text-sm text-destructive">{errors.root.message}</p>}
         <Button
           type="submit"
-          className="w-full shadow-lg shadow-primary/25"
+          className="brand-btn-glow w-full"
           disabled={isSubmitting}
         >
           {t('auth.register')}

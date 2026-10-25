@@ -132,18 +132,18 @@ Applicazione Vite/React navigabile in locale con:
 
 ## Mancante — solo frontend (pre-backend)
 
-| ID | Descrizione | Priorità | Note |
-|----|-------------|----------|------|
-| FE-100 | Completare **verifica umana** checklist sopra | P0 | Gate prima di considerare fase 1 chiusa |
-| FE-101 | Stesse azioni hover (o menu) su chat **Fissate** e **Progetti** | P2 | Oggi solo **Recenti** |
-| FE-102 | Progetti: più cartelle / CRUD cartelle (mock) | P2 | Oggi una «cartella principale» + flag `inProject` |
-| FE-103 | Conferma modale prima di **elimina** chat | P1 | UX sicurezza |
-| FE-104 | Titolo chat auto da primo messaggio (mock) | P2 | Oggi default «Nuova chat» fino a rinomina |
-| FE-105 | Client API tipizzato + adapter store (`VITE_USE_MOCK`) | P0 | Preparazione fase 2; stub senza BE ok |
-| FE-106 | Gestione errori rete / retry UI quando API esiste | P1 | Dopo FE-105 |
-| FE-107 | Test E2E smoke (Playwright) login → chat → copia | P2 | Opzionale beta |
-| FE-108 | `.gitignore` / repo: non versionare `dist/`, `node_modules` | P1 | Igiene repo |
-| FE-109 | Accessibilità pass (focus trap impostazioni, keyboard sidebar) | P2 | NFR |
+| ID     | Descrizione                                                     | Priorità | Note                                              |
+| ------ | --------------------------------------------------------------- | -------- | ------------------------------------------------- |
+| FE-100 | Completare **verifica umana** checklist sopra                   | P0       | Gate prima di considerare fase 1 chiusa           |
+| FE-101 | Stesse azioni hover (o menu) su chat **Fissate** e **Progetti** | P2       | Oggi solo **Recenti**                             |
+| FE-102 | Progetti: più cartelle / CRUD cartelle (mock)                   | P2       | Oggi una «cartella principale» + flag `inProject` |
+| FE-103 | Conferma modale prima di **elimina** chat                       | P1       | UX sicurezza                                      |
+| FE-104 | Titolo chat auto da primo messaggio (mock)                      | P2       | Oggi default «Nuova chat» fino a rinomina         |
+| FE-105 | Client API tipizzato + adapter store (`VITE_USE_MOCK`)          | P0       | Preparazione fase 2; stub senza BE ok             |
+| FE-106 | Gestione errori rete / retry UI quando API esiste               | P1       | Dopo FE-105                                       |
+| FE-107 | Test E2E smoke (Playwright) login → chat → copia                | P2       | Opzionale beta                                    |
+| FE-108 | `.gitignore` / repo: non versionare `dist/`, `node_modules`     | P1       | Igiene repo                                       |
+| FE-109 | Accessibilità pass (focus trap impostazioni, keyboard sidebar)  | P2       | NFR                                               |
 
 ---
 

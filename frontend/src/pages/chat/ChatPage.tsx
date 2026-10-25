@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pin, PinOff } from 'lucide-react';
+import { AppPanelFrame, GlassPanel } from '@/components/brand';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { Button } from '@/components/ui/button';
 import { FileInputButton } from '@/components/ui/FileInputButton';
@@ -90,11 +91,11 @@ export function ChatPage() {
         onRenameRecent={(id, title) => renameConversation(user.id, id, title)}
       />
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <AppPanelFrame>
         {!conv ? (
           <>
-            <div className={cn('border-b bg-background/80', shellHeaderRow)} aria-hidden />
-            <div className="flex flex-1 items-center justify-center text-muted-foreground text-sm">
+            <div className={cn('brand-shell-header', shellHeaderRow)} aria-hidden />
+            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
               …
             </div>
           </>
@@ -102,7 +103,7 @@ export function ChatPage() {
           <>
             <div
               className={cn(
-                'flex items-center justify-end gap-1 border-b bg-background/80 px-3',
+                'brand-shell-header flex items-center justify-end gap-1 px-3',
                 shellHeaderRow,
               )}
             >
@@ -130,9 +131,9 @@ export function ChatPage() {
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
               <div className="shrink-0 border-b px-4 py-4 md:px-8">
                 {isEmptyChat && (
-                  <div className="mx-auto max-w-2xl text-center mb-4">
-                    <h1 className="text-lg font-bold">{t('chat.emptyTitle')}</h1>
-                    <p className="mt-1 text-sm text-muted-foreground">{t('chat.emptySubtitle')}</p>
+                  <div className="mx-auto mb-4 max-w-2xl text-center">
+                    <h1 className="brand-heading-hero">{t('chat.emptyTitle')}</h1>
+                    <p className="mt-2 text-sm text-muted-foreground">{t('chat.emptySubtitle')}</p>
                   </div>
                 )}
 
@@ -172,7 +173,7 @@ export function ChatPage() {
                     </Button>
                   )}
 
-                  <div className="flex flex-col gap-2 rounded-xl border bg-card p-3 shadow-sm">
+                  <GlassPanel compact className="flex flex-col gap-2 p-3">
                     <Textarea
                       value={draft}
                       onChange={(e) => setDraft(e.target.value)}
@@ -198,7 +199,12 @@ export function ChatPage() {
                           {t('chat.uploadHint')}
                         </span>
                       </div>
-                      <Button onClick={() => void handleSend()} disabled={busy} size="sm">
+                      <Button
+                        onClick={() => void handleSend()}
+                        disabled={busy}
+                        size="sm"
+                        className="brand-btn-glow"
+                      >
                         {t('chat.send')}
                       </Button>
                     </div>
@@ -222,14 +228,14 @@ export function ChatPage() {
                         ))}
                       </ul>
                     )}
-                  </div>
+                  </GlassPanel>
                 </div>
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-8">
                 <div className="mx-auto max-w-2xl">
                   {showResult ? (
-                    <div className="flex flex-col gap-2 rounded-xl border bg-card p-4">
+                    <GlassPanel compact className="flex flex-col gap-2 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div>
                           <h2 className="text-sm font-semibold">{t('chat.resultTitle')}</h2>
@@ -254,7 +260,7 @@ export function ChatPage() {
                         value={conv.promptText}
                         onChange={(e) => updatePromptText(user.id, conv.id, e.target.value)}
                       />
-                    </div>
+                    </GlassPanel>
                   ) : (
                     !isEmptyChat &&
                     !busy && (
@@ -266,7 +272,7 @@ export function ChatPage() {
             </div>
           </>
         )}
-      </div>
+      </AppPanelFrame>
     </div>
   );
 }

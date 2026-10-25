@@ -2,7 +2,8 @@
 
 **Documento:** `user-journeys-and-ux.md`  
 **Versione:** 1.0  
-**Requisiti correlati:** FR-001 … FR-016, NFR-007–NFR-009
+**Requisiti correlati:** FR-001 … FR-016, NFR-007–NFR-009  
+**UI implementativa:** [`frontend-brand-ui.md`](frontend-brand-ui.md)
 
 ---
 
