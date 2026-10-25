@@ -1,0 +1,28 @@
+/**
+ * Palette derived from `src/assets/brand/logo-source.png` / logo strokes.
+ * Semantic tokens in globals.css map UI roles to these values.
+ */
+:root {
+  /* Logo canvas & ink */
+  --brand-navy: 219 46% 11%;
+  --brand-navy-elevated: 219 42% 14%;
+  --brand-navy-muted: 219 35% 18%;
+
+  /* Gradient endpoints (speech bubble → cube) */
+  --brand-blue-deep: 229 100% 15%;
+  --brand-blue: 233 79% 52%;
+  --brand-blue-bright: 236 88% 67%;
+  --brand-blue-glow: 236 100% 72%;
+  --brand-violet: 245 85% 62%;
+
+  --brand-gradient: linear-gradient(
+    135deg,
+    hsl(var(--brand-blue)) 0%,
+    hsl(var(--brand-violet)) 100%
+  );
+  --brand-gradient-subtle: linear-gradient(
+    135deg,
+    hsl(var(--brand-blue) / 0.14) 0%,
+    hsl(var(--brand-violet) / 0.1) 100%
+  );
+}

@@ -11,7 +11,7 @@ export function HomePage() {
 
   return (
     <div className="max-w-xl mx-auto py-16 space-y-6 text-center">
-      <h1 className="text-3xl font-bold">{t('app.name')}</h1>
+      <h1 className="text-3xl font-bold text-brand-gradient">{t('app.name')}</h1>
       <p className="text-muted-foreground">{t('app.tagline')}</p>
       <div className="flex gap-4 justify-center">
         <Button asChild>

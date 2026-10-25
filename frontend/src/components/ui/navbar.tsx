@@ -19,7 +19,7 @@ export const Navbar: React.FC<NavbarProps> = ({ children }) => {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
           <Link to={user ? '/app' : '/'} className="flex items-center space-x-2">
-            <span className="text-xl font-bold">{t('app.name')}</span>
+            <span className="text-xl font-bold text-brand-gradient">{t('app.name')}</span>
           </Link>
           <nav className="hidden md:flex gap-6">
             <Link to="/limits" className="text-sm font-medium transition-colors hover:text-primary">
