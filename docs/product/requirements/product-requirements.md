@@ -3,7 +3,7 @@
 **Documento:** `product-requirements.md`  
 **Versione:** 1.1  
 **Stato:** **Approvato dal founder** (2026-10-25) — aggiornato per auth, MySQL, upload, i18n  
-**Fonti:** `docs/initial-brainstorming.md`, `repository-assessment.md`
+**Fonti:** [`../../concept/initial-brainstorming.md`](../../concept/initial-brainstorming.md), [`../discovery/repository-assessment.md`](../discovery/repository-assessment.md)
 
 ---
 
@@ -230,7 +230,7 @@ Non: “prompt più lunghi”. Sì: intento, vincoli, formato, verificabilità, 
 
 ## 14. Decisioni aperte
 
-Vedi `open-questions-and-decisions.md` (OQ-001 … OQ-012).
+Vedi [`../decisions/open-questions-and-decisions.md`](../decisions/open-questions-and-decisions.md) (OQ-001 … OQ-012).
 
 ---
 

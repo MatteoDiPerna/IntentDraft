@@ -57,7 +57,7 @@ flowchart LR
 **Stato:** completata (2026-10-25).
 
 - [X] BETA-001 — Ispezionare struttura repo e documenti (`repository-assessment.md`) — **P0**
-- [X] BETA-002 — Allineare concept da `initial-brainstorming.md` — **P0**
+- [X] BETA-002 — Allineare concept da [`../../concept/initial-brainstorming.md`](../../concept/initial-brainstorming.md) — **P0**
 - [X] BETA-003 — Produrre pacchetto documentazione `docs/product/` — **P0**
 
 **DoD:** documenti 1–8 presenti e incrociati.
@@ -76,7 +76,7 @@ flowchart LR
 - [X] BETA-014 — **OQ-008** output solo prompt testuale — **P1**
 - [X] BETA-015 — Scope beta: **Must** auth + upload; **Won't** pagamenti (ora) — **P1**
 
-**DoD:** `open-questions-and-decisions.md` v1.1.
+**DoD:** [`../decisions/open-questions-and-decisions.md`](../decisions/open-questions-and-decisions.md) v1.2.
 
 ---
 
@@ -97,19 +97,19 @@ flowchart LR
 **Obiettivo:** frontend + backend + MySQL per operazioni basilari (**senza LLM**).  
 **Dipende da:** Fase 2. **Doc:** `database-design.md`, `frontend-backend-operations.md`.
 
-- [ ] FOUND-010 — Monorepo `frontend/` (Vite) + `backend/` (Node API) + lint — **P0**
+- [ ] FOUND-010 — Monorepo `frontend/` (Vite) + `backend/` (Node API) + lint — **P0** _(FE: **[X]** vedi [`frontend-roadmap.md`](frontend-roadmap.md))_
 - [ ] FOUND-011 — Prisma + MySQL + `.env.example` — **P0**
 - [ ] FOUND-012 — Migrazioni schema v1 (`users`, `sessions`, …) — **P0**
 - [ ] FOUND-013 — `POST/GET` auth (register, login, logout, me) — **P0** — FR-021
-- [ ] FOUND-014 — Middleware route protette + pagine login/register — **P0**
-- [ ] FOUND-015 — i18n IT/EN (minimo navigazione + auth) — **P0** — FR-024
-- [ ] FOUND-020 — CRUD conversazioni (lista, crea, dettaglio) — **P0** — FR-022
-- [ ] FOUND-021 — API messaggi (persistenza; risposta stub pre-LLM) — **P0**
+- [X] FOUND-014 — Route protette + pagine login/register (**UI mock**) — **P0**
+- [X] FOUND-015 — i18n IT/EN (minimo navigazione + auth) — **P0** — FR-024
+- [X] FOUND-020 — CRUD conversazioni UI (lista, crea, dettaglio; mock localStorage) — **P0** — FR-022
+- [ ] FOUND-021 — API messaggi backend (persistenza; stub pre-LLM) — **P0**
 - [ ] FOUND-022 — Test integrazione auth + conversazione — **P1**
 - [ ] FOUND-035 — Upload file multipart + storage locale — **P0** — FR-023
-- [ ] FOUND-036 — UI lista allegati + delete — **P1**
+- [X] FOUND-036 — UI lista allegati + delete (mock) — **P1**
 - [X] FOUND-040 — Template UI: [react-typescript-template](https://github.com/luismalamoc/react-typescript-template) — **P1**
-- [ ] FOUND-041 — Adattare template in `frontend/` (shell auth + chat, no Firebase) — **P1**
+- [X] FOUND-041 — Adattato template in `frontend/` (auth + chat, no Firebase) — **P1**
 
 **DoD:** flusso OP-A + OP-C + OP-F01 verde in locale; `LLM_ENABLED=false`.
 

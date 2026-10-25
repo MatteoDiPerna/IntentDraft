@@ -63,4 +63,4 @@ Task implementazione: **FOUND-040** fork/adapt in `frontend/`; sostituire demo â
 ## Conseguenze
 
 - CORS backend con `credentials: true`; FE su porta dev (es. 5173), API su (es. 3001).
-- Aggiornare `technical-architecture.md`, `frontend-backend-operations.md`, `beta-roadmap.md` (FOUND-010+).
+- Aggiornare `../architecture/technical-architecture.md`, `../architecture/frontend-backend-operations.md`, `../planning/beta-roadmap.md` (FOUND-010+).

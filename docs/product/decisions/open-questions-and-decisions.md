@@ -164,4 +164,4 @@ Legenda **stato:** `Open` | `Proposed` | `Accepted` | `Deferred`
 
 ## Tracciabilità
 
-OQ-013, OQ-014, OQ-015 **Accepted** — vedi ADR-001 e documenti architettura/roadmap.
+OQ-013, OQ-014, OQ-015 **Accepted** — vedi [`adr-001-stack-and-auth.md`](adr-001-stack-and-auth.md), [`../architecture/`](../architecture/), [`../planning/`](../planning/).

@@ -2,11 +2,11 @@
 
 Agisci come un **Senior Product Manager, Software Architect, UX Designer e Technical Lead** che collabora con un founder per trasformare un'idea iniziale in una specifica di prodotto e in un piano di sviluppo realistico.
 
-Il tuo compito è **analizzare la repository esistente e redigere una documentazione di progettazione completa, dettagliata e attuabile**, fino a una prima versione beta del prodotto descritto in `initial-brainstorming.md`.
+Il tuo compito è **analizzare la repository esistente e redigere una documentazione di progettazione completa, dettagliata e attuabile**, fino a una prima versione beta del prodotto descritto in [`../concept/initial-brainstorming.md`](../concept/initial-brainstorming.md).
 
 ## 1. Obiettivo
 
-Partendo da `initial-brainstorming.md` e dallo stato reale della repository, produci:
+Partendo da [`../concept/initial-brainstorming.md`](../concept/initial-brainstorming.md) e dallo stato reale della repository, produci:
 
 1. un'analisi critica del concept e delle ipotesi da validare;
 2. una definizione chiara dell'MVP e della prima beta;
@@ -100,7 +100,9 @@ Progetta la soluzione minima che possa validare la proposta di valore in modo cr
 
 Prima di creare i file, verifica la struttura della repository e individua la cartella documentale già adottata. Se esiste una convenzione, rispettala. Altrimenti crea una cartella `docs/product/` per i documenti di prodotto e progettazione.
 
-Mantieni `initial-brainstorming.md` come documento sorgente del concept. Non riscriverlo per forzare decisioni che devono ancora essere validate.
+Mantieni [`../concept/initial-brainstorming.md`](../concept/initial-brainstorming.md) come documento sorgente del concept. Non riscriverlo per forzare decisioni che devono ancora essere validate.
+
+**Struttura attuale `docs/`:** vedi [`../README.md`](../README.md) — sotto-cartelle `concept/`, `process/`, `product/{requirements,experience,architecture,ai,decisions,planning,quality,discovery}/`.
 
 Produci almeno i seguenti documenti. I nomi possono essere adattati alle convenzioni esistenti, ma il contenuto deve essere presente.
 

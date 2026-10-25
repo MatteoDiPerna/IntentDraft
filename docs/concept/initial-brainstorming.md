@@ -382,16 +382,16 @@ Una richiesta semplice non dovrebbe generare un questionario eccessivo. Una rich
 
 Il software non dovrebbe applicare rigidamente lo stesso template a ogni richiesta.
 
-| Tipo di attività | Elementi che il sistema potrebbe considerare |
-|---|---|
-| Scrittura | Obiettivo, destinatario, tono, lunghezza, formato |
-| Ricerca | Domande, fonti, criteri di attendibilità, sintesi e limiti |
-| Analisi dati | Input, controlli, calcoli, interpretazione e visualizzazioni |
-| Pianificazione | Obiettivi, risorse, fasi, dipendenze, tempi e rischi |
-| Programmazione | Requisiti, ambiente, vincoli tecnici, test ed errori |
-| Apprendimento | Livello iniziale, spiegazioni progressive, esempi ed esercizi |
-| Comunicazione | Pubblico, messaggio, tono, canale e risultato atteso |
-| Decisioni | Alternative, criteri di confronto, ipotesi, rischi e incertezze |
+| Tipo di attività | Elementi che il sistema potrebbe considerare                    |
+| ---------------- | --------------------------------------------------------------- |
+| Scrittura        | Obiettivo, destinatario, tono, lunghezza, formato               |
+| Ricerca          | Domande, fonti, criteri di attendibilità, sintesi e limiti      |
+| Analisi dati     | Input, controlli, calcoli, interpretazione e visualizzazioni    |
+| Pianificazione   | Obiettivi, risorse, fasi, dipendenze, tempi e rischi            |
+| Programmazione   | Requisiti, ambiente, vincoli tecnici, test ed errori            |
+| Apprendimento    | Livello iniziale, spiegazioni progressive, esempi ed esercizi   |
+| Comunicazione    | Pubblico, messaggio, tono, canale e risultato atteso            |
+| Decisioni        | Alternative, criteri di confronto, ipotesi, rischi e incertezze |
 
 Queste strategie dovrebbero essere validate con esempi reali, non considerate automaticamente corrette per ogni situazione.
 
@@ -629,7 +629,7 @@ La beta dovrebbe dimostrare che gli utenti riescono a ottenere prompt più utili
 3. [X] Distinguere requisiti indispensabili, requisiti desiderabili e funzionalità future.
 4. [X] Definire il flusso utente principale e gli stati dell'interfaccia.
 5. [X] Definire il comportamento del motore di interpretazione, chiarimento e generazione.
-6. [X] Selezionare l'architettura e le tecnologie coerenti con il progetto esistente (proposta in `docs/product/` — decisione stack **OQ-001** ancora aperta).
+6. [X] Selezionare l'architettura e le tecnologie coerenti con il progetto esistente (proposta in [`docs/product/`](../product/README.md); stack in [`decisions/adr-001-stack-and-auth.md`](../product/decisions/adr-001-stack-and-auth.md)).
 7. [X] Definire requisiti non funzionali: privacy, sicurezza, affidabilità, accessibilità e costi.
 8. [X] Progettare una strategia di test e valutazione della qualità.
 9. [X] Creare una roadmap tecnica con dipendenze, priorità e criteri di completamento.

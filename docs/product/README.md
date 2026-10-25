@@ -1,30 +1,70 @@
 # Documentazione prodotto — PromptPilot
 
-Indice documentazione prodotto e tecnica.
+Indice della specifica beta. Concept sorgente: [`../concept/initial-brainstorming.md`](../concept/initial-brainstorming.md).
 
 ### Stato (2026-10-25)
 
-- [X] Pacchetto documenti 1–8 + DB + operazioni FE/BE
-- [X] Decisioni founder registrate (`open-questions-and-decisions.md` v1.2)
-- [X] Requisiti approvati (`product-requirements.md` v1.1)
-- [ ] Implementazione **FOUND-010+** (Vite FE + Node API + Prisma/MySQL)
-- [ ] Integrazione **Claude Sonnet** (fase tardiva, BETA-060+)
-- [X] Template UI: [react-typescript-template](https://github.com/luismalamoc/react-typescript-template) (**OQ-013**)
-- [X] Sessioni DB + **Prisma** (**OQ-014**, **OQ-015**, ADR-001)
+- [X] Pacchetto documenti prodotto (sotto-cartelle per area)
+- [X] Decisioni founder (`decisions/open-questions-and-decisions.md` v1.2)
+- [X] Requisiti approvati (`requirements/product-requirements.md` v1.1)
+- [X] Frontend fase 1 (`frontend/` + `planning/frontend-roadmap.md`) — **verifica umana**
+- [ ] Backend **FOUND-011+** (Node API + Prisma/MySQL)
+- [X] Template UI + ADR stack (`decisions/adr-001-stack-and-auth.md`)
 
-| #   | Documento                                                            | Contenuto                             |
-| --- | -------------------------------------------------------------------- | ------------------------------------- |
-| —   | [`../initial-brainstorming.md`](../initial-brainstorming.md)         | Concept sorgente                      |
-| 1   | [`product-requirements.md`](product-requirements.md)                 | FR/NFR, MoSCoW                        |
-| 2   | [`user-journeys-and-ux.md`](user-journeys-and-ux.md)                 | Journey, stati UI, scenari            |
-| 3   | [`technical-architecture.md`](technical-architecture.md)             | Architettura FE/BE + MySQL + AI (fasi) |
-| 4   | [`ai-prompt-engine-design.md`](ai-prompt-engine-design.md)           | IntentModel, flusso AI                |
-| 5   | [`testing-and-evaluation.md`](testing-and-evaluation.md)             | Test, rubric, pilota notes/LinkedIn   |
-| 6   | [`beta-roadmap.md`](beta-roadmap.md)                                 | FOUND + BETA checklist                |
-| 7   | [`open-questions-and-decisions.md`](open-questions-and-decisions.md) | Registro decisioni                    |
-| 8   | [`repository-assessment.md`](repository-assessment.md)               | Stato repo                            |
-| 9   | [`database-design.md`](database-design.md)                           | Schema MySQL / ER                     |
-| 10  | [`frontend-backend-operations.md`](frontend-backend-operations.md)   | Operazioni API e collaborazione FE/BE |
-| 11  | [`adr-001-stack-and-auth.md`](adr-001-stack-and-auth.md)             | ADR stack, Prisma, sessioni, template |
+---
 
-**Prossimo passo:** **FOUND-010** in `beta-roadmap.md` (scaffold progetto locale).
+## Requirements
+
+| Doc                      | Path                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------ |
+| Requisiti FR/NFR, MoSCoW | [`requirements/product-requirements.md`](requirements/product-requirements.md) |
+
+## Experience
+
+| Doc                             | Path                                                                       |
+| ------------------------------- | -------------------------------------------------------------------------- |
+| User journey, stati UI, scenari | [`experience/user-journeys-and-ux.md`](experience/user-journeys-and-ux.md) |
+
+## Architecture
+
+| Doc                                   | Path                                                                                         |
+| ------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Architettura FE/BE, fasi              | [`architecture/technical-architecture.md`](architecture/technical-architecture.md)           |
+| Schema MySQL / ER                     | [`architecture/database-design.md`](architecture/database-design.md)                         |
+| Operazioni API e collaborazione FE/BE | [`architecture/frontend-backend-operations.md`](architecture/frontend-backend-operations.md) |
+
+## AI
+
+| Doc                        | Path                                                             |
+| -------------------------- | ---------------------------------------------------------------- |
+| IntentModel, flusso motore | [`ai/ai-prompt-engine-design.md`](ai/ai-prompt-engine-design.md) |
+
+## Decisions
+
+| Doc                         | Path                                                                                     |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| Registro decisioni OQ-*     | [`decisions/open-questions-and-decisions.md`](decisions/open-questions-and-decisions.md) |
+| ADR-001 stack, auth, Prisma | [`decisions/adr-001-stack-and-auth.md`](decisions/adr-001-stack-and-auth.md)             |
+
+## Planning
+
+| Doc                        | Path                                                           |
+| -------------------------- | -------------------------------------------------------------- |
+| Roadmap beta (FOUND, BETA) | [`planning/beta-roadmap.md`](planning/beta-roadmap.md)         |
+| Roadmap solo frontend      | [`planning/frontend-roadmap.md`](planning/frontend-roadmap.md) |
+
+## Quality
+
+| Doc                  | Path                                                                     |
+| -------------------- | ------------------------------------------------------------------------ |
+| Test, rubric, pilota | [`quality/testing-and-evaluation.md`](quality/testing-and-evaluation.md) |
+
+## Discovery
+
+| Doc                   | Path                                                                       |
+| --------------------- | -------------------------------------------------------------------------- |
+| Assessment repository | [`discovery/repository-assessment.md`](discovery/repository-assessment.md) |
+
+---
+
+**Prossimo passo:** backend **FOUND-011** — vedi [`planning/beta-roadmap.md`](planning/beta-roadmap.md).

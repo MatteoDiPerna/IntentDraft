@@ -19,12 +19,12 @@
 
 ### 2.1 Albero verificato (radice)
 
-| Percorso                         | Tipo           | Note                                  |
-| -------------------------------- | -------------- | ------------------------------------- |
-| `README.md`                      | Documentazione | Tagline prodotto in inglese, una riga |
-| `docs/initial-brainstorming.md`  | Documentazione | Concept v0.1, ~695 righe              |
-| `docs/cursor-planning-prompt.md` | Documentazione | Istruzioni per fase di progettazione  |
-| `.git/`                          | VCS            | Repository Git inizializzato          |
+| Percorso                                 | Tipo           | Note                                  |
+| ---------------------------------------- | -------------- | ------------------------------------- |
+| `README.md`                              | Documentazione | Tagline prodotto in inglese, una riga |
+| `docs/concept/initial-brainstorming.md`  | Documentazione | Concept v0.1, ~695 righe              |
+| `docs/process/cursor-planning-prompt.md` | Documentazione | Istruzioni per fase di progettazione  |
+| `.git/`                                  | VCS            | Repository Git inizializzato          |
 
 **Fatto osservato:** non esistono cartelle `src/`, `app/`, `packages/`, `tests/`, `.github/`, file di configurazione (`package.json`, `pyproject.toml`, `Dockerfile`, ecc.).
 
@@ -46,7 +46,7 @@
 
 **Fatto osservato:** nessuno stack tecnologico è dichiarato o implementato nella repository.
 
-**Ipotesi / decisione aperta:** la scelta dello stack è documentata in `technical-architecture.md` e `open-questions-and-decisions.md` (decisione **OQ-001**).
+**Ipotesi / decisione aperta:** la scelta dello stack è documentata in `../architecture/technical-architecture.md` e `../decisions/open-questions-and-decisions.md` (decisione **OQ-001**).
 
 ---
 
@@ -56,7 +56,7 @@ Nessuna funzionalità di prodotto è implementata.
 
 Il concept funzionale è descritto in:
 
-- `docs/initial-brainstorming.md` — flusso conversazionale, MVP ipotizzato, principi UX/qualità
+- `docs/concept/initial-brainstorming.md` — flusso conversazionale, MVP ipotizzato, principi UX/qualità
 - `README.md` — proposta di valore sintetica
 
 ---
@@ -65,17 +65,17 @@ Il concept funzionale è descritto in:
 
 **Fatto osservato:** assenti test automatizzati, linter, formatter e type checker configurati a livello di progetto.
 
-**Lacuna beta:** andranno introdotti insieme al primo codice (vedi `testing-and-evaluation.md`, fase roadmap **BETA-010** e successive).
+**Lacuna beta:** andranno introdotti insieme al primo codice (vedi `../quality/testing-and-evaluation.md`, fase roadmap **BETA-010** e successive).
 
 ---
 
 ## 6. Documentazione esistente
 
-| File                             | Contenuto                                 | Da preservare                |
-| -------------------------------- | ----------------------------------------- | ---------------------------- |
-| `docs/initial-brainstorming.md`  | Concept, target, rischi, MVP ipotizzato   | Sì — documento sorgente idea |
-| `docs/cursor-planning-prompt.md` | Processo di progettazione                 | Sì — meta-processo           |
-| `docs/product/*.md`              | Specifiche prodotto/tecnica (questa fase) | Nuovi deliverable            |
+| File                                     | Contenuto                               | Da preservare                |
+| ---------------------------------------- | --------------------------------------- | ---------------------------- |
+| `docs/concept/initial-brainstorming.md`  | Concept, target, rischi, MVP ipotizzato | Sì — documento sorgente idea |
+| `docs/process/cursor-planning-prompt.md` | Processo di progettazione               | Sì — meta-processo           |
+| `docs/product/**`                        | Specifiche per area (requirements, …)   | Deliverable beta             |
 
 ---
 
@@ -87,13 +87,13 @@ Il concept funzionale è descritto in:
 | Nome prodotto non definitivo      | Bassa             | README: PromptPilot; brainstorming: AI Prompt Assistant             |
 | README con errori grammaticali    | Bassa             | Non blocca beta; migliorare in fase polish                          |
 | Nessuna CI                        | Media             | Introduzione consigliata con primo PR significativo                 |
-| Decisioni prodotto ancora aperte  | Media             | Registrate in `open-questions-and-decisions.md`                     |
+| Decisioni prodotto ancora aperte  | Media             | Registrate in `../decisions/open-questions-and-decisions.md`        |
 
 ---
 
 ## 8. Lacune rispetto ai requisiti della beta
 
-Rispetto agli obiettivi in `initial-brainstorming.md` e ai requisiti Must in `product-requirements.md`:
+Rispetto agli obiettivi in `docs/concept/initial-brainstorming.md` e ai requisiti Must in `requirements/product-requirements.md`:
 
 | Area                                               | Lacuna                                   |
 | -------------------------------------------------- | ---------------------------------------- |
@@ -109,7 +109,7 @@ Rispetto agli obiettivi in `initial-brainstorming.md` e ai requisiti Must in `pr
 
 ## 9. Elementi da riutilizzare
 
-- **Concept e principi** in `initial-brainstorming.md` (intent, gap analysis, decomposition, qualità)
+- **Concept e principi** in `docs/concept/initial-brainstorming.md` (intent, gap analysis, decomposition, qualità)
 - **Checklist MVP** sezione 7.1 del brainstorming — allineata ai requisiti FR della beta
 - **Tagline** e direzione README — coerente con proposta di valore
 
@@ -119,7 +119,7 @@ Non c’è codice da riutilizzare.
 
 ## 10. Elementi da chiarire (founder)
 
-Priorità alta — vedi `open-questions-and-decisions.md`:
+Priorità alta — vedi `../decisions/open-questions-and-decisions.md`:
 
 1. Stack tecnologico (**OQ-001**)
 2. Provider LLM e modello default (**OQ-002**)
@@ -139,6 +139,6 @@ Priorità alta — vedi `open-questions-and-decisions.md`:
 
 ## 12. Riferimenti incrociati
 
-- Requisiti: `product-requirements.md`
-- Architettura proposta: `technical-architecture.md`
-- Roadmap: `beta-roadmap.md`
+- Requisiti: `../requirements/product-requirements.md`
+- Architettura: `../architecture/technical-architecture.md`
+- Roadmap: `../planning/beta-roadmap.md`

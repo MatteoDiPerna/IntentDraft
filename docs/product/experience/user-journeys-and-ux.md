@@ -193,4 +193,4 @@ Chiarimento singolo: “Hai solo quantità vendute o anche fatturato/margini?”
 | Prompt + copia  | FR-006–010     | T-E2E-03  |
 | Errori          | FR-015         | T-ERR-01  |
 
-Vedi `testing-and-evaluation.md`.
+Vedi [`../quality/testing-and-evaluation.md`](../quality/testing-and-evaluation.md).

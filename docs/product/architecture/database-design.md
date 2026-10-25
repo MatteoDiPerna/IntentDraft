@@ -212,4 +212,4 @@ Ordine migrazioni suggerito:
 | FR-023 Upload              | `uploaded_files`                 |
 | FR-006–010 Prompt testuale | `prompt_artifacts.body_markdown` |
 
-Roadmap: **FOUND-020** … **FOUND-030** in `beta-roadmap.md`.
+Roadmap: **FOUND-020** … **FOUND-030** in [`../planning/beta-roadmap.md`](../planning/beta-roadmap.md).

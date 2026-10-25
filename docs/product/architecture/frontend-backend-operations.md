@@ -154,4 +154,4 @@ Codici minimi: `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `VALIDATION_ERROR`, `RA
 | i18n               | FOUND-015                |
 | LLM Anthropic      | BETA-060+ (fase tardiva) |
 
-Vedi `beta-roadmap.md`.
+Vedi [`../planning/beta-roadmap.md`](../planning/beta-roadmap.md).
