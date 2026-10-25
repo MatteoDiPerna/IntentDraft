@@ -1,8 +1,8 @@
 # Requisiti di prodotto — PromptPilot (beta)
 
 **Documento:** `product-requirements.md`  
-**Versione:** 1.0  
-**Stato:** Proposta di progettazione — non approvata dal founder  
+**Versione:** 1.1  
+**Stato:** **Approvato dal founder** (2026-10-25) — aggiornato per auth, MySQL, upload, i18n  
 **Fonti:** `docs/initial-brainstorming.md`, `repository-assessment.md`
 
 ---
@@ -11,7 +11,7 @@
 
 PromptPilot è un assistente conversazionale per utenti **non esperti** di prompt engineering. L’utente descrive in linguaggio naturale cosa vuole ottenere; il sistema interpreta l’intento, chiede chiarimenti mirati quando servono, e produce un **prompt strutturato** da usare in un LLM esterno (copia/incolla).
 
-**Obiettivo beta:** dimostrare che il flusso riduce ambiguità e iterazioni rispetto a “incollare la richiesta grezza” o a una semplice riscrittura generica, senza introdurre account, pagamenti o esecuzione integrata dei task.
+**Obiettivo beta:** produrre un **prompt testuale** di qualità (copiabile in un LLM esterno), con flusso conversazionale, **account**, **persistenza su MySQL** e **upload file**. Pagamenti ed hosting cloud **non** fanno parte di questa fase; integrazione **Anthropic Claude Sonnet** in **fase implementativa successiva** alle fondamenta FE/BE.
 
 ---
 
@@ -25,12 +25,11 @@ PromptPilot è un assistente conversazionale per utenti **non esperti** di promp
 
 ## 3. Target
 
-| Segmento                                    | Priorità beta          | Note                                                   |
-| ------------------------------------------- | ---------------------- | ------------------------------------------------------ |
-| Professionisti che usano già LLM per lavoro | **Primario (ipotesi)** | Report, email, presentazioni, analisi                  |
-| PMI / liberi professionisti                 | Secondario             | Stessi casi d’uso, meno tempo per validazione iniziale |
-| Studenti                                    | Could post-beta        | WTP incerto                                            |
-| Uso personale generalista                   | Could                  | Ampio ma debole differenziazione                       |
+| Segmento                                 | Priorità beta | Note                                       |
+| ---------------------------------------- | ------------- | ------------------------------------------ |
+| **Generalista** (decisione OQ-004 **A**) | **Primario**  | Notes, post social, email, compiti vari    |
+| Professionisti / PMI                     | Secondario    | Stessi flussi, validazione pilota semplice |
+| Studenti                                 | Could         | WTP incerto                                |
 
 **Metodo di validazione segmento:** 15–20 richieste reali + 5–8 interviste (brainstorming §13); metriche in §12.
 
@@ -75,6 +74,9 @@ Attenta a tono e destinatario. Ha bisogno che il sistema chieda **pubblico** e *
 | UC-06 | Input vuoto / non supportato / troppo vago     | Must     |
 | UC-07 | Errore provider / timeout                      | Must     |
 | UC-08 | Feedback minimo (“utile / non utile”)          | Should   |
+| UC-09 | Registrazione / login / logout                 | Must     |
+| UC-10 | Upload file associato a conversazione          | Must     |
+| UC-11 | Ripresa conversazione dopo refresh (DB)        | Must     |
 
 ---
 
@@ -97,17 +99,19 @@ Non: “prompt più lunghi”. Sì: intento, vincoli, formato, verificabilità, 
 
 ## 9. Non-obiettivi e fuori scope beta
 
-| Elemento                       | MoSCoW                                       | Motivazione                             |
-| ------------------------------ | -------------------------------------------- | --------------------------------------- |
-| Esecuzione prompt nel prodotto | **Won't**                                    | Riduce scope; OQ-008                    |
-| Account / login                | **Won't**                                    | Non necessario per validare valore core |
-| Cronologia cloud / libreria    | **Won't**                                    | Privacy e complessità                   |
-| Upload file                    | **Won't**                                    | Injection e privacy                     |
-| Pagamenti                      | **Won't**                                    | Pre-validazione                         |
-| Scelta modello da UI           | **Could**                                    | Config lato server in beta              |
-| Template predefiniti           | **Could** post-beta                          |                                         |
-| Multi-utente / team            | **Won't**                                    |                                         |
-| Analytics avanzate             | **Should** minimo (eventi aggregati anonimi) | Solo se privacy-compatible              |
+| Elemento                        | MoSCoW             | Motivazione                          |
+| ------------------------------- | ------------------ | ------------------------------------ |
+| Esecuzione prompt nel prodotto  | **Won't**          | OQ-008 — output = testo prompt       |
+| Account / login                 | **Must**           | OQ-010 — auth subito                 |
+| Persistenza conversazioni       | **Must**           | OQ-003 **C** — MySQL                 |
+| Upload file                     | **Must**           | OQ-009 — beta                        |
+| Pagamenti                       | **Won't** (ora)    | OQ-007 — v1 ufficiale futura         |
+| Hosting cloud / deploy pubblico | **Won't** (ora)    | OQ-005 **A**, OQ-012 — localhost     |
+| Integrazione LLM Anthropic      | **Must** (roadmap) | OQ-002 — **dopo** fondamenta FE/BE   |
+| Scelta modello da UI            | **Could**          | Config server; Sonnet default futuro |
+| Template UI GitHub              | **Should**         | OQ-013 — scelta repo in corso        |
+| Multi-utente / team             | **Won't**          | Fase post-beta                       |
+| Analytics avanzate              | **Could**          | Dopo pilota                          |
 
 ---
 
@@ -135,6 +139,10 @@ Non: “prompt più lunghi”. Sì: intento, vincoli, formato, verificabilità, 
 | **FR-018** | Mostrare conteggio approssimativo domande rimanenti / progresso conversazione.                                                 | Could  | BETA-050           |
 | **FR-019** | Esportazione prompt come file `.txt`.                                                                                          | Could  | Post-beta          |
 | **FR-020** | Adattamento etichetta sezioni prompt per “tipo attività” (scrittura, analisi, …).                                              | Should | BETA-045           |
+| **FR-021** | Registrazione, login, logout con sessione sicura (cookie httpOnly).                                                            | Must   | FOUND-010–014      |
+| **FR-022** | Conversazioni e messaggi persistiti per utente autenticato (sopravvivono al refresh).                                          | Must   | FOUND-030–034      |
+| **FR-023** | Upload file (tipi e dimensione limitati) collegabile a una conversazione.                                                      | Must   | FOUND-035–038      |
+| **FR-024** | Interfaccia e messaggi di sistema in **italiano e inglese** (selezione lingua).                                                | Must   | FOUND-015          |
 
 ---
 
@@ -150,7 +158,9 @@ Non: “prompt più lunghi”. Sì: intento, vincoli, formato, verificabilità, 
 | **NFR-006** | Tempo risposta percepito: feedback entro 500 ms UI; operazioni LLM async con indicatori. | Should |                  |
 | **NFR-007** | UI **responsive** (mobile usable).                                                       | Should | BETA-030         |
 | **NFR-008** | Accessibilità: navigazione tastiera, contrasto, label form (WCAG 2.1 AA come target).    | Should | BETA-075         |
-| **NFR-009** | Lingua UI italiana; prompt generati in lingua coerente con l’utente (default IT).        | Must   |                  |
+| **NFR-009** | UI **IT + EN**; prompt generati in lingua coerente con preferenza utente (default IT).   | Must   | FOUND-015        |
+| **NFR-012** | Password hash sicuro (bcrypt/argon2); nessuna password in chiaro in DB o log.            | Must   | FOUND-010        |
+| **NFR-013** | MySQL locale documentato; migrazioni versionate.                                         | Must   | FOUND-020–022    |
 | **NFR-010** | Costo inferenza monitorato (metriche per sessione).                                      | Should | BETA-060         |
 | **NFR-011** | Disponibilità target beta: best-effort; nessun SLA formale.                              | Could  |                  |
 
@@ -192,14 +202,29 @@ Non: “prompt più lunghi”. Sì: intento, vincoli, formato, verificabilità, 
 
 - **Verifica:** ispezione bundle client e network tab — nessuna chiave API; solo endpoint backend.
 
+### FR-021
+
+- **Dato** credenziali valide, **quando** login, **allora** sessione creata e pagine protette accessibili.
+- **Quando** logout, **allora** sessione invalidata.
+
+### FR-022 / FR-023
+
+- **Dato** utente loggato, **dopo** refresh, **allora** conversazioni e messaggi ancora visibili.
+- **Dato** file ammesso, **quando** upload completato, **allora** compare in lista allegati conversazione.
+
+### FR-024
+
+- **Quando** utente seleziona EN, **allora** label UI principali in inglese (copertura minima definita in FOUND-015).
+
 ---
 
 ## 13. Assunzioni
 
-- Beta = **generazione + copia**, LLM esterno (**Ipotesi**, allineata OQ-008 Proposed).
-- Utenti beta italiani o bilingui; contenuti principalmente in italiano.
-- Un provider LLM unico in v1 implementazione.
-- Sessione non persistita oltre tab/browser salvo decisione OQ-003.
+- Output prodotto = **testo prompt** (OQ-008 **Accepted**); esecuzione solo in LLM esterno.
+- **MySQL** su localhost; nessun hosting produzione in questa fase (OQ-012 **Deferred**).
+- Provider LLM: **Anthropic Claude Sonnet** (OQ-002); codice integrato **dopo** auth/DB/upload.
+- Pilota qualità su casi **semplici**: note / post LinkedIn (founder 2026-10-25).
+- Template visivo da repo GitHub esterna (OQ-013 **Open**).
 
 ---
 
@@ -238,10 +263,14 @@ Baseline di confronto: richiesta utente incollata direttamente nello stesso LLM 
 
 ## 17. Tracciabilità
 
-| Obiettivo beta         | Requisiti                  | Test       | Roadmap      |
-| ---------------------- | -------------------------- | ---------- | ------------ |
-| Flusso conversazionale | FR-001–005, FR-013–014     | T-CONV-*   | BETA-030–035 |
-| Prompt di qualità      | FR-006–007, FR-011, FR-020 | T-PROMPT-* | BETA-040–045 |
-| Controllo utente       | FR-008–010                 | T-E2E-03   | BETA-050     |
-| Robustezza             | FR-012, FR-015             | T-ERR-*    | BETA-055–060 |
-| Trust                  | FR-016, NFR-001, NFR-005   | T-SEC-*    | BETA-065     |
+| Obiettivo beta         | Requisiti                  | Test       | Roadmap        |
+| ---------------------- | -------------------------- | ---------- | -------------- |
+| Auth e account         | FR-021, NFR-012            | T-AUTH-*   | FOUND-010–014  |
+| Persistenza            | FR-022, NFR-013            | T-DB-*     | FOUND-020–034  |
+| Upload                 | FR-023                     | T-FILE-*   | FOUND-035–038  |
+| i18n                   | FR-024, NFR-009            | T-I18N-*   | FOUND-015      |
+| Flusso conversazionale | FR-001–005, FR-013–014     | T-CONV-*   | BETA-050+ (AI) |
+| Prompt di qualità      | FR-006–007, FR-011, FR-020 | T-PROMPT-* | BETA-060+      |
+| Controllo utente       | FR-008–010                 | T-E2E-03   | BETA-050+      |
+| Robustezza             | FR-012, FR-015             | T-ERR-*    | BETA-054+      |
+| Trust                  | FR-016, NFR-001, NFR-005   | T-SEC-*    | BETA-072+      |

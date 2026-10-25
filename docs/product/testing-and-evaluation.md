@@ -29,6 +29,16 @@
 
 ## 3. Test funzionali mappati
 
+### 3.0 Fondamenta (T-AUTH / T-DB / T-FILE)
+
+| ID        | Descrizione                          | FR/NFR | Pass                     |
+| --------- | ------------------------------------ | ------ | ------------------------ |
+| T-AUTH-01 | Register + login + accesso protetto  | FR-021 | 200 + cookie             |
+| T-AUTH-02 | Logout invalida sessione             | FR-021 | 401 su `/me`             |
+| T-DB-01   | Conversazione sopravvive refresh     | FR-022 | stesso `conversation_id` |
+| T-FILE-01 | Upload file ammesso in conversazione | FR-023 | record DB + file FS      |
+| T-I18N-01 | Switch IT→EN su label auth           | FR-024 | testo EN visibile        |
+
 ### 3.1 Conversazione (T-CONV)
 
 | ID        | Descrizione                                       | FR     | Pass                               |
@@ -79,15 +89,15 @@
 
 **Fonte:** 15–20 richieste sintetiche ispirate a brainstorming + 5 reali anonimizzate (con consenso).
 
-| ID caso     | Tipo                        | Note                         |
-| ----------- | --------------------------- | ---------------------------- |
-| EV-01       | Email semplice              | Scenario 1                   |
-| EV-02       | Piano marketing vago        | Scenario 2                   |
-| EV-03       | Excel + presentazione       | Scenario 3                   |
-| EV-04       | Riassunto articolo (no URL) | gap input                    |
-| EV-05       | Codice Python script        | taskType other               |
-| EV-06       | Consiglio legale            | refusal                      |
-| EV-07–EV-15 | Vari professionali          | report, slide, meeting notes |
+| ID caso     | Tipo                           | Note                         |
+| ----------- | ------------------------------ | ---------------------------- |
+| EV-01       | **Note** / appunti strutturati | Pilota founder (semplice)    |
+| EV-02       | **Post LinkedIn** breve        | Pilota founder (semplice)    |
+| EV-03       | Excel + presentazione          | Caso complesso (differito)   |
+| EV-04       | Riassunto articolo (no URL)    | gap input                    |
+| EV-05       | Codice Python script           | taskType other               |
+| EV-06       | Consiglio legale               | refusal                      |
+| EV-07–EV-15 | Vari professionali             | report, slide, meeting notes |
 
 Conservare in `tests/fixtures/eval/` (da creare in implementazione).
 

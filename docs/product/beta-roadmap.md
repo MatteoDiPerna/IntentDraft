@@ -1,8 +1,8 @@
 # Roadmap verso la prima beta — PromptPilot
 
 **Documento:** `beta-roadmap.md`  
-**Versione:** 1.0  
-**Stato repository iniziale:** greenfield (fase 1 completata in documentazione)
+**Versione:** 1.1  
+**Stato:** decisioni founder registrate (2026-10-25) · **priorità implementazione = fondamenta FE/BE locali**
 
 Legenda priorità: **P0** critico | **P1** alto | **P2** medio
 
@@ -12,16 +12,16 @@ Legenda priorità: **P0** critico | **P1** alto | **P2** medio
 
 ```mermaid
 flowchart LR
-  F2[Decisioni OQ] --> F5[Setup tech]
-  F5 --> F6[Flusso UI]
-  F6 --> F7[Motore AI]
-  F7 --> F8[Sicurezza errori]
-  F8 --> F9[Test]
-  F9 --> F10[Beta interna]
-  F10 --> F11[Pilota]
+  F2[Decisioni OQ] --> FOUND[Fondamenta FE BE MySQL]
+  FOUND --> UI[Shell UI template]
+  UI --> AI[Integrazione Claude Sonnet]
+  AI --> CHAT[Flusso prompt completo]
+  CHAT --> T[Test e pilota]
 ```
 
-**Parallelo possibile:** UX copy (F3) durante F5; dataset valutazione (BETA-085) durante F7.
+**Parallelo possibile:** i18n (FOUND-015) con auth; scelta template (FOUND-040) quando vuoi.
+
+**Nota:** LLM (**BETA-060+**) **dopo** FOUND-* — allineato a founder.
 
 **Legenda checklist:** `[X]` completato · `[ ]` da fare
 
@@ -43,6 +43,9 @@ flowchart LR
 - [X] PLAN-009 — Verifica coerenza requisiti ↔ test ↔ roadmap — **P0**
 - [X] PLAN-010 — Indice `docs/product/README.md` — **P1**
 - [X] PLAN-011 — Allineamento tabelle Markdown (`scripts/align_markdown_tables.py`) — **P2**
+- [X] PLAN-012 — Integrazione decisioni founder in documentazione — **P0**
+- [X] PLAN-013 — `database-design.md` — **P0**
+- [X] PLAN-014 — `frontend-backend-operations.md` — **P0**
 
 **DoD:** pacchetto `docs/product/` completo; nessuna dipendenza runtime aggiunta.
 
@@ -61,65 +64,85 @@ flowchart LR
 
 ---
 
-## Fase 2 — Decisioni prodotto essenziali
+## Fase 2 — Decisioni prodotto essenziali ✅
 
 **Obiettivo:** sbloccare implementazione.  
-**Dipende da:** Fase 1.
+**Stato:** completata (2026-10-25).
 
-- [ ] BETA-010 — Founder: accettare o modificare **OQ-001** stack — **P0** — Deliverable: ADR-001
-- [ ] BETA-011 — Founder: **OQ-002** provider/modello + budget — **P0**
-- [ ] BETA-012 — Founder: **OQ-003** persistenza sessione — **P1**
-- [ ] BETA-013 — Founder: **OQ-005** modello accesso beta (chiusa/rate limit) — **P0**
-- [ ] BETA-014 — Confermare **OQ-008** solo generazione prompt — **P1**
-- [ ] BETA-015 — Confermare scope **Won't** (auth, file, pagamenti) — **P1**
+- [X] BETA-010 — **OQ-001** Next.js + TypeScript — **P0**
+- [X] BETA-011 — **OQ-002** Anthropic Claude Sonnet (integrazione **rinviata**) — **P0**
+- [X] BETA-012 — **OQ-003** persistenza **MySQL + account** — **P1**
+- [X] BETA-013 — **OQ-005** localhost / solo team — **P0**
+- [X] BETA-014 — **OQ-008** output solo prompt testuale — **P1**
+- [X] BETA-015 — Scope beta: **Must** auth + upload; **Won't** pagamenti (ora) — **P1**
 
-**DoD:** almeno OQ-001, OQ-002, OQ-005 in stato `Accepted` in `open-questions-and-decisions.md`.
-
-**Blocchi:** implementazione codice senza BETA-010/011.
+**DoD:** `open-questions-and-decisions.md` v1.1.
 
 ---
 
 ## Fase 3 — Requisiti e UX (documentazione)
 
-**Obiettivo:** baseline congelata per dev.  
-**Stato:** documenti creati; opzionale review founder.
+**Obiettivo:** baseline congelata per dev.
 
-- [ ] BETA-020 — Review founder `product-requirements.md` (FR/NFR) — **P1**
-- [ ] BETA-021 — Review founder scenari UX — **P1**
-- [ ] BETA-022 — Priorizzare 5 casi EV per pilota — **P1**
+- [X] BETA-020 — Review founder `product-requirements.md` — **P1**
+- [ ] BETA-021 — Review founder scenari UX (opzionale) — **P2**
+- [X] BETA-022 — Pilota semplice: **notes** + **post LinkedIn** — **P1**
 
-**DoD:** commenti founder incorporati o ticket espliciti.
+**DoD:** EV-01/EV-02 aggiornati in `testing-and-evaluation.md`.
 
 ---
 
-## Fase 4 — Architettura e contratti
+## Fase 4 — Implementazione fondamenta (priorità attuale)
 
-**Dipende da:** BETA-010.
+**Obiettivo:** frontend + backend + MySQL per operazioni basilari (**senza LLM**).  
+**Dipende da:** Fase 2. **Doc:** `database-design.md`, `frontend-backend-operations.md`.
 
-- [ ] BETA-030 — Inizializzare progetto (package.json, TS, lint, format) — **P0** — FR tutti (fondazione)
+- [ ] FOUND-010 — Monorepo `frontend/` (Vite) + `backend/` (Node API) + lint — **P0**
+- [ ] FOUND-011 — Prisma + MySQL + `.env.example` — **P0**
+- [ ] FOUND-012 — Migrazioni schema v1 (`users`, `sessions`, …) — **P0**
+- [ ] FOUND-013 — `POST/GET` auth (register, login, logout, me) — **P0** — FR-021
+- [ ] FOUND-014 — Middleware route protette + pagine login/register — **P0**
+- [ ] FOUND-015 — i18n IT/EN (minimo navigazione + auth) — **P0** — FR-024
+- [ ] FOUND-020 — CRUD conversazioni (lista, crea, dettaglio) — **P0** — FR-022
+- [ ] FOUND-021 — API messaggi (persistenza; risposta stub pre-LLM) — **P0**
+- [ ] FOUND-022 — Test integrazione auth + conversazione — **P1**
+- [ ] FOUND-035 — Upload file multipart + storage locale — **P0** — FR-023
+- [ ] FOUND-036 — UI lista allegati + delete — **P1**
+- [X] FOUND-040 — Template UI: [react-typescript-template](https://github.com/luismalamoc/react-typescript-template) — **P1**
+- [ ] FOUND-041 — Adattare template in `frontend/` (shell auth + chat, no Firebase) — **P1**
+
+**DoD:** flusso OP-A + OP-C + OP-F01 verde in locale; `LLM_ENABLED=false`.
+
+---
+
+## Fase 5 — Architettura contratti AI (pre-codice LLM)
+
+**Dipende da:** FOUND-010.
+
+- [ ] BETA-030 — Tipi `IntentModel`, `PromptArtifact` in repo — **P0**
 - [ ] BETA-031 — Definire tipi `IntentModel`, `PromptArtifact` (`ai-prompt-engine-design.md`) — **P0** — FR-002, FR-006
-- [ ] BETA-032 — Contratto API `POST /api/conversation` (analyze/generate/regenerate) — **P0** — FR-001–015
-- [ ] BETA-033 — `.env.example` + documentazione avvio locale — **P0** — NFR-001
-- [ ] BETA-034 — ADR-002 provider e strategia 2-step LLM — **P1**
+- [ ] BETA-032 — Contratto API conversazione AI (analyze/generate/regenerate) — **P0** — dopo FOUND
+- [ ] BETA-033 — Documentazione avvio locale (MySQL + app) — **P0**
+- [ ] BETA-034 — ADR-002 Anthropic Sonnet + strategia 2-step — **P1**
 
-**Verifica:** chiamata curl mock restituisce JSON valido.
+**Verifica:** contratti TypeScript + mock MSW.
 
 ---
 
-## Fase 5 — Setup fondazioni tecniche
+## Fase 6 — Moduli server (pre-LLM e LLM)
 
-**Dipende da:** BETA-030–032.
+**Dipende da:** FOUND-011, BETA-030.
 
-- [ ] BETA-040 — Modulo `llm/` client server-side con timeout/retry — **P0** — NFR-002
+- [ ] BETA-040 — Modulo `llm/` Anthropic client (feature flag off fino a ready) — **P0** — NFR-002
 - [ ] BETA-041 — Modulo `validation/` input + output — **P0** — NFR-004
 - [ ] BETA-042 — CI minima (lint + unit test su PR) — **P1**
 - [ ] BETA-043 — Health endpoint — **P2**
 
 ---
 
-## Fase 6 — Flusso principale UI
+## Fase 7 — Flusso principale UI (chat + prompt)
 
-**Dipende da:** BETA-032, BETA-040.
+**Dipende da:** FOUND-020+, BETA-040, integrazione LLM attiva.
 
 - [ ] BETA-050 — Layout chat + composer (FR-001, FR-014) — **P0**
 - [ ] BETA-051 — Pannello “Cosa ho capito” (FR-002, FR-011) — **P0**
@@ -133,9 +156,9 @@ flowchart LR
 
 ---
 
-## Fase 7 — Motore AI
+## Fase 8 — Motore AI (Claude Sonnet)
 
-**Dipende da:** BETA-031, BETA-040.
+**Dipende da:** BETA-031, BETA-040, FOUND completata.
 
 - [ ] BETA-060 — Prompt template ANALYZE + parse IntentModel (FR-002–004) — **P0**
 - [ ] BETA-061 — Policy turni/domande in orchestrator (FR-004, FR-011) — **P0**
@@ -148,7 +171,7 @@ flowchart LR
 
 ---
 
-## Fase 8 — Errori, sicurezza, privacy, costi
+## Fase 9 — Errori, sicurezza, privacy, costi
 
 **Dipende da:** BETA-040, BETA-050.
 
@@ -162,7 +185,7 @@ flowchart LR
 
 ---
 
-## Fase 9 — Test e valutazione
+## Fase 10 — Test e valutazione
 
 **Dipende da:** Fase 6–8.
 
@@ -178,18 +201,18 @@ flowchart LR
 
 ---
 
-## Fase 10 — Beta interna
+## Fase 11 — Beta interna (localhost / team)
 
 **Dipende da:** BETA-080–082, BETA-072.
 
-- [ ] BETA-090 — Deploy ambiente beta — **P0**
-- [ ] BETA-091 — Smoke test produzione — **P0**
+- [ ] BETA-090 — Ambiente demo locale documentato (no cloud obbligatorio) — **P0**
+- [ ] BETA-091 — Smoke test end-to-end locale — **P0**
 - [ ] BETA-092 — Dogfooding team/founder (≥10 sessioni) — **P1**
 - [ ] BETA-093 — Triage bug P0/P1 — **P0**
 
 ---
 
-## Fase 11 — Beta pilota utenti
+## Fase 12 — Beta pilota utenti
 
 **Dipende da:** BETA-090, BETA-084.
 
@@ -200,7 +223,7 @@ flowchart LR
 
 ---
 
-## Fase 12 — Go/No-Go e retrospettiva
+## Fase 13 — Go/No-Go e retrospettiva
 
 - [ ] BETA-110 — Checklist beta pronta (sezione sotto) — **P0**
 - [ ] BETA-111 — Decisione Go/No-Go founder — **P0**
@@ -213,7 +236,8 @@ flowchart LR
 - [ ] Tutti FR **Must** implementati (tracciabilità `product-requirements.md` §17)
 - [ ] NFR-001, NFR-002, NFR-003, NFR-004, NFR-005, NFR-009 verificati
 - [ ] Gate G1–G5 qualità
-- [ ] OQ-005 applicato in produzione
+- [ ] Auth + MySQL + upload verificati (FOUND)
+- [ ] LLM Sonnet integrato con chiavi solo server-side (NFR-001)
 - [ ] Informativa limiti/privacy pubblicata
 - [ ] Runbook incidenti minimi (rotazione chiave API)
 - [ ] Nessun P0 bug aperto
@@ -234,7 +258,7 @@ flowchart LR
 ## Problemi che bloccano il rilascio
 
 1. Chiavi API esposte (NFR-001).  
-2. Nessun rate limit su endpoint pubblico (OQ-005).  
+2. Auth assente o upload non sicuro (file path traversal).  
 3. Test E2E Must rossi in CI.  
 4. Mancanza informativa trattamento dati verso LLM (FR-016).  
 5. Refusal categorie ad alto rischio non funzionante (FR-012).
@@ -246,40 +270,29 @@ flowchart LR
 - Libreria prompt locali (OQ-011)
 - Export .txt / Markdown download
 - Scelta modello UI
-- Persistenza opt-in account
+- Pagamenti (OQ-007)
+- Hosting e GDPR (OQ-012)
 - Template verticali marketing/report
-- Esecuzione integrata (OQ-008)
-- i18n completo
+- Esecuzione integrata task (sempre fuori scope attuale)
 
 ---
 
-## Decisioni founder prima dell’implementazione
+## Prossimo passo implementativo
 
-1. **OQ-001** Stack  
-2. **OQ-002** Provider e budget  
-3. **OQ-005** Accesso e costi beta  
-4. Conferma scope Won't (auth, file, esecuzione)
+Iniziare **Fase 4 — FOUND-010** (scaffold Next.js + MySQL).
 
 ---
 
 ## Tracciabilità requisiti Must → task
 
-| FR         | Task                   |
-| ---------- | ---------------------- |
-| FR-001     | BETA-050, BETA-055     |
-| FR-002     | BETA-051, BETA-060     |
-| FR-003–005 | BETA-052, BETA-060–061 |
-| FR-006–007 | BETA-062               |
-| FR-008–010 | BETA-053               |
-| FR-009     | BETA-064               |
-| FR-011     | BETA-051, BETA-061     |
-| FR-012     | BETA-063               |
-| FR-013     | BETA-053               |
-| FR-014     | BETA-050               |
-| FR-015     | BETA-054               |
-| FR-016     | BETA-072               |
-| NFR-001    | BETA-033, BETA-074     |
-| NFR-002    | BETA-040               |
-| NFR-003    | BETA-070               |
-| NFR-004    | BETA-041, BETA-055     |
-| NFR-005    | BETA-071               |
+| FR / NFR   | Task                 |
+| ---------- | -------------------- |
+| FR-021     | FOUND-010–014        |
+| FR-022     | FOUND-020–021        |
+| FR-023     | FOUND-035–036        |
+| FR-024     | FOUND-015            |
+| NFR-012–13 | FOUND-011–012        |
+| FR-001+    | BETA-050+ (post LLM) |
+| FR-006–010 | BETA-053, BETA-062+  |
+| FR-016     | BETA-072             |
+| NFR-001    | BETA-040, BETA-074   |
