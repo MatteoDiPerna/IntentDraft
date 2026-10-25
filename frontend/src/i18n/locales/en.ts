@@ -1,0 +1,80 @@
+import type { TranslationSchema } from './it';
+
+const en: TranslationSchema = {
+  app: {
+    name: 'PromptPilot',
+    tagline:
+      'Describe what you want to achieve. We help you prepare clear instructions for your AI.',
+  },
+  nav: {
+    limits: 'Limits & privacy',
+    newChat: 'New chat',
+    logout: 'Log out',
+    settings: 'Settings',
+    language: 'Language',
+    theme: 'Theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+  },
+  auth: {
+    login: 'Log in',
+    register: 'Sign up',
+    email: 'Email',
+    password: 'Password',
+    displayName: 'Display name',
+    noAccount: "Don't have an account?",
+    hasAccount: 'Already have an account?',
+    loginError: 'Incorrect email or password.',
+    registerError: 'Email already registered.',
+    mockNotice: 'Demo phase: data stays in your browser (mock).',
+    demoLogin: 'Demo access (evaluation)',
+    demoHint: 'Demo account: demo@promptpilot.local / demo1234',
+  },
+  sidebar: {
+    newChat: 'New chat',
+    projects: 'Projects',
+    pinned: 'Pinned',
+    recent: 'Recent',
+    collapse: 'Close sidebar',
+    expand: 'Open sidebar',
+    defaultProject: 'Main folder',
+    emptyPinned: 'No pinned chats',
+    emptyRecent: 'No recent chats',
+  },
+  chat: {
+    emptyTitle: 'Describe in a few sentences what you need.',
+    emptySubtitle: "You don't need to phrase everything perfectly.",
+    placeholder: 'Write 4–5 sentences about what you want to achieve…',
+    send: 'Send',
+    analyzing: 'Analyzing your request…',
+    generating: 'Preparing the text…',
+    resultTitle: 'Result',
+    resultHint:
+      'Text ready to paste into your AI tool. You can refine this once the full flow is in place.',
+    copy: 'Copy',
+    copied: 'Copied to clipboard.',
+    regenerate: 'Regenerate',
+    regenerateConfirm: 'Regeneration will replace your edits. Continue?',
+    skipAssumption: 'Skip — use a reasonable assumption',
+    emptyInput: 'Write at least one sentence about what you want.',
+    attachments: 'Attachments',
+    chooseFile: 'Choose file',
+    noFile: 'No file',
+    uploadHint: 'Demo: metadata only, stored locally.',
+    fileTooLarge: 'File too large (max 5 MB).',
+    fileType: 'File type not allowed.',
+    retry: 'Retry',
+    errorNetwork: 'Could not complete the operation. Try again.',
+    unsupported:
+      'I cannot help with medical or legal advice. Try work or communication tasks.',
+    pinChat: 'Pin chat',
+    unpinChat: 'Unpin chat',
+    addToProject: 'Move to project',
+  },
+  limits: {
+    title: 'Limits & privacy',
+    body: 'PromptPilot generates text (prompts) for use in an external LLM. It does not guarantee correctness. In this demo, data stays in the browser; with the backend, content will be stored on local MySQL.',
+  },
+};
+
+export default en;

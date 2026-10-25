@@ -32,6 +32,8 @@ function emptyConversation(): Conversation {
     promptText: '',
     files: [],
     updatedAt: now,
+    pinned: false,
+    inProject: false,
   };
 }
 
@@ -53,6 +55,8 @@ interface ConversationState {
   ) => Promise<void>;
   skipClarification: (userId: string, conversationId: string, locale: Locale) => Promise<void>;
   regeneratePrompt: (userId: string, conversationId: string, locale: Locale) => Promise<void>;
+  togglePin: (userId: string, conversationId: string) => void;
+  toggleInProject: (userId: string, conversationId: string) => void;
 }
 
 function patchConversation(
@@ -70,6 +74,14 @@ function patchConversation(
 
 async function delay(ms: number) {
   await new Promise((r) => setTimeout(r, ms));
+}
+
+function normalizeConversation(c: Conversation): Conversation {
+  return {
+    ...c,
+    pinned: c.pinned ?? false,
+    inProject: c.inProject ?? false,
+  };
 }
 
 export const useConversationStore = create<ConversationState>()(
@@ -92,9 +104,10 @@ export const useConversationStore = create<ConversationState>()(
       getActive: (userId) => {
         const id = get().activeId[userId];
         if (!id) return null;
-        return (get().byUser[userId] ?? []).find((c) => c.id === id) ?? null;
+        const c = (get().byUser[userId] ?? []).find((x) => x.id === id);
+        return c ? normalizeConversation(c) : null;
       },
-      list: (userId) => get().byUser[userId] ?? [],
+      list: (userId) => (get().byUser[userId] ?? []).map(normalizeConversation),
       addFiles: (userId, conversationId, files) => {
         for (const f of files) {
           if (f.size > MAX_FILE_BYTES) return 'size';
@@ -280,6 +293,24 @@ export const useConversationStore = create<ConversationState>()(
           patchConversation(get(), userId, conversationId, {
             promptText,
             phase: 'prompt_ready',
+          }),
+        );
+      },
+      togglePin: (userId, conversationId) => {
+        const conv = (get().byUser[userId] ?? []).find((c) => c.id === conversationId);
+        if (!conv) return;
+        set(
+          patchConversation(get(), userId, conversationId, {
+            pinned: !normalizeConversation(conv).pinned,
+          }),
+        );
+      },
+      toggleInProject: (userId, conversationId) => {
+        const conv = (get().byUser[userId] ?? []).find((c) => c.id === conversationId);
+        if (!conv) return;
+        set(
+          patchConversation(get(), userId, conversationId, {
+            inProject: !normalizeConversation(conv).inProject,
           }),
         );
       },

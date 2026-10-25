@@ -36,7 +36,8 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md space-y-6 py-8">
+    <div className="flex flex-1 flex-col items-center justify-center w-full">
+      <div className="mx-auto w-full max-w-md space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{t('auth.register')}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t('auth.mockNotice')}</p>
@@ -68,6 +69,7 @@ export function RegisterPage() {
           {t('auth.login')}
         </Link>
       </p>
+      </div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/store/authStore';
+import { appConfig } from '@/config';
 
 const schema = z.object({
   email: z.string().email(),
@@ -18,6 +19,7 @@ type Form = z.infer<typeof schema>;
 export function LoginPage() {
   const { t } = useTranslation();
   const login = useAuthStore((s) => s.login);
+  const loginDemo = useAuthStore((s) => s.loginDemo);
   const user = useAuthStore((s) => s.currentUser);
   const location = useLocation();
   const from = (location.state as { from?: string })?.from ?? '/app';
@@ -37,7 +39,8 @@ export function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md space-y-6 py-8">
+    <div className="flex flex-1 flex-col items-center justify-center w-full">
+      <div className="mx-auto w-full max-w-md space-y-6">
       <div>
         <h1 className="text-2xl font-bold">{t('auth.login')}</h1>
         <p className="text-sm text-muted-foreground mt-1">{t('auth.mockNotice')}</p>
@@ -58,12 +61,21 @@ export function LoginPage() {
           {t('auth.login')}
         </Button>
       </form>
+      {appConfig.useMock && (
+        <div className="space-y-2 pt-2 border-t">
+          <Button type="button" variant="secondary" className="w-full" onClick={loginDemo}>
+            {t('auth.demoLogin')}
+          </Button>
+          <p className="text-xs text-center text-muted-foreground">{t('auth.demoHint')}</p>
+        </div>
+      )}
       <p className="text-sm text-center">
         {t('auth.noAccount')}{' '}
         <Link to="/register" className="text-primary underline-offset-4 hover:underline">
           {t('auth.register')}
         </Link>
       </p>
+      </div>
     </div>
   );
 }

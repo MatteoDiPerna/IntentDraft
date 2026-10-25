@@ -1,8 +1,7 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
-import { Navigate } from 'react-router-dom';
 
 export function HomePage() {
   const { t } = useTranslation();
@@ -10,10 +9,10 @@ export function HomePage() {
   if (user) return <Navigate to="/app" replace />;
 
   return (
-    <div className="max-w-xl mx-auto py-16 space-y-6 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center w-full max-w-3xl mx-auto text-center space-y-6">
       <h1 className="text-3xl font-bold text-brand-gradient">{t('app.name')}</h1>
-      <p className="text-muted-foreground">{t('app.tagline')}</p>
-      <div className="flex gap-4 justify-center">
+      <p className="text-muted-foreground text-lg">{t('app.tagline')}</p>
+      <div className="flex flex-wrap gap-4 justify-center">
         <Button asChild>
           <Link to="/login">{t('auth.login')}</Link>
         </Button>

@@ -11,7 +11,12 @@ interface AuthState {
   login: (email: string, password: string) => boolean;
   logout: () => void;
   setLocale: (locale: Locale) => void;
+  /** Mock: account fisso per valutare l'app senza registrarsi. */
+  loginDemo: () => void;
 }
+
+const DEMO_EMAIL = 'demo@promptpilot.local';
+const DEMO_PASSWORD = 'demo1234';
 
 function toUser(stored: StoredUser): User {
   return {
@@ -50,6 +55,11 @@ export const useAuthStore = create<AuthState>()(
         return true;
       },
       logout: () => set({ currentUser: null }),
+      loginDemo: () => {
+        if (!get().login(DEMO_EMAIL, DEMO_PASSWORD)) {
+          get().register(DEMO_EMAIL, DEMO_PASSWORD, 'Demo');
+        }
+      },
       setLocale: (locale) => {
         const current = get().currentUser;
         if (!current) return;

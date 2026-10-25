@@ -46,4 +46,8 @@ export interface Conversation {
   promptText: string;
   files: AttachedFile[];
   updatedAt: string;
+  /** ChatGPT-style pinned chats */
+  pinned: boolean;
+  /** Chats grouped under the default project folder (mock) */
+  inProject: boolean;
 }
