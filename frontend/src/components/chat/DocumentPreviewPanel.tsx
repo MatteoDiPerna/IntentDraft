@@ -192,7 +192,7 @@ export function DocumentPreviewPanel({
 
   return (
     <aside
-      className="fixed right-0 top-0 z-50 flex h-full flex-col border-l border-primary/20 bg-background/95 shadow-xl shadow-primary/10 backdrop-blur-md"
+      className="document-preview-panel-enter fixed right-0 top-0 z-50 flex h-full flex-col border-l border-primary/20 bg-background/95 shadow-xl shadow-primary/10 backdrop-blur-md"
       style={{ width }}
       aria-label={t('documentPreview.title')}
     >

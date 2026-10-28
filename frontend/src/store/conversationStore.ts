@@ -42,6 +42,10 @@ function emptyConversation(): Conversation {
   };
 }
 
+function isBlankRecentChat(c: Conversation): boolean {
+  return !c.pinned && !c.inProject && c.messages.length === 0;
+}
+
 interface ConversationState {
   byUser: Record<string, Conversation[]>;
   activeId: Record<string, string | null>;
@@ -238,8 +242,16 @@ export const useConversationStore = create<ConversationState>()(
       byUser: {},
       activeId: {},
       createConversation: (userId) => {
-        const conv = emptyConversation();
         const list = get().byUser[userId] ?? [];
+        const existingBlank = list.map(normalizeConversation).find(isBlankRecentChat);
+        if (existingBlank) {
+          set({
+            activeId: { ...get().activeId, [userId]: existingBlank.id },
+          });
+          return existingBlank.id;
+        }
+
+        const conv = emptyConversation();
         set({
           byUser: { ...get().byUser, [userId]: [conv, ...list] },
           activeId: { ...get().activeId, [userId]: conv.id },

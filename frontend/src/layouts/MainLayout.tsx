@@ -37,7 +37,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </main>
       <footer
         className={cn(
-          'shrink-0 border-t py-3 text-center text-sm text-muted-foreground',
+          'brand-inset-divider-top shrink-0 bg-background/60 py-3 text-center text-sm text-muted-foreground backdrop-blur-sm',
           isApp ? 'px-[30px]' : pageGutter,
           !isApp && 'mt-auto',
         )}

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pin, PinOff } from 'lucide-react';
 import { AppPanelFrame, GlassPanel } from '@/components/brand';
 import { ChatEditableUserMessage } from '@/components/chat/ChatEditableUserMessage';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
@@ -13,7 +12,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/store/authStore';
 import { useConversationStore } from '@/store/conversationStore';
 import { useToast } from '@/components/ui/toast';
-import { shellHeaderRow } from '@/lib/layout';
+import {
+  chatShellDocumentsRow,
+  chatShellNewChatRow,
+  chatShellPad,
+  shellHeaderRow,
+} from '@/lib/layout';
 import { cn } from '@/utils/cn';
 
 export function ChatPage() {
@@ -132,7 +136,7 @@ export function ChatPage() {
       {documentPreview && (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-background/45 backdrop-blur-md"
+          className="document-preview-backdrop-enter fixed inset-0 z-40 bg-background/45 backdrop-blur-md"
           aria-label={t('documentPreview.closeBackdrop')}
           onClick={closeDocumentPreview}
         />
@@ -160,203 +164,186 @@ export function ChatPage() {
 
       <AppPanelFrame className={cn(documentPreview && 'relative z-10')}>
         {!conv ? (
-          <>
-            <div className={cn('brand-shell-header', shellHeaderRow)} aria-hidden />
-            <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-              …
-            </div>
-          </>
+          <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">…</div>
         ) : (
-          <>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className={cn(shellHeaderRow, 'pointer-events-none')} aria-hidden />
             <div
               className={cn(
-                'brand-shell-header flex items-center justify-end gap-1 px-3',
-                shellHeaderRow,
+                'flex min-h-0 flex-1 flex-col px-2 md:px-4',
+                chatShellPad,
               )}
             >
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="gap-2 text-xs"
-                onClick={() => toggleInProject(user.id, conv.id)}
-              >
-                {conv.inProject ? t('sidebar.projects') : t('chat.addToProject')}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                aria-label={conv.pinned ? t('chat.unpinChat') : t('chat.pinChat')}
-                onClick={() => togglePin(user.id, conv.id)}
-              >
-                {conv.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
-              </Button>
-            </div>
-
-            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-              <div className="shrink-0 border-b px-4 py-4 md:px-8">
-                {isEmptyChat && (
-                  <div className="mx-auto mb-4 max-w-2xl text-center">
-                    <h1 className="brand-heading-hero">{t('chat.emptyTitle')}</h1>
-                    <p className="mt-2 text-sm text-muted-foreground">{t('chat.emptySubtitle')}</p>
-                  </div>
+              <div className={chatShellNewChatRow} aria-hidden />
+              <div
+                className={cn(
+                  'flex min-h-0 flex-1 flex-col overflow-y-auto',
+                  isEmptyChat && !showResult && 'justify-center',
                 )}
-
-                <div className="mx-auto flex max-w-2xl flex-col gap-2">
-                  {conv.messages.length > 0 && (
-                    <div className="max-h-[28vh] space-y-2 overflow-y-auto pr-1">
-                      {conv.messages.map((m) =>
-                        m.role === 'user' ? (
-                          <ChatEditableUserMessage
-                            key={m.id}
-                            messageId={m.id}
-                            content={m.content}
-                            files={conv.files.filter((f) => f.messageId === m.id)}
-                            disabled={busy}
-                            onAddFiles={onMessageFiles}
-                            onRemoveFile={(fileId) => removeFile(user.id, conv.id, fileId)}
-                            onSubmit={async (messageId, text) => {
-                              await editUserMessage(user.id, conv.id, messageId, text, locale);
-                            }}
-                          />
-                        ) : (
-                          <div
-                            key={m.id}
-                            className="max-w-[95%] rounded-xl bg-muted px-3 py-2 text-sm whitespace-pre-wrap"
-                          >
-                            {m.content}
-                          </div>
-                        ),
-                      )}
-                      {busy && (
-                        <p className="text-sm text-muted-foreground animate-pulse">
-                          {conv.phase === 'generating' ? t('chat.generating') : t('chat.analyzing')}
-                        </p>
-                      )}
-                    </div>
+              >
+                <div
+                  className={cn(
+                    'mx-auto flex w-full max-w-2xl flex-col gap-4 px-2 md:px-4',
+                    showResult && 'min-h-0 flex-1',
                   )}
+                >
+              {isEmptyChat && (
+                <div className="text-center">
+                  <h1 className="brand-heading-hero">{t('chat.emptyTitle')}</h1>
+                  <p className="mt-2 text-sm text-muted-foreground">{t('chat.emptySubtitle')}</p>
+                </div>
+              )}
 
-                  {conv.phase === 'clarifying' && (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      className="self-start"
-                      onClick={() => skipClarification(user.id, conv.id, locale)}
-                    >
-                      {t('chat.skipAssumption')}
-                    </Button>
-                  )}
-
-                  {showComposer ? (
-                    <GlassPanel compact className="flex flex-col gap-2 p-3">
-                      <Textarea
-                        value={draft}
-                        onChange={(e) => setDraft(e.target.value)}
-                        placeholder={t('chat.placeholder')}
+              {conv.messages.length > 0 && (
+                <div className="max-h-[32vh] space-y-2 overflow-y-auto pr-1">
+                  {conv.messages.map((m) =>
+                    m.role === 'user' ? (
+                      <ChatEditableUserMessage
+                        key={m.id}
+                        messageId={m.id}
+                        content={m.content}
+                        files={conv.files.filter((f) => f.messageId === m.id)}
                         disabled={busy}
-                        rows={3}
-                        className="min-h-[72px] resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            void handleSend();
-                          }
+                        onAddFiles={onMessageFiles}
+                        onRemoveFile={(fileId) => removeFile(user.id, conv.id, fileId)}
+                        onSubmit={async (messageId, text) => {
+                          await editUserMessage(user.id, conv.id, messageId, text, locale);
                         }}
                       />
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <FileInputButton
-                            label={t('chat.chooseFile')}
-                            disabled={busy}
-                            onFiles={onComposerFiles}
-                          />
-                          <span className="hidden text-xs text-muted-foreground sm:inline">
-                            {t('chat.uploadHint')}
-                          </span>
-                        </div>
-                        <Button
-                          onClick={() => void handleSend()}
-                          disabled={busy}
-                          size="sm"
-                          className="brand-btn-glow"
-                        >
-                          {t('chat.send')}
-                        </Button>
+                    ) : (
+                      <div
+                        key={m.id}
+                        className="max-w-[95%] rounded-xl bg-muted px-3 py-2 text-sm whitespace-pre-wrap"
+                      >
+                        {m.content}
                       </div>
-                      {composerFiles.length > 0 && (
-                        <ul className="flex flex-wrap gap-2 text-xs">
-                          {composerFiles.map((f, i) => (
-                            <li
-                              key={`${f.name}-${f.size}-${i}`}
-                              className="flex items-center gap-1 rounded-md border bg-muted/50 px-2 py-1"
-                            >
-                              <span className="max-w-[160px] truncate">{f.name}</span>
-                              <button
-                                type="button"
-                                className="text-muted-foreground hover:text-destructive"
-                                onClick={() =>
-                                  setComposerFiles((prev) => prev.filter((_, idx) => idx !== i))
-                                }
-                                aria-label={t('chat.removeFile')}
-                              >
-                                ×
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </GlassPanel>
-                  ) : null}
-                </div>
-              </div>
-
-              <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4 md:px-8">
-                <div className="mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col">
-                  {showResult ? (
-                    <GlassPanel compact className="flex min-h-0 flex-1 flex-col gap-2 p-4">
-                      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-                        <div>
-                          <h2 className="text-sm font-semibold">{t('chat.resultTitle')}</h2>
-                          <p className="text-xs text-muted-foreground">{t('chat.resultHint')}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={onRegenerateClick}
-                            disabled={!conv.promptText}
-                          >
-                            {t('chat.regenerate')}
-                          </Button>
-                          <Button size="sm" onClick={() => void handleCopy()} disabled={!conv.promptText}>
-                            {t('chat.copy')}
-                          </Button>
-                        </div>
-                      </div>
-                      <Textarea
-                        className="min-h-0 flex-1 resize-y font-mono text-xs"
-                        value={conv.promptText}
-                        onChange={(e) => updatePromptText(user.id, conv.id, e.target.value)}
-                      />
-                    </GlassPanel>
-                  ) : (
-                    !isEmptyChat &&
-                    !busy && (
-                      <p className="text-center text-xs text-muted-foreground">{t('chat.generating')}</p>
-                    )
+                    ),
+                  )}
+                  {busy && (
+                    <p className="text-sm text-muted-foreground animate-pulse">
+                      {conv.phase === 'generating' ? t('chat.generating') : t('chat.analyzing')}
+                    </p>
                   )}
                 </div>
+              )}
+
+              {conv.phase === 'clarifying' && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="self-start"
+                  onClick={() => skipClarification(user.id, conv.id, locale)}
+                >
+                  {t('chat.skipAssumption')}
+                </Button>
+              )}
+
+              {showComposer ? (
+                <GlassPanel compact className="flex flex-col gap-2 p-3">
+                  <Textarea
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    placeholder={t('chat.placeholder')}
+                    disabled={busy}
+                    rows={3}
+                    className="min-h-[72px] resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        void handleSend();
+                      }
+                    }}
+                  />
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <FileInputButton
+                        label={t('chat.chooseFile')}
+                        disabled={busy}
+                        onFiles={onComposerFiles}
+                      />
+                      <span className="hidden text-xs text-muted-foreground sm:inline">
+                        {t('chat.uploadHint')}
+                      </span>
+                    </div>
+                    <Button
+                      onClick={() => void handleSend()}
+                      disabled={busy}
+                      size="sm"
+                      className="brand-btn-glow"
+                    >
+                      {t('chat.send')}
+                    </Button>
+                  </div>
+                  {composerFiles.length > 0 && (
+                    <ul className="flex flex-wrap gap-2 text-xs">
+                      {composerFiles.map((f, i) => (
+                        <li
+                          key={`${f.name}-${f.size}-${i}`}
+                          className="flex items-center gap-1 rounded-md border bg-muted/50 px-2 py-1"
+                        >
+                          <span className="max-w-[160px] truncate">{f.name}</span>
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-destructive"
+                            onClick={() =>
+                              setComposerFiles((prev) => prev.filter((_, idx) => idx !== i))
+                            }
+                            aria-label={t('chat.removeFile')}
+                          >
+                            ×
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </GlassPanel>
+              ) : null}
+
+              {showResult ? (
+                <GlassPanel compact className="flex min-h-0 flex-1 flex-col gap-2 p-4">
+                  <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h2 className="text-sm font-semibold">{t('chat.resultTitle')}</h2>
+                      <p className="text-xs text-muted-foreground">{t('chat.resultHint')}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={onRegenerateClick}
+                        disabled={!conv.promptText}
+                      >
+                        {t('chat.regenerate')}
+                      </Button>
+                      <Button size="sm" onClick={() => void handleCopy()} disabled={!conv.promptText}>
+                        {t('chat.copy')}
+                      </Button>
+                    </div>
+                  </div>
+                  <Textarea
+                    className="min-h-0 flex-1 resize-y font-mono text-xs"
+                    value={conv.promptText}
+                    onChange={(e) => updatePromptText(user.id, conv.id, e.target.value)}
+                  />
+                </GlassPanel>
+              ) : (
+                !isEmptyChat &&
+                !busy && (
+                  <p className="text-center text-xs text-muted-foreground">{t('chat.generating')}</p>
+                )
+              )}
+                </div>
               </div>
+              <div className={chatShellDocumentsRow} aria-hidden />
             </div>
-          </>
+          </div>
         )}
       </AppPanelFrame>
 
       {documentPreview && (
         <DocumentPreviewPanel
+          key={documentPreview.fileId}
           fileId={documentPreview.fileId}
           fileName={documentPreview.fileName}
           mimeType={documentPreview.mimeType}

@@ -321,7 +321,7 @@ export function ChatSidebar({
     >
       <div
         className={cn(
-          'brand-shell-header flex items-center',
+          'brand-shell-header sidebar-header-row flex items-center',
           shellHeaderRow,
           open ? 'justify-between gap-2 px-2' : 'justify-center px-0',
         )}
@@ -370,8 +370,8 @@ export function ChatSidebar({
         )}
 
         {open ? (
-          <div className="flex min-w-0 flex-col gap-2 overflow-x-hidden">
-            <SidebarNavCard>
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-x-hidden">
+            <SidebarNavCard className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
               <p className="sidebar-section-label">{t('sidebar.general')}</p>
               <button
                 type="button"
@@ -467,7 +467,7 @@ export function ChatSidebar({
               </div>
             </SidebarNavCard>
 
-            <SidebarNavCard className="mt-0.5">
+            <SidebarNavCard className="mt-0.5 shrink-0">
               <button
                 type="button"
                 className="sidebar-documents-header w-full"
