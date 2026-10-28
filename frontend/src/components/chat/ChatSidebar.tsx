@@ -2,6 +2,8 @@ import type React from 'react';
 import { useState } from 'react';
 import {
   ChevronDown,
+  FileSpreadsheet,
+  FileText,
   FolderKanban,
   PanelLeftClose,
   Pin,
@@ -13,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { Button } from '@/components/ui/button';
 import { useUiStore } from '@/store/uiStore';
-import type { Conversation } from '@/types/conversation';
+import type { AttachedFile, Conversation } from '@/types/conversation';
 import { shellHeaderRow } from '@/lib/layout';
 import { cn } from '@/utils/cn';
 
@@ -30,6 +32,47 @@ type ChatSidebarProps = {
 
 function chatLabel(c: Conversation, fallback: string) {
   return c.title.trim() || fallback;
+}
+
+function truncateFileName(name: string, max = 28) {
+  if (name.length <= max) return name;
+  const ext = name.includes('.') ? name.slice(name.lastIndexOf('.')) : '';
+  const base = ext ? name.slice(0, name.length - ext.length) : name;
+  const keep = Math.max(8, max - ext.length - 1);
+  return `${base.slice(0, keep)}…${ext}`;
+}
+
+function FileTypeIcon({ file }: { file: AttachedFile }) {
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+  const spreadsheet = ['xls', 'xlsx', 'csv'].includes(ext);
+  if (spreadsheet) {
+    return (
+      <span
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-brand-gradient text-[10px] font-bold text-primary-foreground"
+        aria-hidden
+      >
+        X
+      </span>
+    );
+  }
+  if (file.mimeType === 'application/pdf' || ext === 'pdf') {
+    return (
+      <span
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-destructive text-[9px] font-bold text-destructive-foreground"
+        aria-hidden
+      >
+        PDF
+      </span>
+    );
+  }
+  if (ext === 'doc' || ext === 'docx' || file.mimeType.includes('wordprocessingml')) {
+    return <FileText className="h-4 w-4 shrink-0 text-primary" aria-hidden />;
+  }
+  return <FileText className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />;
+}
+
+function SidebarNavCard({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={cn('sidebar-nav-card min-w-0', className)}>{children}</div>;
 }
 
 const rowActionClass =
@@ -154,16 +197,16 @@ function ChatListItem({
     <div
       className={cn(
         'group relative min-w-0 overflow-hidden rounded-lg transition-colors',
-        active ? 'bg-primary/15' : 'hover:bg-muted',
+        active ? 'sidebar-nav-item-active' : 'hover:bg-primary/5',
       )}
     >
       <button
         type="button"
         onClick={onSelect}
         className={cn(
-          'block w-full truncate px-3 py-2 text-left text-sm transition-[padding]',
+          'block w-full truncate py-2 pl-3 pr-3 text-left text-sm transition-[padding]',
           'group-hover:pr-[7.25rem]',
-          active ? 'text-primary font-medium' : '',
+          active ? 'font-medium text-primary' : 'font-medium text-foreground/90',
         )}
       >
         {label}
@@ -175,7 +218,7 @@ function ChatListItem({
             'opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100',
             active
               ? 'bg-gradient-to-l from-primary/15 from-55% to-transparent'
-              : 'bg-gradient-to-l from-muted from-55% to-transparent group-hover:from-muted',
+              : 'bg-gradient-to-l from-muted from-55% to-transparent group-hover:from-primary/5',
           )}
         >
           <RowAction label={recentActions.renameLabel} onClick={recentActions.onRename}>
@@ -238,11 +281,15 @@ export function ChatSidebar({
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const projectsExpanded = useUiStore((s) => s.projectsExpanded);
   const setProjectsExpanded = useUiStore((s) => s.setProjectsExpanded);
+  const documentsExpanded = useUiStore((s) => s.documentsExpanded);
+  const setDocumentsExpanded = useUiStore((s) => s.setDocumentsExpanded);
 
   const fallback = t('nav.newChat');
   const pinned = conversations.filter((c) => c.pinned);
   const inProject = conversations.filter((c) => c.inProject && !c.pinned);
   const recent = conversations.filter((c) => !c.pinned && !c.inProject);
+  const conversationsWithFiles = conversations.filter((c) => c.files.length > 0);
+  const totalDocuments = conversationsWithFiles.reduce((n, c) => n + c.files.length, 0);
 
   const startRename = (c: Conversation) => {
     setRenamingId(c.id);
@@ -266,13 +313,13 @@ export function ChatSidebar({
   return (
     <aside
       className={cn(
-        'flex h-full min-w-0 shrink-0 flex-col overflow-x-hidden border-r bg-muted/30 transition-[width] duration-200 ease-out',
+        'sidebar-shell flex h-full min-w-0 shrink-0 flex-col overflow-x-hidden font-sans transition-[width] duration-200 ease-out',
         width,
       )}
     >
       <div
         className={cn(
-          'flex items-center border-b bg-background/80',
+          'brand-shell-header flex items-center',
           shellHeaderRow,
           open ? 'justify-between gap-2 px-2' : 'justify-center px-0',
         )}
@@ -300,7 +347,7 @@ export function ChatSidebar({
 
       <div
         className={cn(
-          'flex min-h-0 flex-1 flex-col gap-1 p-2',
+          'flex min-h-0 flex-1 flex-col gap-2 p-2',
           open ? 'overflow-x-hidden overflow-y-auto' : 'overflow-hidden items-center',
         )}
       >
@@ -321,31 +368,33 @@ export function ChatSidebar({
         )}
 
         {open ? (
-          <div className="min-w-0 overflow-x-hidden">
-            <div className="mt-2">
+          <div className="flex min-w-0 flex-col gap-2 overflow-x-hidden">
+            <SidebarNavCard>
+              <p className="sidebar-section-label">{t('sidebar.general')}</p>
               <button
                 type="button"
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
+                className={cn(
+                  'flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:bg-primary/5',
+                  projectsExpanded && 'sidebar-nav-item-active',
+                )}
                 onClick={() => setProjectsExpanded(!projectsExpanded)}
               >
-                <FolderKanban className="h-4 w-4 shrink-0" />
-                <span className="flex-1 text-left">{t('sidebar.projects')}</span>
+                <FolderKanban className="ml-0.5 h-4 w-4 shrink-0" />
+                <span className="flex-1 truncate text-left">{t('sidebar.projects')}</span>
                 <ChevronDown
                   className={cn(
-                    'h-4 w-4 shrink-0 transition-transform',
+                    'h-4 w-4 shrink-0 text-muted-foreground transition-transform',
                     projectsExpanded ? 'rotate-0' : '-rotate-90',
                   )}
                 />
               </button>
               {projectsExpanded && (
-                <div className="ml-2 border-l pl-2 pt-1 space-y-0.5">
-                  <p className="px-3 py-1 text-xs font-medium text-muted-foreground">
+                <div className="sidebar-tree-branch mx-1 mb-1 space-y-0.5">
+                  <p className="px-2 py-1 text-xs font-medium text-muted-foreground">
                     {t('sidebar.defaultProject')}
                   </p>
                   {inProject.length === 0 && (
-                    <p className="px-3 py-1 text-xs text-muted-foreground">
-                      {t('sidebar.emptyRecent')}
-                    </p>
+                    <p className="px-2 py-1 text-xs text-muted-foreground">{t('sidebar.emptyRecent')}</p>
                   )}
                   {inProject.map((c) => (
                     <ChatListItem
@@ -358,16 +407,13 @@ export function ChatSidebar({
                   ))}
                 </div>
               )}
-            </div>
 
-            <div className="mt-3">
-              <div className="flex items-center gap-2 px-3 py-1 text-xs font-medium text-muted-foreground">
-                <Pin className="h-3.5 w-3.5" />
-                {t('sidebar.pinned')}
-              </div>
-              <div className="space-y-0.5">
+              <div className="sidebar-section-divider" />
+
+              <p className="sidebar-section-label">{t('sidebar.pinned')}</p>
+              <div className="space-y-0.5 px-0.5 pb-1">
                 {pinned.length === 0 && (
-                  <p className="px-3 py-1 text-xs text-muted-foreground">{t('sidebar.emptyPinned')}</p>
+                  <p className="px-2.5 py-1 text-xs text-muted-foreground">{t('sidebar.emptyPinned')}</p>
                 )}
                 {pinned.map((c) => (
                   <ChatListItem
@@ -379,15 +425,13 @@ export function ChatSidebar({
                   />
                 ))}
               </div>
-            </div>
 
-            <div className="mt-3">
-              <p className="px-3 py-1 text-xs font-medium text-muted-foreground">
-                {t('sidebar.recent')}
-              </p>
-              <div className="space-y-0.5">
+              <div className="sidebar-section-divider" />
+
+              <p className="sidebar-section-label">{t('sidebar.recent')}</p>
+              <div className="space-y-0.5 px-0.5 pb-1.5">
                 {recent.length === 0 && (
-                  <p className="px-3 py-1 text-xs text-muted-foreground">{t('sidebar.emptyRecent')}</p>
+                  <p className="px-2.5 py-1 text-xs text-muted-foreground">{t('sidebar.emptyRecent')}</p>
                 )}
                 {recent.map((c) => (
                   <ChatListItem
@@ -419,7 +463,62 @@ export function ChatSidebar({
                   />
                 ))}
               </div>
-            </div>
+            </SidebarNavCard>
+
+            <SidebarNavCard className="mt-0.5">
+              <button
+                type="button"
+                className="sidebar-documents-header w-full"
+                onClick={() => setDocumentsExpanded(!documentsExpanded)}
+              >
+                <ChevronDown
+                  className={cn(
+                    'h-3.5 w-3.5 shrink-0 transition-transform',
+                    documentsExpanded ? 'rotate-0' : '-rotate-90',
+                  )}
+                />
+                <span className="flex-1 text-left">{t('sidebar.uploadedDocuments')}</span>
+                <span className="sidebar-documents-count">{totalDocuments}</span>
+              </button>
+              {documentsExpanded && (
+                <>
+                  <div className="sidebar-section-divider mb-1" />
+                  <div className="space-y-2 px-1 pb-2">
+                    {conversationsWithFiles.length === 0 && (
+                      <p className="px-2 py-1 text-xs text-muted-foreground">{t('sidebar.emptyDocuments')}</p>
+                    )}
+                    {conversationsWithFiles.map((c) => (
+                      <div key={c.id} className="min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => onSelect(c.id)}
+                          className="w-full truncate px-2 py-0.5 text-left text-xs font-semibold text-foreground/90 hover:text-foreground"
+                          title={chatLabel(c, fallback)}
+                        >
+                          {chatLabel(c, fallback)}
+                        </button>
+                        <div className="sidebar-tree-branch space-y-0.5">
+                          {c.files.map((file) => (
+                            <button
+                              key={file.id}
+                              type="button"
+                              onClick={() => onSelect(c.id)}
+                              className="sidebar-tree-item w-full min-w-0 rounded-md pr-1 text-left text-xs text-muted-foreground transition-colors hover:bg-primary/5 hover:text-foreground"
+                              title={file.name}
+                            >
+                              <FileTypeIcon file={file} />
+                              <span className="min-w-0 flex-1 truncate font-medium">
+                                {truncateFileName(file.name)}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </SidebarNavCard>
           </div>
         ) : (
           <div className="mt-1 flex w-full flex-col items-center gap-1">
@@ -428,6 +527,9 @@ export function ChatSidebar({
             </CollapsedIconButton>
             <CollapsedIconButton title={t('sidebar.pinned')} onClick={toggleSidebar}>
               <Pin className="h-4 w-4" />
+            </CollapsedIconButton>
+            <CollapsedIconButton title={t('sidebar.uploadedDocuments')} onClick={toggleSidebar}>
+              <FileSpreadsheet className="h-4 w-4" />
             </CollapsedIconButton>
           </div>
         )}

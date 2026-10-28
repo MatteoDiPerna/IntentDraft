@@ -192,4 +192,48 @@
   .brand-feature-item {
     @apply inline-flex items-center justify-center gap-2 text-sm text-muted-foreground;
   }
+
+  .sidebar-shell {
+    @apply border-r border-primary/15 bg-muted/30;
+  }
+
+  .sidebar-nav-card {
+    @apply rounded-xl border border-primary/20 bg-background/60 p-1.5 shadow-md shadow-primary/5 backdrop-blur-sm;
+  }
+
+  .dark .sidebar-nav-card {
+    @apply bg-card/80 shadow-none;
+  }
+
+  .sidebar-section-label {
+    @apply px-2.5 pb-1 pt-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground;
+  }
+
+  .sidebar-section-divider {
+    @apply mx-2 border-t border-primary/10;
+  }
+
+  .sidebar-documents-header {
+    @apply flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:bg-primary/5;
+  }
+
+  .sidebar-tree-branch {
+    @apply relative ml-3 pl-3 before:absolute before:left-0 before:top-0 before:h-[calc(100%-0.625rem)] before:w-px before:bg-primary/15 before:content-[''];
+  }
+
+  .sidebar-tree-item {
+    @apply relative flex min-w-0 items-center gap-2 py-1.5 pl-4 before:absolute before:left-0 before:top-[calc(50%-0.5px)] before:h-px before:w-3 before:bg-primary/15 before:content-[''];
+  }
+
+  .sidebar-nav-item-active {
+    @apply relative rounded-lg bg-primary/15;
+  }
+
+  .sidebar-nav-item-active::before {
+    @apply absolute bottom-1.5 left-0 top-1.5 w-[3px] rounded-full bg-primary content-[''];
+  }
+
+  .sidebar-documents-count {
+    @apply rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-primary;
+  }
 }
