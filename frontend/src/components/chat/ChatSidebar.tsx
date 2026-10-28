@@ -28,6 +28,7 @@ type ChatSidebarProps = {
   onPinRecent: (id: string) => void;
   onMoveRecentToProject: (id: string) => void;
   onRenameRecent: (id: string, title: string) => void;
+  onOpenDocument: (conversationId: string, file: AttachedFile) => void;
 };
 
 function chatLabel(c: Conversation, fallback: string) {
@@ -273,6 +274,7 @@ export function ChatSidebar({
   onPinRecent,
   onMoveRecentToProject,
   onRenameRecent,
+  onOpenDocument,
 }: ChatSidebarProps) {
   const { t } = useTranslation();
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -502,7 +504,10 @@ export function ChatSidebar({
                             <button
                               key={file.id}
                               type="button"
-                              onClick={() => onSelect(c.id)}
+                              onClick={() => {
+                                onSelect(c.id);
+                                onOpenDocument(c.id, file);
+                              }}
                               className="sidebar-tree-item w-full min-w-0 rounded-md pr-1 text-left text-xs text-muted-foreground transition-colors hover:bg-primary/5 hover:text-foreground"
                               title={file.name}
                             >

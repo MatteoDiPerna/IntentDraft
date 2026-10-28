@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pin, PinOff } from 'lucide-react';
 import { AppPanelFrame, GlassPanel } from '@/components/brand';
+import { ChatEditableUserMessage } from '@/components/chat/ChatEditableUserMessage';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
+import { DocumentPreviewPanel } from '@/components/chat/DocumentPreviewPanel';
+import { useUiStore } from '@/store/uiStore';
 import { Button } from '@/components/ui/button';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { FileInputButton } from '@/components/ui/FileInputButton';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/store/authStore';
@@ -23,6 +27,7 @@ export function ChatPage() {
   const createConversation = useConversationStore((s) => s.createConversation);
   const setActive = useConversationStore((s) => s.setActive);
   const sendUserMessage = useConversationStore((s) => s.sendUserMessage);
+  const editUserMessage = useConversationStore((s) => s.editUserMessage);
   const skipClarification = useConversationStore((s) => s.skipClarification);
   const regeneratePrompt = useConversationStore((s) => s.regeneratePrompt);
   const updatePromptText = useConversationStore((s) => s.updatePromptText);
@@ -34,6 +39,14 @@ export function ChatPage() {
   const renameConversation = useConversationStore((s) => s.renameConversation);
 
   const [draft, setDraft] = useState('');
+  const [composerFiles, setComposerFiles] = useState<File[]>([]);
+  const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
+
+  const documentPreview = useUiStore((s) => s.documentPreview);
+  const documentPreviewWidth = useUiStore((s) => s.documentPreviewWidth);
+  const openDocumentPreview = useUiStore((s) => s.openDocumentPreview);
+  const closeDocumentPreview = useUiStore((s) => s.closeDocumentPreview);
+  const setDocumentPreviewWidth = useUiStore((s) => s.setDocumentPreviewWidth);
 
   useEffect(() => {
     if (list.length === 0) createConversation(user.id);
@@ -44,8 +57,14 @@ export function ChatPage() {
   }, [locale, i18n]);
 
   const conv = active;
+
+  useEffect(() => {
+    setDraft('');
+    setComposerFiles([]);
+  }, [conv?.id]);
   const busy = conv?.phase === 'analyzing' || conv?.phase === 'generating';
   const isEmptyChat = !conv || conv.messages.length === 0;
+  const showComposer = isEmptyChat || conv?.phase === 'clarifying';
   const showResult = Boolean(conv?.promptText?.trim());
 
   const handleSend = async () => {
@@ -56,7 +75,16 @@ export function ChatPage() {
       return;
     }
     setDraft('');
-    await sendUserMessage(user.id, conv.id, text, locale);
+    const attachments = composerFiles;
+    setComposerFiles([]);
+    const err = await sendUserMessage(user.id, conv.id, text, locale, attachments);
+    if (err === 'size') {
+      setComposerFiles(attachments);
+      toast(t('chat.fileTooLarge'));
+    } else if (err === 'type') {
+      setComposerFiles(attachments);
+      toast(t('chat.fileType'));
+    }
   };
 
   const handleCopy = async () => {
@@ -67,19 +95,49 @@ export function ChatPage() {
 
   const handleRegenerate = async () => {
     if (!conv) return;
-    if (conv.promptText && !window.confirm(t('chat.regenerateConfirm'))) return;
     await regeneratePrompt(user.id, conv.id, locale);
   };
 
-  const onFiles = (files: FileList | null) => {
+  const onRegenerateClick = () => {
+    if (!conv?.promptText) return;
+    setRegenerateConfirmOpen(true);
+  };
+
+  const confirmRegenerate = async () => {
+    setRegenerateConfirmOpen(false);
+    await handleRegenerate();
+  };
+
+  const onComposerFiles = (files: FileList | null) => {
+    if (!files?.length) return;
+    const next = Array.from(files);
+    for (const f of next) {
+      if (f.size > 5 * 1024 * 1024) {
+        toast(t('chat.fileTooLarge'));
+        return;
+      }
+    }
+    setComposerFiles((prev) => [...prev, ...next]);
+  };
+
+  const onMessageFiles = (messageId: string, files: FileList | null) => {
     if (!conv || !files?.length) return;
-    const err = addFiles(user.id, conv.id, Array.from(files));
+    const err = addFiles(user.id, conv.id, messageId, Array.from(files));
     if (err === 'size') toast(t('chat.fileTooLarge'));
     else if (err === 'type') toast(t('chat.fileType'));
   };
 
   return (
-    <div className="flex h-full min-h-0 w-full overflow-hidden">
+    <div className="relative flex h-full min-h-0 w-full overflow-hidden">
+      {documentPreview && (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-background/45 backdrop-blur-md"
+          aria-label={t('documentPreview.closeBackdrop')}
+          onClick={closeDocumentPreview}
+        />
+      )}
+
       <ChatSidebar
         conversations={list}
         activeId={conv?.id}
@@ -89,9 +147,18 @@ export function ChatPage() {
         onPinRecent={(id) => togglePin(user.id, id)}
         onMoveRecentToProject={(id) => toggleInProject(user.id, id)}
         onRenameRecent={(id, title) => renameConversation(user.id, id, title)}
+        onOpenDocument={(conversationId, file) => {
+          setActive(user.id, conversationId);
+          openDocumentPreview({
+            conversationId,
+            fileId: file.id,
+            fileName: file.name,
+            mimeType: file.mimeType,
+          });
+        }}
       />
 
-      <AppPanelFrame>
+      <AppPanelFrame className={cn(documentPreview && 'relative z-10')}>
         {!conv ? (
           <>
             <div className={cn('brand-shell-header', shellHeaderRow)} aria-hidden />
@@ -140,19 +207,29 @@ export function ChatPage() {
                 <div className="mx-auto flex max-w-2xl flex-col gap-2">
                   {conv.messages.length > 0 && (
                     <div className="max-h-[28vh] space-y-2 overflow-y-auto pr-1">
-                      {conv.messages.map((m) => (
-                        <div
-                          key={m.id}
-                          className={cn(
-                            'max-w-[95%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap',
-                            m.role === 'user'
-                              ? 'ml-auto bg-primary text-primary-foreground'
-                              : 'bg-muted',
-                          )}
-                        >
-                          {m.content}
-                        </div>
-                      ))}
+                      {conv.messages.map((m) =>
+                        m.role === 'user' ? (
+                          <ChatEditableUserMessage
+                            key={m.id}
+                            messageId={m.id}
+                            content={m.content}
+                            files={conv.files.filter((f) => f.messageId === m.id)}
+                            disabled={busy}
+                            onAddFiles={onMessageFiles}
+                            onRemoveFile={(fileId) => removeFile(user.id, conv.id, fileId)}
+                            onSubmit={async (messageId, text) => {
+                              await editUserMessage(user.id, conv.id, messageId, text, locale);
+                            }}
+                          />
+                        ) : (
+                          <div
+                            key={m.id}
+                            className="max-w-[95%] rounded-xl bg-muted px-3 py-2 text-sm whitespace-pre-wrap"
+                          >
+                            {m.content}
+                          </div>
+                        ),
+                      )}
                       {busy && (
                         <p className="text-sm text-muted-foreground animate-pulse">
                           {conv.phase === 'generating' ? t('chat.generating') : t('chat.analyzing')}
@@ -173,70 +250,74 @@ export function ChatPage() {
                     </Button>
                   )}
 
-                  <GlassPanel compact className="flex flex-col gap-2 p-3">
-                    <Textarea
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                      placeholder={t('chat.placeholder')}
-                      disabled={busy}
-                      rows={3}
-                      className="min-h-[72px] resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          void handleSend();
-                        }
-                      }}
-                    />
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <FileInputButton
-                          label={t('chat.chooseFile')}
-                          disabled={busy}
-                          onFiles={onFiles}
-                        />
-                        <span className="hidden text-xs text-muted-foreground sm:inline">
-                          {t('chat.uploadHint')}
-                        </span>
-                      </div>
-                      <Button
-                        onClick={() => void handleSend()}
+                  {showComposer ? (
+                    <GlassPanel compact className="flex flex-col gap-2 p-3">
+                      <Textarea
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        placeholder={t('chat.placeholder')}
                         disabled={busy}
-                        size="sm"
-                        className="brand-btn-glow"
-                      >
-                        {t('chat.send')}
-                      </Button>
-                    </div>
-                    {conv.files.length > 0 && (
-                      <ul className="flex flex-wrap gap-2 text-xs">
-                        {conv.files.map((f) => (
-                          <li
-                            key={f.id}
-                            className="flex items-center gap-1 rounded-md border bg-muted/50 px-2 py-1"
-                          >
-                            <span className="max-w-[160px] truncate">{f.name}</span>
-                            <button
-                              type="button"
-                              className="text-muted-foreground hover:text-destructive"
-                              onClick={() => removeFile(user.id, conv.id, f.id)}
-                              aria-label="Remove"
+                        rows={3}
+                        className="min-h-[72px] resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            void handleSend();
+                          }
+                        }}
+                      />
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <FileInputButton
+                            label={t('chat.chooseFile')}
+                            disabled={busy}
+                            onFiles={onComposerFiles}
+                          />
+                          <span className="hidden text-xs text-muted-foreground sm:inline">
+                            {t('chat.uploadHint')}
+                          </span>
+                        </div>
+                        <Button
+                          onClick={() => void handleSend()}
+                          disabled={busy}
+                          size="sm"
+                          className="brand-btn-glow"
+                        >
+                          {t('chat.send')}
+                        </Button>
+                      </div>
+                      {composerFiles.length > 0 && (
+                        <ul className="flex flex-wrap gap-2 text-xs">
+                          {composerFiles.map((f, i) => (
+                            <li
+                              key={`${f.name}-${f.size}-${i}`}
+                              className="flex items-center gap-1 rounded-md border bg-muted/50 px-2 py-1"
                             >
-                              ×
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </GlassPanel>
+                              <span className="max-w-[160px] truncate">{f.name}</span>
+                              <button
+                                type="button"
+                                className="text-muted-foreground hover:text-destructive"
+                                onClick={() =>
+                                  setComposerFiles((prev) => prev.filter((_, idx) => idx !== i))
+                                }
+                                aria-label={t('chat.removeFile')}
+                              >
+                                ×
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </GlassPanel>
+                  ) : null}
                 </div>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-8">
-                <div className="mx-auto max-w-2xl">
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4 py-4 md:px-8">
+                <div className="mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col">
                   {showResult ? (
-                    <GlassPanel compact className="flex flex-col gap-2 p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
+                    <GlassPanel compact className="flex min-h-0 flex-1 flex-col gap-2 p-4">
+                      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
                         <div>
                           <h2 className="text-sm font-semibold">{t('chat.resultTitle')}</h2>
                           <p className="text-xs text-muted-foreground">{t('chat.resultHint')}</p>
@@ -245,7 +326,7 @@ export function ChatPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => void handleRegenerate()}
+                            onClick={onRegenerateClick}
                             disabled={!conv.promptText}
                           >
                             {t('chat.regenerate')}
@@ -256,7 +337,7 @@ export function ChatPage() {
                         </div>
                       </div>
                       <Textarea
-                        className="min-h-[120px] font-mono text-xs"
+                        className="min-h-0 flex-1 resize-y font-mono text-xs"
                         value={conv.promptText}
                         onChange={(e) => updatePromptText(user.id, conv.id, e.target.value)}
                       />
@@ -273,6 +354,26 @@ export function ChatPage() {
           </>
         )}
       </AppPanelFrame>
+
+      {documentPreview && (
+        <DocumentPreviewPanel
+          fileId={documentPreview.fileId}
+          fileName={documentPreview.fileName}
+          mimeType={documentPreview.mimeType}
+          width={documentPreviewWidth}
+          onWidthChange={setDocumentPreviewWidth}
+          onClose={closeDocumentPreview}
+        />
+      )}
+
+      <ConfirmModal
+        open={regenerateConfirmOpen}
+        message={t('chat.regenerateConfirm')}
+        confirmLabel={t('chat.continue')}
+        cancelLabel={t('chat.cancel')}
+        onConfirm={() => void confirmRegenerate()}
+        onCancel={() => setRegenerateConfirmOpen(false)}
+      />
     </div>
   );
 }

@@ -30,6 +30,7 @@ export interface ChatMessage {
 
 export interface AttachedFile {
   id: string;
+  messageId: string;
   name: string;
   size: number;
   mimeType: string;
