@@ -50,8 +50,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const run = () => void refreshSession();
     if (appConfig.useMock) {
-      if (useAuthStore.persist.hasHydrated()) run();
-      else return useAuthStore.persist.onFinishHydration(run);
+      type PersistedAuthStore = typeof useAuthStore & {
+        persist: {
+          hasHydrated: () => boolean;
+          onFinishHydration: (fn: () => void) => () => void;
+        };
+      };
+      const store = useAuthStore as PersistedAuthStore;
+      if (store.persist.hasHydrated()) run();
+      else return store.persist.onFinishHydration(run);
     }
     run();
   }, [refreshSession]);

@@ -5,11 +5,13 @@ import { Pencil } from 'lucide-react';
 import { FileInputButton } from '@/components/ui/FileInputButton';
 import { Textarea } from '@/components/ui/textarea';
 import type { AttachedFile } from '@/types/conversation';
+import { formatMessageTime } from '@/lib/formatMessageTime';
 import { cn } from '@/utils/cn';
 
 type ChatEditableUserMessageProps = {
   messageId: string;
   content: string;
+  createdAt?: string;
   files: AttachedFile[];
   disabled?: boolean;
   onAddFiles: (messageId: string, files: FileList | null) => void;
@@ -63,6 +65,7 @@ function MessageFileList({
 export function ChatEditableUserMessage({
   messageId,
   content,
+  createdAt,
   files,
   disabled,
   onAddFiles,
@@ -170,6 +173,14 @@ export function ChatEditableUserMessage({
             {content}
           </button>
           <MessageFileList files={files} className="justify-end px-1" />
+          {createdAt ? (
+            <time
+              dateTime={createdAt}
+              className="px-1 text-[10px] tabular-nums text-muted-foreground"
+            >
+              {formatMessageTime(createdAt)}
+            </time>
+          ) : null}
         </div>
         <button
           type="button"

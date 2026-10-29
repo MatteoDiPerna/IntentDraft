@@ -2,11 +2,10 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
+import { BackendHealthBanner } from '@/components/BackendHealthBanner';
 import { Navbar } from '@/components/ui/navbar';
 import { pageGutter } from '@/lib/layout';
 import { cn } from '@/utils/cn';
-import { appConfig } from '@/config';
-import { useAuth } from '@/hooks/useAuth';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -16,7 +15,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const isApp = pathname === '/app' || pathname.startsWith('/app/');
-  const { user } = useAuth();
 
   return (
     <div
@@ -30,11 +28,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <meta name="description" content={t('app.tagline')} />
       </Helmet>
       <Navbar />
-      {isApp && user && appConfig.useMock && (
-        <p className="bg-muted/80 px-[30px] py-1 text-center text-xs text-muted-foreground">
-          {t('appShell.mockMode')}
-        </p>
-      )}
+      <BackendHealthBanner />
       <main
         className={cn(
           'flex min-h-0 w-full flex-1 flex-col',

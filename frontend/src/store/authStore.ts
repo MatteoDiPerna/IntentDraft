@@ -4,6 +4,7 @@ import type { Locale, StoredUser, User } from '@/types/auth';
 import { createId } from '@/lib/ids';
 import { STORAGE } from '@/lib/storageKeys';
 import i18n from '@/i18n';
+import { appConfig } from '@/config';
 
 interface AuthState {
   users: StoredUser[];
@@ -85,4 +86,6 @@ const authImpl: StateCreator<AuthState> = (set, get) => ({
   },
 });
 
-export const useAuthStore = create<AuthState>()(persist(authImpl, { name: STORAGE.auth }));
+export const useAuthStore = appConfig.useMock
+  ? create<AuthState>()(persist(authImpl, { name: STORAGE.auth }))
+  : create<AuthState>()(authImpl);

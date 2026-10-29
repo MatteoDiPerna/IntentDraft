@@ -11,10 +11,13 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { FileInputButton } from '@/components/ui/FileInputButton';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
+import { useApiErrorToast } from '@/hooks/useApiErrorToast';
 import { usePorts } from '@/providers/PortsProvider';
 import { useConversationStore } from '@/store/conversationStore';
 import { useToast } from '@/components/ui/toast';
 import { appConfig } from '@/config';
+import { isRecoverableApiError } from '@/api/client';
+import { formatMessageTime } from '@/lib/formatMessageTime';
 import {
   chatShellDocumentsRow,
   chatShellNewChatRow,
@@ -29,7 +32,9 @@ export function ChatPage() {
   const ports = usePorts();
   const locale = user?.locale ?? 'it';
   const toast = useToast();
+  const showApiError = useApiErrorToast();
   const maxChars = appConfig.maxMessageChars;
+  const pendingRetryRef = useRef<(() => Promise<void>) | null>(null);
 
   const userId = user?.id ?? '';
   const list = useConversationStore((s) => (userId ? s.list(userId) : []));
@@ -43,6 +48,7 @@ export function ChatPage() {
   const toggleInProject = useConversationStore((s) => s.toggleInProject);
   const deleteConversation = useConversationStore((s) => s.deleteConversation);
   const renameConversation = useConversationStore((s) => s.renameConversation);
+  const setPhase = useConversationStore((s) => s.setPhase);
 
   const [draft, setDraft] = useState('');
   const [composerFiles, setComposerFiles] = useState<File[]>([]);
@@ -82,11 +88,37 @@ export function ChatPage() {
     }
   }, [conv?.id, conv?.phase, conv?.promptText]);
   const busy = conv?.phase === 'analyzing' || conv?.phase === 'generating';
+  const recoverableError = conv?.phase === 'error_recoverable';
   const isEmptyChat = !conv || conv.messages.length === 0;
   const showComposer = isEmptyChat || conv?.phase === 'clarifying';
   const showResult = Boolean(conv?.promptText?.trim());
 
   if (!user) return null;
+
+  const runSend = async (text: string, attachments: File[]) => {
+    if (!conv) return;
+    pendingRetryRef.current = () => runSend(text, attachments);
+    setPhase(user.id, conv.id, 'idle');
+    try {
+      const err = await ports.messages.send(user.id, conv.id, text, locale, attachments);
+      if (err === 'size') {
+        setComposerFiles(attachments);
+        toast(t('chat.fileTooLarge'));
+      } else if (err === 'type') {
+        setComposerFiles(attachments);
+        toast(t('chat.fileType'));
+      }
+    } catch (e) {
+      if (isRecoverableApiError(e)) {
+        showApiError(e);
+        setPhase(user.id, conv.id, 'error_recoverable');
+        setDraft(text);
+        setComposerFiles(attachments);
+      } else {
+        showApiError(e);
+      }
+    }
+  };
 
   const handleSend = async () => {
     if (!conv || busy) return;
@@ -102,14 +134,12 @@ export function ChatPage() {
     setDraft('');
     const attachments = composerFiles;
     setComposerFiles([]);
-    const err = await ports.messages.send(user.id, conv.id, text, locale, attachments);
-    if (err === 'size') {
-      setComposerFiles(attachments);
-      toast(t('chat.fileTooLarge'));
-    } else if (err === 'type') {
-      setComposerFiles(attachments);
-      toast(t('chat.fileType'));
-    }
+    await runSend(text, attachments);
+  };
+
+  const handleRetry = async () => {
+    if (!conv || !pendingRetryRef.current) return;
+    await pendingRetryRef.current();
   };
 
   const handleCopy = async () => {
@@ -120,8 +150,19 @@ export function ChatPage() {
 
   const handleRegenerate = async () => {
     if (!conv) return;
-    await ports.messages.regeneratePrompt(user.id, conv.id, locale);
-    setPromptBaseline(conv.promptText);
+    pendingRetryRef.current = () => handleRegenerate();
+    setPhase(user.id, conv.id, 'idle');
+    try {
+      await ports.messages.regeneratePrompt(user.id, conv.id, locale);
+      setPromptBaseline(conv.promptText);
+    } catch (e) {
+      if (isRecoverableApiError(e)) {
+        showApiError(e);
+        setPhase(user.id, conv.id, 'error_recoverable');
+      } else {
+        showApiError(e);
+      }
+    }
   };
 
   const onRegenerateClick = () => {
@@ -204,7 +245,13 @@ export function ChatPage() {
             </div>
             <div className={cn(shellHeaderRow, 'pointer-events-none hidden md:block')} aria-hidden />
             <div ref={statusLiveRef} className="sr-only" aria-live="polite" aria-atomic="true">
-              {busy ? (conv.phase === 'generating' ? t('chat.generating') : t('chat.analyzing')) : ''}
+              {recoverableError
+                ? t('chat.errorRecoverable')
+                : busy
+                  ? conv.phase === 'generating'
+                    ? t('chat.generating')
+                    : t('chat.analyzing')
+                  : ''}
             </div>
             <div
               className={cn(
@@ -240,20 +287,53 @@ export function ChatPage() {
                         key={m.id}
                         messageId={m.id}
                         content={m.content}
+                        createdAt={m.createdAt}
                         files={conv.files.filter((f) => f.messageId === m.id)}
                         disabled={busy}
                         onAddFiles={onMessageFiles}
                         onRemoveFile={(fileId) => removeFile(user.id, conv.id, fileId)}
                         onSubmit={async (messageId, text) => {
-                          await ports.messages.editUserMessage(user.id, conv.id, messageId, text, locale);
+                          pendingRetryRef.current = async () => {
+                            await ports.messages.editUserMessage(
+                              user.id,
+                              conv.id,
+                              messageId,
+                              text,
+                              locale,
+                            );
+                          };
+                          setPhase(user.id, conv.id, 'idle');
+                          try {
+                            await ports.messages.editUserMessage(
+                              user.id,
+                              conv.id,
+                              messageId,
+                              text,
+                              locale,
+                            );
+                          } catch (e) {
+                            if (isRecoverableApiError(e)) {
+                              showApiError(e);
+                              setPhase(user.id, conv.id, 'error_recoverable');
+                            } else {
+                              showApiError(e);
+                            }
+                          }
                         }}
                       />
                     ) : (
-                      <div
-                        key={m.id}
-                        className="max-w-[95%] rounded-xl bg-muted px-3 py-2 text-sm whitespace-pre-wrap"
-                      >
-                        {m.content}
+                      <div key={m.id} className="flex max-w-[95%] flex-col gap-0.5">
+                        <div className="rounded-xl bg-muted px-3 py-2 text-sm whitespace-pre-wrap">
+                          {m.content}
+                        </div>
+                        {m.createdAt ? (
+                          <time
+                            dateTime={m.createdAt}
+                            className="text-[10px] tabular-nums text-muted-foreground"
+                          >
+                            {formatMessageTime(m.createdAt)}
+                          </time>
+                        ) : null}
                       </div>
                     ),
                   )}
@@ -289,13 +369,37 @@ export function ChatPage() {
                 </GlassPanel>
               )}
 
+              {recoverableError && (
+                <GlassPanel compact className="flex flex-wrap items-center justify-between gap-2 border-destructive/30 bg-destructive/5 p-3">
+                  <p className="text-sm text-destructive">{t('chat.errorRecoverable')}</p>
+                  <Button type="button" size="sm" variant="outline" onClick={() => void handleRetry()}>
+                    {t('chat.retry')}
+                  </Button>
+                </GlassPanel>
+              )}
+
               {conv.phase === 'clarifying' && (
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
                   className="self-start"
-                  onClick={() => void ports.messages.skipClarification(user.id, conv.id, locale)}
+                  onClick={() => {
+                    pendingRetryRef.current = async () => {
+                      await ports.messages.skipClarification(user.id, conv.id, locale);
+                    };
+                    setPhase(user.id, conv.id, 'idle');
+                    void ports.messages
+                      .skipClarification(user.id, conv.id, locale)
+                      .catch((e) => {
+                        if (isRecoverableApiError(e)) {
+                          showApiError(e);
+                          setPhase(user.id, conv.id, 'error_recoverable');
+                        } else {
+                          showApiError(e);
+                        }
+                      });
+                  }}
                 >
                   {t('chat.skipAssumption')}
                 </Button>
@@ -317,9 +421,14 @@ export function ChatPage() {
                       }
                     }}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    {t('chat.charCount', { count: draft.length, max: maxChars })}
-                  </p>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                    <p className="text-xs text-muted-foreground" title={t('chat.composeHint')}>
+                      {t('chat.composeHint')}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t('chat.charCount', { count: draft.length, max: maxChars })}
+                    </p>
+                  </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <FileInputButton

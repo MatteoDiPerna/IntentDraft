@@ -104,6 +104,8 @@ const it = {
     copied: 'Copiato negli appunti. Incollalo nel tuo strumento AI preferito.',
     charCount: '{{count}} / {{max}} caratteri',
     charLimit: 'Hai superato il limite di caratteri.',
+    composeHint: 'Invio per inviare · Maiusc+Invio per andare a capo',
+    errorRecoverable: 'Qualcosa è andato storto. Puoi riprovare.',
     understoodTitle: 'Ecco cosa ho capito',
     understoodToggle: 'Mostra / nascondi dettagli',
     feedbackUseful: 'Utile',
@@ -147,10 +149,10 @@ const it = {
     zoomOut: 'Riduci',
     resetZoom: 'Reimposta zoom',
     resize: 'Trascina per ridimensionare il pannello',
+    download: 'Scarica file',
     zoomToolbar: 'Controlli zoom documento',
   },
   appShell: {
-    mockMode: 'Modalità demo — dati nel browser, nessun backend.',
     backendUnavailable: 'Backend non raggiungibile. Controlla che il server sia avviato.',
   },
   limits: {

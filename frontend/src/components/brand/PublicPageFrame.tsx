@@ -11,7 +11,7 @@ type PublicPageFrameProps = {
 export function PublicPageFrame({ children, className }: PublicPageFrameProps) {
   return (
     <div className={cn('page-frame-public', className)}>
-      <BrandScene />
+      <BrandScene subtle />
       {children}
     </div>
   );

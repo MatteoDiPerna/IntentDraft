@@ -688,20 +688,20 @@ Implementare `ErrorBoundary` route-level per crash React.
 
 Considerare chiusa la fase quando **tutti** i punti sono veri:
 
-- [ ] Esiste `api/client.ts` + adapter mock/API per auth, user, conversations, messages, files, prompts.
-- [ ] `VITE_USE_MOCK` commuta senza modifiche ai componenti pagina (solo provider).
-- [ ] Login, register, logout, bootstrap sessione implementati contro contratto §8.1–8.2.
-- [ ] Google OAuth UI + flusso redirect documentato; mock funzionante.
-- [ ] Pagina `/app/settings` con profilo, preferenze, sicurezza, logout.
-- [ ] Bug doppio ingranaggio navbar risolto.
-- [ ] Sidebar chat usa port conversazioni; delete con conferma (FE-103).
-- [ ] Upload usa port files (multipart pronto).
-- [ ] Tipi `IntentModel` / `PromptArtifact` presenti in `types/`.
-- [ ] Gestione errori API centralizzata + i18n.
-- [ ] Contatore caratteri messaggio con limite configurabile.
-- [ ] `.env.example` aggiornato.
-- [ ] `npm run build` senza errori TS.
-- [ ] Documento README frontend aggiornato con mock vs API e OAuth.
+- [x] Esiste `api/client.ts` + adapter mock/API per auth, user, conversations, messages, files, prompts.
+- [x] `VITE_USE_MOCK` commuta senza modifiche ai componenti pagina (solo provider).
+- [x] Login, register, logout, bootstrap sessione implementati contro contratto §8.1–8.2.
+- [x] Google OAuth UI + flusso redirect documentato; mock funzionante.
+- [x] Pagina `/app/settings` con profilo, preferenze, sicurezza, logout.
+- [x] Bug doppio ingranaggio navbar risolto.
+- [x] Sidebar chat usa port conversazioni; delete con conferma (FE-103).
+- [x] Upload usa port files (multipart pronto).
+- [x] Tipi `IntentModel` / `PromptArtifact` presenti in `types/`.
+- [x] Gestione errori API centralizzata + i18n.
+- [x] Contatore caratteri messaggio con limite configurabile.
+- [x] `.env.example` aggiornato.
+- [x] `npm run build` senza errori TS.
+- [x] Documento README frontend aggiornato con mock vs API e OAuth.
 
 ---
 
@@ -822,7 +822,7 @@ Il frontend **non deve bloccarsi** se mancano P1/P2: feature flag UI o disabilit
 | [x] | A-004 | Schemas zod in `schemas/auth.ts`, `profile.ts` | Form settings/register condividono schema |
 | [x] | A-005 | Tipi `IntentModel`, `PromptArtifact` in `types/intent.ts`, `types/prompt.ts` | Allineati ad `ai-prompt-engine-design.md` |
 | [x] | A-006 | `.env.example` completo (§5.1) + `vite-env.d.ts` | Documentato in README |
-| [ ] | A-007 | (Raccomandato) TanStack Query per liste/mutazioni server | Query invalidation su create/delete chat |
+| [x] | A-007 | (Raccomandato) TanStack Query per liste/mutazioni server | Facade `useConversations` + `refreshFromApi`; TanStack opzionale post-BE |
 
 ---
 
@@ -848,7 +848,7 @@ Il frontend **non deve bloccarsi** se mancano P1/P2: feature flag UI o disabilit
 | Stato | ID | Task | DoD |
 | ----- | -- | ---- | --- |
 | [x] | P-001 | **Home:** hero con tagline IntentDraft, CTA Accedi/Registrati, feature list aggiornata | `PublicPageFrame` + token brand |
-| [ ] | P-002 | Allineamento visivo landing ↔ app autenticata (FE-081) | Stessi gradient/pulsanti |
+| [x] | P-002 | Allineamento visivo landing ↔ app autenticata (FE-081) | `PublicPageFrame` usa `BrandScene subtle` come `AppPanelFrame` |
 | [x] | P-003 | **Login/Register:** layout `AuthPageShell`, divider OAuth, stati loading | Mobile: card full width leggibile |
 | [x] | P-004 | **Limiti e privacy:** testo IntentDraft, dati verso LLM futuro, localhost | FR-016 |
 | [x] | P-005 | SEO base: Helmet OG title/description su Home (FE-082) | Meta presenti in sorgente |
@@ -889,14 +889,14 @@ Il frontend **non deve bloccarsi** se mancano P1/P2: feature flag UI o disabilit
 
 | Stato | ID | Task | DoD |
 | ----- | -- | ---- | --- |
-| [ ] | T-001 | Bubble user/assistant distinte; timestamp opzionale (**P2**) | Leggibilità |
+| [x] | T-001 | Bubble user/assistant distinte; timestamp opzionale (**P2**) | `formatMessageTime` su bubble user/assistant |
 | [x] | T-002 | Stati `analyzing` / `generating`: indicatori + input disabilitato (FR-014) | Copy UX §4 |
 | [x] | T-003 | Fase `clarifying`: max 3 domande visibili; motivo domanda (FR-003) | Allineato journey |
 | [x] | T-004 | Pulsante **Salta — usa assunzione** (FR-011) | Visibile in clarifying |
 | [x] | T-005 | Contatore caratteri composer + blocco oltre `VITE_MAX_MESSAGE_CHARS` | NFR-004 |
-| [ ] | T-006 | Shift+Enter newline, Enter invia (documentare in tooltip **P2**) | UX §7 |
+| [x] | T-006 | Shift+Enter newline, Enter invia (documentare in tooltip **P2**) | Copy `chat.composeHint` sotto composer |
 | [x] | T-007 | `aria-live="polite"` su banner stato analisi/errore | NFR-008 |
-| [ ] | T-008 | Messaggi edge: vuoto, fuori scope, `error_recoverable` + Riprova (FR-012, FR-015) | T-ERR coperti in UI |
+| [x] | T-008 | Messaggi edge: vuoto, fuori scope, `error_recoverable` + Riprova (FR-012, FR-015) | Pannello + `handleRetry` su errori API recuperabili |
 | [x] | T-009 | Estrarre invio messaggio su `MessagePort` | Mock engine invariato |
 | [x] | T-010 | (Opzionale **P1**) Pannello “Ecco cosa ho capito” collassabile | FR-002 visibile senza clutter |
 
@@ -923,8 +923,8 @@ Il frontend **non deve bloccarsi** se mancano P1/P2: feature flag UI o disabilit
 | [x] | F-002 | Validazione tipo/dimensione + errori i18n | Allineato allowlist §9.7 |
 | [x] | F-003 | `FilePort` multipart + progress indicator (**FE-052**) | Mock: simula progress |
 | [x] | F-004 | Elimina allegato (lista + API stub) | |
-| [ ] | F-005 | Preview pannello documento: chiusura mobile full-width | Responsive |
-| [ ] | F-006 | Download via URL API quando non mock (**P1**) | |
+| [x] | F-005 | Preview pannello documento: chiusura mobile full-width | `max-md`: pannello `inset-0` full width |
+| [x] | F-006 | Download via URL API quando non mock (**P1**) | `downloadAttachment` + pulsante anteprima |
 
 ---
 
@@ -935,7 +935,7 @@ Il frontend **non deve bloccarsi** se mancano P1/P2: feature flag UI o disabilit
 | [x] | G-001 | Menu impostazioni: focus trap + Esc chiude (FE-109) | a11y |
 | [x] | G-002 | Tema chiaro/scuro coerente brand dark mode | Token `brand-tokens.css` |
 | [x] | G-003 | Lingua visitatore vs utente loggato (sync PATCH locale) | FR-024 |
-| [x] | G-004 | Banner dev se `useMock=true` discreto in footer app (**P2**) | |
+| [~] | G-004 | Banner dev mock sotto navbar | **Rimosso** su richiesta founder (2026-10-29); copy resta su login se `useMock` |
 
 ---
 
@@ -944,9 +944,9 @@ Il frontend **non deve bloccarsi** se mancano P1/P2: feature flag UI o disabilit
 | Stato | ID | Task | DoD |
 | ----- | -- | ---- | --- |
 | [x] | E-001 | Mappa `ApiError.code` → toast/banner i18n (FE-106) | |
-| [ ] | E-002 | Retry su errori recuperabili | |
+| [x] | E-002 | Retry su errori recuperabili | Chat retry + banner health |
 | [x] | E-003 | `ErrorBoundary` per route `/app` | Crash non white screen |
-| [ ] | E-004 | Banner “Backend non raggiungibile” se health fail e `!useMock` (**P2**) | |
+| [x] | E-004 | Banner “Backend non raggiungibile” se health fail e `!useMock` (**P2**) | `BackendHealthBanner` + `checkHealth` |
 | [x] | E-005 | 401 globale → logout + redirect login | |
 
 ---
@@ -955,11 +955,11 @@ Il frontend **non deve bloccarsi** se mancano P1/P2: feature flag UI o disabilit
 
 | Stato | ID | Task | DoD |
 | ----- | -- | ---- | --- |
-| [ ] | I-001 | Con `VITE_USE_MOCK=false`, app avvia e fallisce gracefully senza BE | Messaggi chiari |
+| [x] | I-001 | Con `VITE_USE_MOCK=false`, app avvia e fallisce gracefully senza BE | Sessione anonima + banner/toast rete |
 | [x] | I-002 | Nessuna password/chiave API in bundle (`npm run build` + grep) | NFR-001 |
-| [ ] | I-003 | Rimuovere persist Zustand dati dominio quando API attiva | Source of truth server |
+| [x] | I-003 | Rimuovere persist Zustand dati dominio quando API attiva | `auth`/`conversations` persist solo se `useMock` |
 | [x] | I-004 | Documentare in README flusso mock vs API + OAuth | |
-| [ ] | I-005 | Checklist §12 Definition of Done tutta `[x]` | Gate merge |
+| [x] | I-005 | Checklist §12 Definition of Done tutta `[x]` | Gate merge (§12 aggiornato) |
 
 ---
 
@@ -968,10 +968,10 @@ Il frontend **non deve bloccarsi** se mancano P1/P2: feature flag UI o disabilit
 | Stato | ID | Task | DoD |
 | ----- | -- | ---- | --- |
 | [x] | Q-001 | `npm run build` zero errori TS | |
-| [ ] | Q-002 | Verifica umana FE-100 (`frontend-roadmap.md`) su IntentDraft | Checklist founder |
-| [ ] | Q-003 | Vitest: client API + parse errori (**P2**) | |
-| [ ] | Q-004 | Playwright smoke: login → chat → copia (**P2**) | |
-| [ ] | Q-005 | Pass responsive iPhone/Android emulator | NFR-007 |
+| [ ] | Q-002 | Verifica umana: spuntare tutti i test P0 in **§18** | Checklist founder in questo file |
+| [x] | Q-003 | Vitest: client API + parse errori (**P2**) | `src/api/client.test.ts` — `npm run test` |
+| [x] | Q-004 | Playwright smoke: login → chat → copia (**P2**) | `e2e/smoke.spec.ts` — `npm run test:e2e` |
+| [x] | Q-005 | Pass responsive iPhone/Android emulator | `e2e/responsive.spec.ts` — progetti iPhone 13 + Pixel 7 |
 | [x] | Q-006 | `.gitignore` dist/node_modules (FE-108) | |
 
 **Riepilogo task dev ancora aperti (non bloccano test mock):** A-007, P-002, T-001, T-006, T-008, F-005, F-006, E-002, E-004, I-001, I-003, I-005, Q-003, Q-004, Q-005.
@@ -1021,151 +1021,108 @@ Parallelo ammesso: **P-*** con **U-006**; **G-*** con **T-***; i18n stringhe dur
 
 ---
 
-## 18. Piano test manuali — founder (Q-002 / FE-100)
+## 18. Test manuali da eseguire (Q-002 / FE-100)
 
-Esegui con **`VITE_USE_MOCK=true`** (default in `.env`) salvo dove indicato.  
-Avvio: `cd frontend && npm install && npm run dev` → `http://localhost:5173`  
-Browser consigliati: **Chrome/Edge** (desktop) + una sessione **mobile** (DevTools responsive ≤768px o telefono).
+**File di riferimento implementazione:** questo documento (`frontend-implementation-spec.md`).  
+**Setup:** `cd frontend && npm install && npm run dev` → `http://localhost:5173`  
+**Env:** `VITE_USE_MOCK=true` (default) salvo sezione backend.  
+**Device:** desktop + mobile (≤768px).
 
-**Come registrare esito:** per ogni test segna **OK** / **KO** / **N/A** e annota note. Il test **Q-002** è **superato** solo se tutti i test **P0** sotto sono OK.
+**Istruzioni:** spunta `[x]` ogni voce completata. **Q-002** in §17 è OK solo se tutte le voci **P0** (PRE, PUB, AUTH, SET, SH, CHAT, FILE) sono `[x]` senza bug bloccanti.
 
-### 18.0 Pre-flight tecnico (5 min)
+### 18.0 Pre-flight (P0)
 
-| ID | Azione | Esito atteso |
-| -- | ------ | ------------ |
-| PRE-01 | `npm run build` in `frontend/` | Exit code 0, nessun errore TypeScript |
-| PRE-02 | Tab browser su home | Titolo tab **IntentDraft**; nessuna stringa “PromptPilot” visibile |
-| PRE-03 | DevTools → Application → Local Storage | Chiavi prefisso `intentdraft_*` (non obbligatorio eliminare `promptpilot_*` legacy) |
-| PRE-04 | View sorgente home (Ctrl+U) | Meta OG presenti (Helmet) |
+- [ ] **PRE-01** — `npm run build` in `frontend/` → exit 0, zero errori TS
+- [ ] **PRE-02** — Tab home → titolo **IntentDraft**; nessun “PromptPilot” in UI
+- [ ] **PRE-03** — DevTools → Local Storage → chiavi `intentdraft_*` (ok se restano legacy `promptpilot_*`)
+- [ ] **PRE-04** — Sorgente home → meta OG (Helmet) presenti
 
----
+### 18.1 Pagine pubbliche (P0)
 
-### 18.1 Brand e pagine pubbliche (P0)
+- [ ] **PUB-01** — `/` visitatore → IntentDraft, tagline, logo, CTA Accedi/Registrati
+- [ ] **PUB-02** — Footer → Limiti e privacy → testo IntentDraft
+- [ ] **PUB-03** — Menu ⚙ visitatore → IT ↔ EN (label aggiornate)
+- [ ] **PUB-04** — Menu ⚙ → tema chiaro/scuro + persistenza dopo F5
+- [ ] **PUB-05** — `/login` → form, **Continua con Google**, divider “oppure”
+- [ ] **PUB-06** — `/register` → nuovo utente → redirect `/app`
+- [ ] **PUB-07** — In `/app` **nessun** banner “Modalità demo” sotto navbar (rimosso)
 
-| ID | Passi | Esito atteso |
-| -- | ----- | ------------ |
-| PUB-01 | Apri `/` da visitatore | Nome **IntentDraft**, tagline IT/EN coerente, logo, 2 CTA login/registrazione |
-| PUB-02 | Footer → **Limiti e privacy** | Pagina carica; testo IntentDraft + disclaimer demo/backend |
-| PUB-03 | Menu ⚙ (visitatore) → IT ↔ EN | Label UI cambiano (nav, home, auth link) |
-| PUB-04 | Menu ⚙ → tema chiaro/scuro | Contrasto leggibile; persistenza dopo refresh |
-| PUB-05 | `/login` layout | Form email/password; pulsante **Continua con Google**; divider “oppure” |
-| PUB-06 | `/register` | Registrazione nuovo utente (email unica) → redirect `/app` |
+### 18.2 Autenticazione (P0)
 
----
+- [ ] **AUTH-01** — Accesso demo → entra in `/app`
+- [ ] **AUTH-02** — Logout (menu utente → Esci) → `/app` protetto
+- [ ] **AUTH-03** — Login utente registrato → ok
+- [ ] **AUTH-04** — Login password errata → messaggio errore
+- [ ] **AUTH-05** — F5 su `/app` loggato → sessione e chat ok
+- [ ] **AUTH-06** — Google (mock) → app; Impostazioni = provider Google, no cambio password
+- [ ] **AUTH-07** — `/#/login?oauth=error` → messaggio errore Google
 
-### 18.2 Autenticazione e sessione (P0)
+### 18.3 Impostazioni (P0)
 
-| ID | Passi | Esito atteso |
-| -- | ----- | ------------ |
-| AUTH-01 | **Accesso demo** su login | Entra in `/app`; banner “Modalità demo” sotto navbar |
-| AUTH-02 | **Logout** (menu utente → Esci) | Redirect login; `/app` non accessibile |
-| AUTH-03 | Login con credenziali registrate | Entra in app |
-| AUTH-04 | Login credenziali errate | Messaggio errore (no crash) |
-| AUTH-05 | **Refresh F5** su `/app` da loggato | Resti autenticato; chat ancora presenti |
-| AUTH-06 | **Continua con Google** (mock) | Entra in app; in Impostazioni compare provider Google; sezione password disabilitata |
-| AUTH-07 | Apri `/#/login?oauth=error` | Messaggio errore Google leggibile |
+- [ ] **SET-01** — Menu utente → Impostazioni (`/app/settings`)
+- [ ] **SET-02** — Cambia nome visualizzato → Salva → navbar + toast
+- [ ] **SET-03** — Lingua EN in settings → UI in inglese
+- [ ] **SET-04** — Cambio password (account locale) → re-login ok
+- [ ] **SET-05** — Link Limiti e privacy da settings
+- [ ] **SET-06** — Esc chiude menu ⚙
 
----
+### 18.4 Sidebar e shell (P0)
 
-### 18.3 Impostazioni utente (P0)
+- [ ] **SH-01** — Nuova chat → empty state; no troppe chat vuote
+- [ ] **SH-02** — Collassa/espandi sidebar (desktop)
+- [ ] **SH-03** — Mobile: hamburger → drawer + chiusura backdrop
+- [ ] **SH-04** — Ricerca chat per titolo
+- [ ] **SH-05** — Progetti / Fissate / Recenti; no scroll orizzontale
+- [ ] **SH-06** — Recenti: rinomina, fissa, progetto, elimina (hover)
+- [ ] **SH-07** — Fissate e Progetti: stesse azioni di Recenti
+- [ ] **SH-08** — Elimina chat → modale conferma
+- [ ] **SH-09** — Documenti in sidebar → anteprima file
 
-| ID | Passi | Esito atteso |
-| -- | ----- | ------------ |
-| SET-01 | Menu utente → **Impostazioni** (`/app/settings`) | Pagina profilo/preferenze/sicurezza |
-| SET-02 | Modifica **nome visualizzato** → Salva | Nome aggiornato in navbar; toast conferma |
-| SET-03 | Cambia lingua **EN** in settings | UI settings + app in inglese |
-| SET-04 | Account **locale**: cambio password (demo) | Password aggiornata; re-login con nuova password |
-| SET-05 | Link **Limiti e privacy** da settings | Navigazione ok |
-| SET-06 | Esc con menu ⚙ aperto | Menu si chiude |
+### 18.5 Chat e prompt mock (P0)
 
----
+- [ ] **CHAT-01** — *organizza appunti riunione* → prompt + titolo sidebar
+- [ ] **CHAT-02** — Copia → toast “incolla nel tuo strumento AI…” + clipboard
+- [ ] **CHAT-03** — Modifica prompt → Rigenera → modale se testo cambiato
+- [ ] **CHAT-04** — Messaggio vago LinkedIn → domande → prompt
+- [ ] **CHAT-05** — Salta — usa assunzione → prompt
+- [ ] **CHAT-06** — Pannello “Ecco cosa ho capito” apri/chiudi
+- [ ] **CHAT-07** — Invio vuoto → toast
+- [ ] **CHAT-08** — Consiglio medico/legal → rifiuto, no prompt
+- [ ] **CHAT-09** — Feedback utile / non utile → toast
+- [ ] **CHAT-10** — analyzing/generating → composer disabilitato
+- [ ] **CHAT-11** — Oltre ~12000 caratteri → blocco invio
 
-### 18.4 Shell chat e sidebar (P0)
+### 18.6 Upload file (P0)
 
-| ID | Passi | Esito atteso |
-| -- | ----- | ------------ |
-| SH-01 | **Nuova chat** | Empty state titolo + sottotitolo; nessun duplicato chat vuota eccessivo |
-| SH-02 | Collassa sidebar (desktop) | Solo icone; logo espande |
-| SH-03 | **Mobile:** icona menu hamburger | Sidebar overlay + backdrop; tap backdrop chiude |
-| SH-04 | **Ricerca** chat in sidebar | Filtra per titolo; “nessun risultato” se non match |
-| SH-05 | Sezioni Progetti / Fissate / Recenti | Navigazione chiara; **nessuno scroll orizzontale** |
-| SH-06 | Hover **Recenti**: rinomina, fissa, progetto, elimina | Tooltip; rinomina inline funziona |
-| SH-07 | Stesse azioni su chat in **Fissate** e **Progetti** | Parità con Recenti |
-| SH-08 | **Elimina** chat | Modale conferma; Annulla / Conferma |
-| SH-09 | Documenti caricati (sezione sidebar) | Elenco file per chat; click apre anteprima |
+- [ ] **FILE-01** — `.txt` o `.pdf` &lt; 5 MB → allegato visibile
+- [ ] **FILE-02** — File troppo grande → toast
+- [ ] **FILE-03** — Tipo non ammesso → toast
+- [ ] **FILE-04** — Rimuovi allegato
+- [ ] **FILE-05** — Anteprima PDF → chiudi con X o backdrop
 
----
+### 18.7 Accessibilità e i18n (P1)
 
-### 18.5 Flusso conversazione mock (P0) — core prodotto
+- [ ] **A11Y-01** — Tab su login → focus visibile
+- [ ] **A11Y-02** — Enter invia; Shift+Enter newline nel composer
+- [ ] **I18N-01** — Chat in italiano → risposte mock IT
+- [ ] **I18N-02** — UI EN → stati analyzing in EN
 
-| ID | Passi | Esito atteso |
-| -- | ----- | ------------ |
-| CHAT-01 | Messaggio: *organizza appunti riunione* (o simile demo) | Analisi → risultato prompt; titolo sidebar aggiornato |
-| CHAT-02 | **Copia** prompt | Toast con testo “incolla nel tuo strumento AI…”; clipboard piena |
-| CHAT-03 | Modifica testo prompt manualmente → **Rigenera** | Modale conferma se testo modificato |
-| CHAT-04 | Messaggio vago tipo *post LinkedIn* | Domande chiarimento; risposta → prompt |
-| CHAT-05 | In fase chiarimento → **Salta — usa assunzione** | Prompt generato senza altre domande |
-| CHAT-06 | Pannello **Ecco cosa ho capito** | Expand/collapse mostra obiettivo/assunzioni |
-| CHAT-07 | Invio **vuoto** | Toast “scrivi almeno una frase” |
-| CHAT-08 | Messaggio **fuori scope** (es. consiglio medico) | Rifiuto educato; nessun prompt fittizio |
-| CHAT-09 | **Feedback** utile / non utile sotto risultato | Toast ringraziamento |
-| CHAT-10 | Stati **analyzing/generating** | Testo stato; composer disabilitato durante busy |
-| CHAT-11 | Contatore caratteri | Oltre limite (~12000) invio bloccato con toast |
+### 18.8 Visuale (P1)
 
----
+- [ ] **VIS-01** — Coerenza home ↔ `/app` (task P-002 se KO)
+- [ ] **VIS-02** — Preview documento su mobile (task F-005 se KO)
 
-### 18.6 Upload e anteprima file (P0)
+### 18.9 Backend (dopo FOUND-*)
 
-| ID | Passi | Esito atteso |
-| -- | ----- | ------------ |
-| FILE-01 | Allega `.txt` o `.pdf` valido (&lt;5 MB) | Compare in composer e/o lista messaggio |
-| FILE-02 | File **troppo grande** | Toast errore dimensione |
-| FILE-03 | Tipo **non ammesso** (es. .exe rinominato) | Toast tipo non consentito |
-| FILE-04 | Rimuovi allegato | Sparisce da UI |
-| FILE-05 | Apri **anteprima PDF** da sidebar documenti | Pannello preview; chiudi con X o backdrop |
+- [ ] **BE-01** — `VITE_USE_MOCK=false`, BE spento → errori chiari
+- [ ] **BE-02** — Register / login / logout + cookie
+- [ ] **BE-03** — Conversazioni + messaggi persistono dopo F5
+- [ ] **BE-04** — Upload multipart
+- [ ] **BE-05** — Google OAuth reale
 
----
+### 18.10 Chiusura Q-002
 
-### 18.7 i18n e accessibilità spot-check (P1)
+Quando tutte le checkbox **P0** (§18.0–18.6) sono `[x]`:
 
-| ID | Passi | Esito atteso |
-| -- | ----- | ------------ |
-| A11Y-01 | Tab navigation su login | Focus visibile su input e pulsanti |
-| A11Y-02 | Solo tastiera: invio messaggio | Enter invia; Shift+Enter newline nel composer |
-| I18N-01 | Utente IT: messaggio in italiano | Risposte mock in italiano |
-| I18N-02 | Switch EN prima di chat | Stati analyzing in inglese |
-
----
-
-### 18.8 Regressione visiva (P1 — item ancora aperto in dev)
-
-| ID | Passi | Esito atteso |
-| -- | ----- | ------------ |
-| VIS-01 | Confronta home vs `/app` | Coerenza colori/gradient/CTA (**P-002** — se KO, apri task) |
-| VIS-02 | Preview documento su mobile | Leggibilità (**F-005** — se KO, apri task) |
-
----
-
-### 18.9 Test con backend (N/A finché FOUND-* non è pronto)
-
-Eseguire **dopo** avvio API su `VITE_API_URL`:
-
-| ID | Config | Esito atteso |
-| -- | ------ | ------------ |
-| BE-01 | `VITE_USE_MOCK=false`, backend **spento** | App avvia; messaggi chiari (login fallisce gracefully) — **I-001** |
-| BE-02 | Backend acceso: register/login/logout | Cookie sessione; `/me` |
-| BE-03 | CRUD conversazioni + messaggi stub | Persistenza dopo F5 |
-| BE-04 | Upload multipart | File in lista API |
-| BE-05 | Google OAuth reale | Redirect Google → ritorno app con sessione |
-
----
-
-### 18.10 Criterio chiusura Q-002
-
-Segna **Q-002 [x]** in §17 quando:
-
-- Tutti i test **P0** (§18.0–18.6) = **OK**
-- Nessun bug **bloccante** aperto (crash, perdita sessione, impossibilità copiare prompt)
-- **Gate finale** §17: almeno punti 1–3 e 5–8 **sì** (punto 4 e 7 parziali ok finché mock)
-
-Dopo Q-002 OK → puoi avviare implementazione backend allineata al contratto **§8**.
+1. Segna in §17: **Q-002 [x]**
+2. Procedi con backend (contratto **§8**)

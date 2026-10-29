@@ -24,8 +24,18 @@ export class ApiError extends Error {
   }
 
   get retryable(): boolean {
-    return this.status === 503 || this.status === 429 || this.code === 'RATE_LIMITED';
+    return (
+      this.status === 0 ||
+      this.status === 503 ||
+      this.status === 429 ||
+      this.code === 'RATE_LIMITED' ||
+      this.code === 'NETWORK_ERROR'
+    );
   }
+}
+
+export function isRecoverableApiError(err: unknown): err is ApiError {
+  return err instanceof ApiError && err.retryable;
 }
 
 type UnauthorizedHandler = () => void;

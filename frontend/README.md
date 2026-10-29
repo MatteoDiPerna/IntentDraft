@@ -20,6 +20,8 @@ Apri `http://localhost:5173`. Con **`VITE_USE_MOCK=true`** (default) auth, chat 
 | `npm run dev` | Dev server |
 | `npm run build` | Build produzione |
 | `npm run preview` | Anteprima build |
+| `npm run test` | Vitest (client API) |
+| `npm run test:e2e` | Playwright smoke + responsive (prima: `npx playwright install chromium`) |
 
 ## Roadmap
 

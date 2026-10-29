@@ -102,6 +102,8 @@ const en: TranslationSchema = {
     copied: 'Copied to clipboard. Paste it into your preferred AI tool.',
     charCount: '{{count}} / {{max}} characters',
     charLimit: 'You exceeded the character limit.',
+    composeHint: 'Enter to send · Shift+Enter for a new line',
+    errorRecoverable: 'Something went wrong. You can try again.',
     understoodTitle: 'Here is what I understood',
     understoodToggle: 'Show / hide details',
     feedbackUseful: 'Helpful',
@@ -144,10 +146,10 @@ const en: TranslationSchema = {
     zoomOut: 'Zoom out',
     resetZoom: 'Reset zoom',
     resize: 'Drag to resize panel',
+    download: 'Download file',
     zoomToolbar: 'Document zoom controls',
   },
   appShell: {
-    mockMode: 'Demo mode — data in browser, no backend.',
     backendUnavailable: 'Backend unreachable. Check that the server is running.',
   },
   limits: {

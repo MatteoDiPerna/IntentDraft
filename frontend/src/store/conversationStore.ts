@@ -1,6 +1,12 @@
 import { create, type StateCreator } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AttachedFile, ChatMessage, Conversation } from '@/types/conversation';
+import type {
+  AttachedFile,
+  ChatMessage,
+  Conversation,
+  ConversationUiPhase,
+} from '@/types/conversation';
+import { appConfig } from '@/config';
 import { createId } from '@/lib/ids';
 import { STORAGE } from '@/lib/storageKeys';
 import {
@@ -82,6 +88,7 @@ interface ConversationState {
   toggleInProject: (userId: string, conversationId: string) => void;
   deleteConversation: (userId: string, conversationId: string) => void;
   renameConversation: (userId: string, conversationId: string, title: string) => void;
+  setPhase: (userId: string, conversationId: string, phase: ConversationUiPhase) => void;
 }
 
 function patchConversation(
@@ -448,8 +455,11 @@ const conversationImpl: StateCreator<ConversationState> = (set, get) => ({
           }),
         );
       },
+      setPhase: (userId, conversationId, phase) => {
+        set(patchConversation(get(), userId, conversationId, { phase }));
+      },
 });
 
-export const useConversationStore = create<ConversationState>()(
-  persist(conversationImpl, { name: STORAGE.conversations }),
-);
+export const useConversationStore = appConfig.useMock
+  ? create<ConversationState>()(persist(conversationImpl, { name: STORAGE.conversations }))
+  : create<ConversationState>()(conversationImpl);

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
-import { GripVertical, RotateCcw, X, ZoomIn, ZoomOut } from 'lucide-react';
+import { Download, GripVertical, RotateCcw, X, ZoomIn, ZoomOut } from 'lucide-react';
+import { downloadAttachment } from '@/lib/downloadAttachment';
 import { Button } from '@/components/ui/button';
 import { clampDocumentPreviewWidth } from '@/lib/documentPreviewLayout';
 import { getFileBlob } from '@/lib/fileBlobStore';
@@ -128,7 +129,17 @@ export function DocumentPreviewPanel({
   const [blob, setBlob] = useState<Blob | null>(null);
   const [blobLoading, setBlobLoading] = useState(true);
   const [textPreview, setTextPreview] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(max-width: 767px)').matches : false,
+  );
   const resizeRef = useRef<{ startX: number; startWidth: number } | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const onChange = () => setIsMobile(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   useEffect(() => {
     setZoom(1);
@@ -192,22 +203,29 @@ export function DocumentPreviewPanel({
 
   return (
     <aside
-      className="document-preview-panel-enter fixed right-0 top-0 z-50 flex h-full flex-col border-l border-primary/20 bg-background/95 shadow-xl shadow-primary/10 backdrop-blur-md"
-      style={{ width }}
+      className={cn(
+        'document-preview-panel-enter fixed z-50 flex h-full flex-col border-primary/20 bg-background/95 shadow-xl shadow-primary/10 backdrop-blur-md',
+        isMobile
+          ? 'inset-0 w-full max-w-none border-0'
+          : 'right-0 top-0 border-l',
+      )}
+      style={isMobile ? undefined : { width }}
       aria-label={t('documentPreview.title')}
     >
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        aria-label={t('documentPreview.resize')}
-        className="absolute -left-1.5 top-0 z-10 flex h-full w-3 cursor-ew-resize items-center justify-center touch-none"
-        onPointerDown={onResizePointerDown}
-        onPointerMove={onResizePointerMove}
-        onPointerUp={onResizePointerUp}
-        onPointerCancel={onResizePointerUp}
-      >
-        <GripVertical className="h-4 w-4 text-muted-foreground/80" aria-hidden />
-      </div>
+      {!isMobile ? (
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label={t('documentPreview.resize')}
+          className="absolute -left-1.5 top-0 z-10 flex h-full w-3 cursor-ew-resize items-center justify-center touch-none"
+          onPointerDown={onResizePointerDown}
+          onPointerMove={onResizePointerMove}
+          onPointerUp={onResizePointerUp}
+          onPointerCancel={onResizePointerUp}
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground/80" aria-hidden />
+        </div>
+      ) : null}
 
       <header className="brand-shell-header flex shrink-0 items-center gap-2 px-3 py-2">
         <div className="min-w-0 flex-1">
@@ -216,6 +234,16 @@ export function DocumentPreviewPanel({
             {t('documentPreview.title')}
           </p>
         </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0"
+          aria-label={t('documentPreview.download')}
+          onClick={() => void downloadAttachment(fileId, fileName)}
+        >
+          <Download className="h-4 w-4" />
+        </Button>
         <Button
           type="button"
           variant="ghost"
