@@ -350,19 +350,19 @@ Segnare `[x]` solo con test verificati. ID collegati a [`beta-roadmap.md`](beta-
 ### Fase B1 — Database (FOUND-012, NFR-013)
 
 - [x] **B1-001** `prisma/schema.prisma` — tutte le tabelle `idt_*` §7  
-- [ ] **B1-002** Migrazione iniziale + `prisma migrate dev` documentato  
+- [x] **B1-002** Migrazione iniziale `20260329220000_init_idt_schema` + flusso in `backend/README.md`  
 - [ ] **B1-003** Seed dev opzionale (utente test) — non committare password reali  
-- [ ] **B1-004** Health check esegue query DB  
+- [x] **B1-004** Health check esegue query DB (`pingDatabase`, verificato `db: true`)  
 
 **DoD B1:** T-DB-01 preparato (conversazione persistita).
 
 ### Fase B2 — Auth & sessioni (FOUND-013, FR-021)
 
-- [ ] **B2-001** Modello `idt_sess` + cookie plugin  
-- [ ] **B2-002** BE-A02 … BE-A05  
-- [ ] **B2-003** Middleware `requireAuth` su route `/api/conversations/*`, `/api/users/*`, `/api/files/*`  
-- [ ] **B2-004** DTO `User` identico al FE (`authProvider`, `hasPassword`)  
-- [ ] **B2-005** Test integrazione: T-AUTH-01, T-AUTH-02  
+- [x] **B2-001** Modello `idt_sess` + cookie plugin
+- [x] **B2-002** BE-A02 … BE-A05
+- [ ] **B2-003** Middleware `requireAuth` su route `/api/conversations/*`, `/api/users/*`, `/api/files/*` (middleware pronto; wiring in B3+)
+- [x] **B2-004** DTO `User` identico al FE (`authProvider`, `hasPassword`)
+- [x] **B2-005** Test integrazione: T-AUTH-01, T-AUTH-02
 
 **DoD B2:** IF-01 … IF-03 verdi manualmente.
 

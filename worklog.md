@@ -11,10 +11,12 @@
 | ---- | ----- |
 | **Frontend** | IntentDraft completo in mock; adapter API pronti; test Vitest + Playwright. Spec: [`docs/product/planning/frontend-implementation-spec.md`](docs/product/planning/frontend-implementation-spec.md) |
 | **Backend B0** | Fastify, health, errori JSON, env zod, Prisma + Supabase connesso |
+| **Backend B1** | 6 tabelle `idt_*` su Supabase, migrazione `init_idt_schema`, health `db: true` |
+| **Backend B2** | Auth register/login/logout/me, sessioni cookie, test integrazione |
 | **Schema DB** | Definito in doc + `backend/prisma/schema.prisma` — tabelle fisiche **`idt_*`** (8 caratteri). Vedi [`docs/product/architecture/database-design.md`](docs/product/architecture/database-design.md) §2.1 |
 | **Commit recente** | Frontend checklist + test; backend scaffold (verificare `git log`) |
 
-**Non ancora implementato sul backend:** auth, CRUD conversazioni, messaggi, file, orchestrator, LLM.
+**Non ancora implementato sul backend:** CRUD conversazioni, messaggi, file, orchestrator, LLM (auth B2 ok).
 
 ---
 
@@ -41,11 +43,11 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ### Blocco 1 — Database su Supabase (B1)
 
-1. [ ] Eseguire `cd backend && npm run db:push` e confermare in Supabase **Table Editor** le 6 tabelle: `idt_user`, `idt_sess`, `idt_conv`, `idt_msgs`, `idt_file`, `idt_prmt`.
-2. [ ] (Consigliato) Creare prima migrazione versionata: `npx prisma migrate dev --name init_idt_schema` e documentare in `backend/README.md` se si passa da `db:push` a migrate.
-3. [ ] Rimuovere eventuale tabella legacy `schema_bootstrap` se ancora presente (Prisma può proporlo in `db push`).
-4. [ ] Verificare `GET http://localhost:3001/api/health` → `{ "ok": true, "db": true }` (`pingDatabase` in `src/lib/db.ts`).
-5. [ ] (Opzionale B1-003) Seed dev in `backend/prisma/seed.ts` — utente test; **non** committare password.
+1. [x] Eseguire `cd backend && npm run db:push` e confermare in Supabase **Table Editor** le 6 tabelle: `idt_user`, `idt_sess`, `idt_conv`, `idt_msgs`, `idt_file`, `idt_prmt`.
+2. [x] Migrazione versionata `prisma/migrations/20260329220000_init_idt_schema` (baseline dopo `db:push` con `migrate resolve --applied`); flusso documentato in `backend/README.md`.
+3. [x] Nessuna tabella legacy `schema_bootstrap` nel schema `public` (verificato 2026-10-29).
+4. [x] Verificare `GET http://localhost:3001/api/health` → `{ "ok": true, "db": true }` (`pingDatabase` in `src/lib/db.ts`).
+5. [ ] (Opzionale B1-003) Seed dev in `backend/prisma/seed.ts` — utente test; **non** committare password (placeholder: solo `user.count()` fino a B2).
 
 **Riferimenti:** piano [`docs/product/planning/backend-implementation-plan.md`](docs/product/planning/backend-implementation-plan.md) Fase B1 · FOUND-012.
 
@@ -53,12 +55,12 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ### Blocco 2 — Autenticazione (B2, FR-021)
 
-6. [ ] Implementare `src/services/passwordService.ts` (bcrypt) e `src/services/sessionService.ts` (crea/valida/elimina righe `idt_sess`).
-7. [ ] Route auth: `POST /api/auth/register`, `login`, `logout`, `GET /api/auth/me` — contratto §8.1 in frontend spec.
-8. [ ] Cookie sessione httpOnly (`SESSION_COOKIE_NAME`), TTL da `SESSION_TTL_DAYS`; plugin `@fastify/cookie` già registrato in `index.ts`.
-9. [ ] Middleware `requireAuth` + tipizzazione `request.user`; 401 → JSON `{ error: { code: "UNAUTHORIZED", ... } }`.
-10. [ ] Mapper risposta `User`: `id`, `email`, `displayName`, `locale`, `authProvider`, `hasPassword` (allineato a `frontend/src/types/auth.ts`).
-11. [ ] Test integrazione: register → login → `/me` → logout → `/me` 401 (Vitest + supertest o script manuale).
+6. [x] `src/services/passwordService.ts` (bcrypt) e `src/services/sessionService.ts` (crea/valida/elimina `idt_sess`).
+7. [x] Route auth: `POST /api/auth/register`, `login`, `logout`, `GET /api/auth/me` — contratto §8.1.
+8. [x] Cookie sessione httpOnly firmato (`SESSION_COOKIE_NAME`), TTL `SESSION_TTL_DAYS` (`src/app.ts`).
+9. [x] Middleware `createRequireAuth` + `request.user` (`src/middleware/requireAuth.ts`); 401 → `UNAUTHORIZED`.
+10. [x] Mapper `toUserDto` — allineato a `frontend/src/types/auth.ts`.
+11. [x] Test integrazione Vitest: `tests/integration/auth.test.ts` (`npm run test`).
 12. [ ] **Verifica FE:** `VITE_USE_MOCK=false`, register/login/logout, F5 su `/app` mantiene sessione (IF-01…03).
 
 **Riferimenti:** [`docs/product/architecture/frontend-backend-operations.md`](docs/product/architecture/frontend-backend-operations.md) OP-A01…A04.
@@ -174,7 +176,7 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ## Dove riprendere **adesso**
 
-**Prossima azione consigliata:** completare **Blocco 1** (punti 1–4) se non già fatto, poi iniziare **Blocco 2** dal punto 6.
+**Prossima azione consigliata:** verifica manuale FE punto 12 (IF-01…03), poi **Blocco 3 — Conversazioni CRUD (B3)** dal punto 13.
 
 Dopo ogni blocco: `npm run build` in `backend/`, commit atomico, aggiornare le checkbox in questo file.
 

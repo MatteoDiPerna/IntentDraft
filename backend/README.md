@@ -31,9 +31,19 @@ cd backend
 cp .env.example .env
 # modifica DATABASE_URL
 npm install
-npm run db:push    # crea tabelle idt_* su Supabase (vedi database-design.md §2.1)
+npm run db:push    # prima sync schema su Supabase (vedi database-design.md §2.1)
 npm run dev        # http://localhost:3001
 ```
+
+### Schema: `db:push` vs migrazioni
+
+| Scenario | Comando |
+| -------- | ------- |
+| Nuovo clone, DB vuoto | `npm run db:migrate:deploy` (applica `prisma/migrations/*`) oppure `npm run db:push` in dev |
+| Modifica `schema.prisma` in team | `npm run db:migrate` → commit della cartella `prisma/migrations/` |
+| DB già allineato con `db:push` (senza history) | Baseline: generare SQL con `npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script -o prisma/migrations/<timestamp>_nome/migration.sql`, poi `npx prisma migrate resolve --applied <timestamp>_nome` |
+
+La migrazione iniziale **`20260329220000_init_idt_schema`** è già in repo e marcata *applied* sull’istanza Supabase demo.
 
 Verifica:
 
@@ -79,4 +89,5 @@ npm run dev
 ## Fase corrente
 
 **B0** — scaffold, health check, Prisma collegato a Supabase.  
-**B1** — schema dominio in `prisma/schema.prisma` (tabelle **`idt_user`**, **`idt_conv`**, … — 8 caratteri). Esegui `db:push` dopo pull.
+**B1** — schema dominio applicato su Supabase (6 tabelle `idt_*`), migrazione `init_idt_schema`, health `db: true`.  
+**B2** — auth email/password, cookie sessione, `GET/POST /api/auth/*`. Prossimo: **B3** conversazioni.
