@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Menu } from 'lucide-react';
 import { AppPanelFrame, GlassPanel } from '@/components/brand';
 import { ChatEditableUserMessage } from '@/components/chat/ChatEditableUserMessage';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
@@ -9,9 +10,11 @@ import { Button } from '@/components/ui/button';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { FileInputButton } from '@/components/ui/FileInputButton';
 import { Textarea } from '@/components/ui/textarea';
-import { useAuthStore } from '@/store/authStore';
+import { useAuth } from '@/hooks/useAuth';
+import { usePorts } from '@/providers/PortsProvider';
 import { useConversationStore } from '@/store/conversationStore';
 import { useToast } from '@/components/ui/toast';
+import { appConfig } from '@/config';
 import {
   chatShellDocumentsRow,
   chatShellNewChatRow,
@@ -22,18 +25,17 @@ import { cn } from '@/utils/cn';
 
 export function ChatPage() {
   const { t, i18n } = useTranslation();
-  const user = useAuthStore((s) => s.currentUser)!;
-  const locale = user.locale;
+  const { user } = useAuth();
+  const ports = usePorts();
+  const locale = user?.locale ?? 'it';
   const toast = useToast();
+  const maxChars = appConfig.maxMessageChars;
 
-  const list = useConversationStore((s) => s.list(user.id));
-  const active = useConversationStore((s) => s.getActive(user.id));
+  const userId = user?.id ?? '';
+  const list = useConversationStore((s) => (userId ? s.list(userId) : []));
+  const active = useConversationStore((s) => (userId ? s.getActive(userId) : null));
   const createConversation = useConversationStore((s) => s.createConversation);
   const setActive = useConversationStore((s) => s.setActive);
-  const sendUserMessage = useConversationStore((s) => s.sendUserMessage);
-  const editUserMessage = useConversationStore((s) => s.editUserMessage);
-  const skipClarification = useConversationStore((s) => s.skipClarification);
-  const regeneratePrompt = useConversationStore((s) => s.regeneratePrompt);
   const updatePromptText = useConversationStore((s) => s.updatePromptText);
   const addFiles = useConversationStore((s) => s.addFiles);
   const removeFile = useConversationStore((s) => s.removeFile);
@@ -45,6 +47,11 @@ export function ChatPage() {
   const [draft, setDraft] = useState('');
   const [composerFiles, setComposerFiles] = useState<File[]>([]);
   const [regenerateConfirmOpen, setRegenerateConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [understoodOpen, setUnderstoodOpen] = useState(false);
+  const [promptBaseline, setPromptBaseline] = useState('');
+  const setMobileSidebarOpen = useUiStore((s) => s.setMobileSidebarOpen);
+  const statusLiveRef = useRef<HTMLDivElement>(null);
 
   const documentPreview = useUiStore((s) => s.documentPreview);
   const documentPreviewWidth = useUiStore((s) => s.documentPreviewWidth);
@@ -53,8 +60,9 @@ export function ChatPage() {
   const setDocumentPreviewWidth = useUiStore((s) => s.setDocumentPreviewWidth);
 
   useEffect(() => {
+    if (!user) return;
     if (list.length === 0) createConversation(user.id);
-  }, [list.length, createConversation, user.id]);
+  }, [list.length, createConversation, user?.id, user]);
 
   useEffect(() => {
     void i18n.changeLanguage(locale);
@@ -65,11 +73,20 @@ export function ChatPage() {
   useEffect(() => {
     setDraft('');
     setComposerFiles([]);
+    setUnderstoodOpen(false);
   }, [conv?.id]);
+
+  useEffect(() => {
+    if (conv?.phase === 'prompt_ready' && conv.promptText) {
+      setPromptBaseline(conv.promptText);
+    }
+  }, [conv?.id, conv?.phase, conv?.promptText]);
   const busy = conv?.phase === 'analyzing' || conv?.phase === 'generating';
   const isEmptyChat = !conv || conv.messages.length === 0;
   const showComposer = isEmptyChat || conv?.phase === 'clarifying';
   const showResult = Boolean(conv?.promptText?.trim());
+
+  if (!user) return null;
 
   const handleSend = async () => {
     if (!conv || busy) return;
@@ -78,10 +95,14 @@ export function ChatPage() {
       toast(t('chat.emptyInput'));
       return;
     }
+    if (text.length > maxChars) {
+      toast(t('chat.charLimit'));
+      return;
+    }
     setDraft('');
     const attachments = composerFiles;
     setComposerFiles([]);
-    const err = await sendUserMessage(user.id, conv.id, text, locale, attachments);
+    const err = await ports.messages.send(user.id, conv.id, text, locale, attachments);
     if (err === 'size') {
       setComposerFiles(attachments);
       toast(t('chat.fileTooLarge'));
@@ -99,12 +120,14 @@ export function ChatPage() {
 
   const handleRegenerate = async () => {
     if (!conv) return;
-    await regeneratePrompt(user.id, conv.id, locale);
+    await ports.messages.regeneratePrompt(user.id, conv.id, locale);
+    setPromptBaseline(conv.promptText);
   };
 
   const onRegenerateClick = () => {
     if (!conv?.promptText) return;
-    setRegenerateConfirmOpen(true);
+    if (conv.promptText !== promptBaseline) setRegenerateConfirmOpen(true);
+    else void handleRegenerate();
   };
 
   const confirmRegenerate = async () => {
@@ -147,7 +170,7 @@ export function ChatPage() {
         activeId={conv?.id}
         onNewChat={() => createConversation(user.id)}
         onSelect={(id) => setActive(user.id, id)}
-        onDeleteRecent={(id) => deleteConversation(user.id, id)}
+        onDeleteRecent={(id) => setDeleteTargetId(id)}
         onPinRecent={(id) => togglePin(user.id, id)}
         onMoveRecentToProject={(id) => toggleInProject(user.id, id)}
         onRenameRecent={(id, title) => renameConversation(user.id, id, title)}
@@ -167,7 +190,22 @@ export function ChatPage() {
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">…</div>
         ) : (
           <div className="flex min-h-0 flex-1 flex-col">
-            <div className={cn(shellHeaderRow, 'pointer-events-none')} aria-hidden />
+            <div className={cn(shellHeaderRow, 'flex items-center gap-2 px-2 md:hidden')}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10"
+                aria-label={t('chat.openMenu')}
+                onClick={() => setMobileSidebarOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className={cn(shellHeaderRow, 'pointer-events-none hidden md:block')} aria-hidden />
+            <div ref={statusLiveRef} className="sr-only" aria-live="polite" aria-atomic="true">
+              {busy ? (conv.phase === 'generating' ? t('chat.generating') : t('chat.analyzing')) : ''}
+            </div>
             <div
               className={cn(
                 'flex min-h-0 flex-1 flex-col px-2 md:px-4',
@@ -207,7 +245,7 @@ export function ChatPage() {
                         onAddFiles={onMessageFiles}
                         onRemoveFile={(fileId) => removeFile(user.id, conv.id, fileId)}
                         onSubmit={async (messageId, text) => {
-                          await editUserMessage(user.id, conv.id, messageId, text, locale);
+                          await ports.messages.editUserMessage(user.id, conv.id, messageId, text, locale);
                         }}
                       />
                     ) : (
@@ -227,13 +265,37 @@ export function ChatPage() {
                 </div>
               )}
 
+              {conv.interpretation && conv.phase !== 'idle' && (
+                <GlassPanel compact className="p-3">
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between text-left text-sm font-medium"
+                    onClick={() => setUnderstoodOpen((v) => !v)}
+                  >
+                    {t('chat.understoodTitle')}
+                    <span className="text-xs text-muted-foreground">{t('chat.understoodToggle')}</span>
+                  </button>
+                  {understoodOpen && (
+                    <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                      <li>
+                        <strong>{conv.interpretation.objective}</strong>
+                      </li>
+                      {conv.interpretation.audience && <li>{conv.interpretation.audience}</li>}
+                      {conv.interpretation.assumptions.map((a) => (
+                        <li key={a}>{a}</li>
+                      ))}
+                    </ul>
+                  )}
+                </GlassPanel>
+              )}
+
               {conv.phase === 'clarifying' && (
                 <Button
                   type="button"
                   variant="secondary"
                   size="sm"
                   className="self-start"
-                  onClick={() => skipClarification(user.id, conv.id, locale)}
+                  onClick={() => void ports.messages.skipClarification(user.id, conv.id, locale)}
                 >
                   {t('chat.skipAssumption')}
                 </Button>
@@ -255,6 +317,9 @@ export function ChatPage() {
                       }
                     }}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    {t('chat.charCount', { count: draft.length, max: maxChars })}
+                  </p>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <FileInputButton
@@ -326,6 +391,32 @@ export function ChatPage() {
                     value={conv.promptText}
                     onChange={(e) => updatePromptText(user.id, conv.id, e.target.value)}
                   />
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        void ports.prompts.submitFeedback(user.id, conv.id, true).then(() =>
+                          toast(t('chat.feedbackThanks')),
+                        )
+                      }
+                    >
+                      {t('chat.feedbackUseful')}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        void ports.prompts.submitFeedback(user.id, conv.id, false).then(() =>
+                          toast(t('chat.feedbackThanks')),
+                        )
+                      }
+                    >
+                      {t('chat.feedbackNotUseful')}
+                    </Button>
+                  </div>
                 </GlassPanel>
               ) : (
                 !isEmptyChat &&
@@ -360,6 +451,17 @@ export function ChatPage() {
         cancelLabel={t('chat.cancel')}
         onConfirm={() => void confirmRegenerate()}
         onCancel={() => setRegenerateConfirmOpen(false)}
+      />
+      <ConfirmModal
+        open={Boolean(deleteTargetId)}
+        message={t('chat.deleteChatConfirm')}
+        confirmLabel={t('sidebar.deleteChat')}
+        cancelLabel={t('chat.cancel')}
+        onConfirm={() => {
+          if (deleteTargetId) deleteConversation(user.id, deleteTargetId);
+          setDeleteTargetId(null);
+        }}
+        onCancel={() => setDeleteTargetId(null)}
       />
     </div>
   );

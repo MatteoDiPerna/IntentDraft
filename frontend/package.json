@@ -1,9 +1,9 @@
 {
-  "name": "promptpilot-frontend",
+  "name": "intentdraft-frontend",
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "description": "PromptPilot — UI conversazionale (Vite + React + TypeScript)",
+  "description": "IntentDraft — UI conversazionale (Vite + React + TypeScript)",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

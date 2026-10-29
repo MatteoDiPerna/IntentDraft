@@ -1,1 +1,2 @@
-/* Hooks barrel — add exports as needed */
+export { useAuth } from './useAuth';
+export { useApiErrorToast } from './useApiErrorToast';

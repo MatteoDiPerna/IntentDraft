@@ -216,6 +216,67 @@
     @apply absolute bottom-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent;
   }
 
+  .sidebar-header-leading-slot {
+    @apply relative h-9 min-w-0 flex-1 overflow-hidden;
+  }
+
+  .sidebar-header-brand-panel,
+  .sidebar-header-search-panel {
+    @apply absolute inset-0 will-change-[opacity,transform];
+    transition:
+      opacity 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .sidebar-header-brand-panel {
+    @apply flex items-center overflow-hidden pl-1;
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  .sidebar-header-search-panel {
+    @apply flex items-center pl-1;
+    opacity: 0;
+    transform: translateX(0.75rem) scale(0.96);
+    pointer-events: none;
+  }
+
+  .sidebar-header-search-field {
+    @apply relative h-8 min-w-0 w-full;
+  }
+
+  .sidebar-header-leading-slot[data-search-open='true'] .sidebar-header-brand-panel {
+    opacity: 0;
+    transform: translateX(-0.75rem) scale(0.96);
+    pointer-events: none;
+  }
+
+  .sidebar-header-leading-slot[data-search-open='true'] .sidebar-header-search-panel {
+    z-index: 1;
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    pointer-events: auto;
+  }
+
+  .sidebar-header-leading-slot[data-search-open='false'] .sidebar-header-brand-panel {
+    z-index: 1;
+  }
+
+  .sidebar-search-clear-enter {
+    animation: sidebar-search-clear-in 0.2s ease-out both;
+  }
+
+  @keyframes sidebar-search-clear-in {
+    from {
+      opacity: 0;
+      transform: translateY(-50%) scale(0.85);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+  }
+
   .brand-feature-item {
     @apply inline-flex items-center justify-center gap-2 text-sm text-muted-foreground;
   }
@@ -295,6 +356,15 @@
   @media (prefers-reduced-motion: reduce) {
     .document-preview-backdrop-enter,
     .document-preview-panel-enter {
+      animation: none;
+    }
+
+    .sidebar-header-brand-panel,
+    .sidebar-header-search-panel {
+      transition: none;
+    }
+
+    .sidebar-search-clear-enter {
       animation: none;
     }
   }

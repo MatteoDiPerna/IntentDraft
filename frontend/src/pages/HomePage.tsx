@@ -4,19 +4,24 @@ import { MessageSquare, Sparkles, Wand2 } from 'lucide-react';
 import { PublicPageFrame } from '@/components/brand';
 import { Button } from '@/components/ui/button';
 import { brandAssets } from '@/lib/brand';
-import { useAuthStore } from '@/store/authStore';
+import { useAuth } from '@/hooks/useAuth';
+import { Helmet } from 'react-helmet-async';
 
 const featureIcons = [MessageSquare, Wand2, Sparkles] as const;
 
 export function HomePage() {
   const { t } = useTranslation();
-  const user = useAuthStore((s) => s.currentUser);
+  const { user } = useAuth();
   if (user) return <Navigate to="/app" replace />;
 
   const features = t('landing.features', { returnObjects: true }) as string[];
 
   return (
     <PublicPageFrame>
+      <Helmet>
+        <meta property="og:title" content={t('app.name')} />
+        <meta property="og:description" content={t('app.tagline')} />
+      </Helmet>
       <div className="page-content-layer flex w-full max-w-2xl flex-col items-center text-center">
         <div className="brand-badge mb-6">
           <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
@@ -25,7 +30,7 @@ export function HomePage() {
 
         <img
           src={brandAssets.logoTransparent}
-          alt=""
+          alt={t('app.name')}
           className="mb-5 h-12 w-auto max-w-[200px] sm:h-14"
           width={200}
           height={48}

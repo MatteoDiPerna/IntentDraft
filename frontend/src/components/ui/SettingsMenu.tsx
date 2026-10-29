@@ -6,6 +6,7 @@ import { SegmentToggle } from '@/components/ui/SegmentToggle';
 import { useTheme } from '@/components/ui/ThemeProvider';
 import { useAuthStore } from '@/store/authStore';
 import type { Locale } from '@/types/auth';
+import { STORAGE } from '@/lib/storageKeys';
 import { cn } from '@/utils/cn';
 
 export function SettingsMenu() {
@@ -30,13 +31,20 @@ export function SettingsMenu() {
     const onDoc = (e: MouseEvent) => {
       if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
     };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
     document.addEventListener('mousedown', onDoc);
-    return () => document.removeEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
   }, [open]);
 
   const onLocale = (next: Locale) => {
     void i18n.changeLanguage(next);
-    localStorage.setItem('promptpilot_locale', next);
+    localStorage.setItem(STORAGE.locale, next);
     if (user) setLocale(next);
   };
 

@@ -5,7 +5,9 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { LimitsPage } from '@/pages/LimitsPage';
 import { ChatPage } from '@/pages/chat/ChatPage';
+import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const AppRoutes: React.FC = () => {
   return (
@@ -21,7 +23,19 @@ const AppRoutes: React.FC = () => {
           path="/app"
           element={
             <ProtectedRoute>
-              <ChatPage />
+              <ErrorBoundary>
+                <ChatPage />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/app/settings"
+          element={
+            <ProtectedRoute>
+              <ErrorBoundary>
+                <SettingsPage />
+              </ErrorBoundary>
             </ProtectedRoute>
           }
         />

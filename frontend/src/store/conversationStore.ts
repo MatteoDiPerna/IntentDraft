@@ -1,7 +1,8 @@
-import { create } from 'zustand';
+import { create, type StateCreator } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { AttachedFile, ChatMessage, Conversation } from '@/types/conversation';
 import { createId } from '@/lib/ids';
+import { STORAGE } from '@/lib/storageKeys';
 import {
   assistantReplyForQuestions,
   buildClarifications,
@@ -236,9 +237,7 @@ function normalizeConversation(c: Conversation): Conversation {
   };
 }
 
-export const useConversationStore = create<ConversationState>()(
-  persist(
-    (set, get) => ({
+const conversationImpl: StateCreator<ConversationState> = (set, get) => ({
       byUser: {},
       activeId: {},
       createConversation: (userId) => {
@@ -449,7 +448,8 @@ export const useConversationStore = create<ConversationState>()(
           }),
         );
       },
-    }),
-    { name: 'promptpilot_conversations_v1' },
-  ),
+});
+
+export const useConversationStore = create<ConversationState>()(
+  persist(conversationImpl, { name: STORAGE.conversations }),
 );

@@ -1,4 +1,4 @@
-const DB_NAME = 'promptpilot_file_blobs_v1';
+const DB_NAME = 'intentdraft_file_blobs_v1';
 const STORE = 'blobs';
 
 function openDb(): Promise<IDBDatabase> {

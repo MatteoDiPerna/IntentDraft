@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '@/store/authStore';
-import { Button } from './button';
-import { GuestSettingsMenu, SettingsMenu } from './SettingsMenu';
+import { useAuth } from '@/hooks/useAuth';
+import { GuestSettingsMenu } from './SettingsMenu';
+import { UserMenu } from './UserMenu';
 import { pageGutter } from '@/lib/layout';
 
 interface NavbarProps {
@@ -12,8 +12,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ children }) => {
   const { t } = useTranslation();
-  const user = useAuthStore((s) => s.currentUser);
-  const logout = useAuthStore((s) => s.logout);
+  const { user } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
@@ -22,16 +21,8 @@ export const Navbar: React.FC<NavbarProps> = ({ children }) => {
           <span className="text-xl font-bold text-brand-gradient">{t('app.name')}</span>
         </Link>
         <div className="flex items-center gap-1">
-          <GuestSettingsMenu />
-          {user && (
-            <>
-              <SettingsMenu />
-              <span className="text-sm text-muted-foreground hidden sm:inline px-1">{user.displayName}</span>
-              <Button variant="ghost" size="sm" onClick={logout}>
-                {t('nav.logout')}
-              </Button>
-            </>
-          )}
+          {!user && <GuestSettingsMenu />}
+          {user && <UserMenu />}
           {children}
         </div>
       </div>

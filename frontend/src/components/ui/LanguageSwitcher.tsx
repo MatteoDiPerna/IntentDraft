@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/authStore';
 import type { Locale } from '@/types/auth';
+import { STORAGE } from '@/lib/storageKeys';
 import { Button } from './button';
 
 export function LanguageSwitcher() {
@@ -11,7 +12,7 @@ export function LanguageSwitcher() {
   const toggle = () => {
     const next: Locale = i18n.language === 'it' ? 'en' : 'it';
     void i18n.changeLanguage(next);
-    localStorage.setItem('promptpilot_locale', next);
+    localStorage.setItem(STORAGE.locale, next);
     if (user) setLocale(next);
   };
 

@@ -1,1 +1,2 @@
-/* Zod schemas — auth forms inline in pages for now */
+export * from './auth';
+export * from './profile';

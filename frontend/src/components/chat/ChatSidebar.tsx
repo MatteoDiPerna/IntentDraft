@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ChevronDown,
   FileSpreadsheet,
@@ -9,7 +9,9 @@ import {
   Pin,
   PenSquare,
   Pencil,
+  Search,
   Trash2,
+  X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BrandLogo } from '@/components/brand/BrandLogo';
@@ -29,6 +31,7 @@ type ChatSidebarProps = {
   onMoveRecentToProject: (id: string) => void;
   onRenameRecent: (id: string, title: string) => void;
   onOpenDocument: (conversationId: string, file: AttachedFile) => void;
+  onAfterSelect?: () => void;
 };
 
 function chatLabel(c: Conversation, fallback: string) {
@@ -275,23 +278,48 @@ export function ChatSidebar({
   onMoveRecentToProject,
   onRenameRecent,
   onOpenDocument,
+  onAfterSelect,
 }: ChatSidebarProps) {
   const { t } = useTranslation();
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const open = useUiStore((s) => s.sidebarOpen);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const mobileSidebarOpen = useUiStore((s) => s.mobileSidebarOpen);
+  const setMobileSidebarOpen = useUiStore((s) => s.setMobileSidebarOpen);
   const projectsExpanded = useUiStore((s) => s.projectsExpanded);
   const setProjectsExpanded = useUiStore((s) => s.setProjectsExpanded);
   const documentsExpanded = useUiStore((s) => s.documentsExpanded);
   const setDocumentsExpanded = useUiStore((s) => s.setDocumentsExpanded);
 
   const fallback = t('nav.newChat');
-  const pinned = conversations.filter((c) => c.pinned);
-  const inProject = conversations.filter((c) => c.inProject && !c.pinned);
-  const recent = conversations.filter((c) => !c.pinned && !c.inProject);
-  const conversationsWithFiles = conversations.filter((c) => c.files.length > 0);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const searching = normalizedQuery.length > 0;
+  const matchesQuery = (c: Conversation) =>
+    !normalizedQuery || chatLabel(c, fallback).toLowerCase().includes(normalizedQuery);
+  const pinned = conversations.filter((c) => c.pinned && matchesQuery(c));
+  const inProject = conversations.filter((c) => c.inProject && !c.pinned && matchesQuery(c));
+  const recent = conversations.filter((c) => !c.pinned && !c.inProject && matchesQuery(c));
+  const allWithFiles = conversations.filter((c) => c.files.length > 0);
+  const conversationsWithFiles = allWithFiles.filter(matchesQuery);
   const totalDocuments = conversationsWithFiles.reduce((n, c) => n + c.files.length, 0);
+  const hasChatMatches = pinned.length + inProject.length + recent.length > 0;
+  const showProjectsSection = !searching || inProject.length > 0;
+  const showPinnedSection = !searching || pinned.length > 0;
+  const showRecentSection = !searching || recent.length > 0;
+  const projectsOpen = searching || projectsExpanded;
+
+  useEffect(() => {
+    if (searchOpen && open) searchInputRef.current?.focus();
+  }, [searchOpen, open]);
+
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setSearchQuery('');
+  };
 
   const startRename = (c: Conversation) => {
     setRenamingId(c.id);
@@ -311,12 +339,44 @@ export function ChatSidebar({
   };
 
   const width = open ? 'w-[260px]' : 'w-[56px]';
+  const sidebarVisible = open || mobileSidebarOpen;
+
+  const selectChat = (id: string) => {
+    onSelect(id);
+    onAfterSelect?.();
+    setMobileSidebarOpen(false);
+  };
+
+  const rowActionsFor = (c: Conversation) =>
+    renamingId === c.id
+      ? undefined
+      : {
+          pinLabel: t('sidebar.pinChat'),
+          renameLabel: t('sidebar.renameChat'),
+          moveLabel: t('sidebar.moveToProject'),
+          deleteLabel: t('sidebar.deleteChat'),
+          onPin: () => onPinRecent(c.id),
+          onRename: () => startRename(c),
+          onMove: () => onMoveRecentToProject(c.id),
+          onDelete: () => onDeleteRecent(c.id),
+        };
 
   return (
+    <>
+      {mobileSidebarOpen && (
+        <button
+          type="button"
+          className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm md:hidden"
+          aria-label={t('sidebar.collapse')}
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
     <aside
       className={cn(
-        'sidebar-shell flex h-full min-w-0 shrink-0 flex-col overflow-x-hidden font-sans transition-[width] duration-200 ease-out',
+        'sidebar-shell flex h-full min-w-0 shrink-0 flex-col overflow-x-hidden font-sans transition-[width,transform] duration-200 ease-out',
         width,
+        'max-md:fixed max-md:inset-y-0 max-md:left-0 max-md:z-50 max-md:shadow-xl',
+        !sidebarVisible && 'max-md:pointer-events-none max-md:-translate-x-full',
       )}
     >
       <div
@@ -328,19 +388,82 @@ export function ChatSidebar({
       >
         {open ? (
           <>
-            <div className="min-w-0 flex-1 pl-1">
-              <BrandLogo variant="sidebar" linked={false} />
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 shrink-0"
-              aria-label={t('sidebar.collapse')}
-              onClick={toggleSidebar}
+            <div
+              className="sidebar-header-leading-slot"
+              data-search-open={searchOpen ? 'true' : 'false'}
             >
-              <PanelLeftClose className="h-5 w-5" />
-            </Button>
+              <div className="sidebar-header-brand-panel" aria-hidden={searchOpen}>
+                <BrandLogo variant="sidebar" linked={false} />
+              </div>
+              <div className="sidebar-header-search-panel" aria-hidden={!searchOpen}>
+                <div className="sidebar-header-search-field">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    placeholder={t('sidebar.searchPlaceholder')}
+                    aria-label={t('sidebar.searchChats')}
+                    autoComplete="off"
+                    spellCheck={false}
+                    tabIndex={searchOpen ? 0 : -1}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        e.preventDefault();
+                        closeSearch();
+                      }
+                    }}
+                    className={cn(
+                      'h-8 w-full rounded-md border border-input bg-background px-2 text-xs outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring',
+                      searchQuery && 'pr-7',
+                    )}
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      className="sidebar-search-clear-enter absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label={t('sidebar.clearSearch')}
+                      onClick={() => {
+                        setSearchQuery('');
+                        searchInputRef.current?.focus();
+                      }}
+                    >
+                      <X className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'h-9 w-9 shrink-0 transition-[background-color,color,transform] duration-300 ease-out',
+                  searchOpen && 'scale-105 bg-primary/10 text-primary',
+                )}
+                aria-label={t('sidebar.searchChats')}
+                aria-expanded={searchOpen}
+                title={t('sidebar.searchChats')}
+                onClick={() => {
+                  if (searchOpen) closeSearch();
+                  else setSearchOpen(true);
+                }}
+              >
+                <Search className="h-5 w-5" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0"
+                aria-label={t('sidebar.collapse')}
+                onClick={toggleSidebar}
+              >
+                <PanelLeftClose className="h-5 w-5" />
+              </Button>
+            </div>
           </>
         ) : (
           <BrandLogo variant="sidebarCollapsed" linked={false} onClick={toggleSidebar} />
@@ -372,99 +495,118 @@ export function ChatSidebar({
         {open ? (
           <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-x-hidden">
             <SidebarNavCard className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
-              <p className="sidebar-section-label">{t('sidebar.general')}</p>
-              <button
-                type="button"
-                className={cn(
-                  'flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:bg-primary/5',
-                  projectsExpanded && 'sidebar-nav-item-active',
-                )}
-                onClick={() => setProjectsExpanded(!projectsExpanded)}
-              >
-                <FolderKanban className="ml-0.5 h-4 w-4 shrink-0" />
-                <span className="flex-1 truncate text-left">{t('sidebar.projects')}</span>
-                <ChevronDown
-                  className={cn(
-                    'h-4 w-4 shrink-0 text-muted-foreground transition-transform',
-                    projectsExpanded ? 'rotate-0' : '-rotate-90',
-                  )}
-                />
-              </button>
-              {projectsExpanded && (
-                <div className="sidebar-tree-branch mx-1 mb-1 space-y-0.5">
-                  <p className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                    {t('sidebar.defaultProject')}
-                  </p>
-                  {inProject.length === 0 && (
-                    <p className="px-2 py-1 text-xs text-muted-foreground">{t('sidebar.emptyRecent')}</p>
-                  )}
-                  {inProject.map((c) => (
-                    <ChatListItem
-                      key={c.id}
-                      active={c.id === activeId}
-                      label={chatLabel(c, fallback)}
-                      onSelect={() => onSelect(c.id)}
-                      collapsed={false}
-                    />
-                  ))}
-                </div>
+              {searching && !hasChatMatches && (
+                <p className="px-2.5 py-2 text-xs text-muted-foreground">{t('sidebar.noSearchResults')}</p>
               )}
 
-              <div className="sidebar-section-divider" />
+              {showProjectsSection && (
+                <>
+                  <p className="sidebar-section-label">{t('sidebar.general')}</p>
+                  <button
+                    type="button"
+                    className={cn(
+                      'flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors hover:bg-primary/5',
+                      projectsOpen && 'sidebar-nav-item-active',
+                    )}
+                    onClick={() => setProjectsExpanded(!projectsExpanded)}
+                  >
+                    <FolderKanban className="ml-0.5 h-4 w-4 shrink-0" />
+                    <span className="flex-1 truncate text-left">{t('sidebar.projects')}</span>
+                    <ChevronDown
+                      className={cn(
+                        'h-4 w-4 shrink-0 text-muted-foreground transition-transform',
+                        projectsOpen ? 'rotate-0' : '-rotate-90',
+                      )}
+                    />
+                  </button>
+                  {projectsOpen && (
+                    <div className="sidebar-tree-branch mx-1 mb-1 space-y-0.5">
+                      <p className="px-2 py-1 text-xs font-medium text-muted-foreground">
+                        {t('sidebar.defaultProject')}
+                      </p>
+                      {!searching && inProject.length === 0 && (
+                        <p className="px-2 py-1 text-xs text-muted-foreground">{t('sidebar.emptyRecent')}</p>
+                      )}
+                      {inProject.map((c) => (
+                        <ChatListItem
+                          key={c.id}
+                          active={c.id === activeId}
+                          label={chatLabel(c, fallback)}
+                          onSelect={() => selectChat(c.id)}
+                          collapsed={false}
+                          renaming={renamingId === c.id}
+                          renameValue={renameDraft}
+                          renamePlaceholder={t('sidebar.renamePlaceholder')}
+                          onRenameChange={setRenameDraft}
+                          onRenameCommit={commitRename}
+                          onRenameCancel={cancelRename}
+                          recentActions={rowActionsFor(c)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
 
-              <p className="sidebar-section-label">{t('sidebar.pinned')}</p>
-              <div className="space-y-0.5 px-0.5 pb-1">
-                {pinned.length === 0 && (
-                  <p className="px-2.5 py-1 text-xs text-muted-foreground">{t('sidebar.emptyPinned')}</p>
-                )}
-                {pinned.map((c) => (
-                  <ChatListItem
-                    key={c.id}
-                    active={c.id === activeId}
-                    label={chatLabel(c, fallback)}
-                    onSelect={() => onSelect(c.id)}
-                    collapsed={false}
-                  />
-                ))}
-              </div>
+              {showProjectsSection && (showPinnedSection || showRecentSection) && (
+                <div className="sidebar-section-divider" />
+              )}
 
-              <div className="sidebar-section-divider" />
+              {showPinnedSection && (
+                <>
+                  <p className="sidebar-section-label">{t('sidebar.pinned')}</p>
+                  <div className="space-y-0.5 px-0.5 pb-1">
+                    {!searching && pinned.length === 0 && (
+                      <p className="px-2.5 py-1 text-xs text-muted-foreground">{t('sidebar.emptyPinned')}</p>
+                    )}
+                    {pinned.map((c) => (
+                      <ChatListItem
+                        key={c.id}
+                        active={c.id === activeId}
+                        label={chatLabel(c, fallback)}
+                        onSelect={() => selectChat(c.id)}
+                        collapsed={false}
+                        renaming={renamingId === c.id}
+                        renameValue={renameDraft}
+                        renamePlaceholder={t('sidebar.renamePlaceholder')}
+                        onRenameChange={setRenameDraft}
+                        onRenameCommit={commitRename}
+                        onRenameCancel={cancelRename}
+                        recentActions={rowActionsFor(c)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
 
-              <p className="sidebar-section-label">{t('sidebar.recent')}</p>
-              <div className="space-y-0.5 px-0.5 pb-1.5">
-                {recent.length === 0 && (
-                  <p className="px-2.5 py-1 text-xs text-muted-foreground">{t('sidebar.emptyRecent')}</p>
-                )}
-                {recent.map((c) => (
-                  <ChatListItem
-                    key={c.id}
-                    active={c.id === activeId}
-                    label={chatLabel(c, fallback)}
-                    onSelect={() => onSelect(c.id)}
-                    collapsed={false}
-                    renaming={renamingId === c.id}
-                    renameValue={renameDraft}
-                    renamePlaceholder={t('sidebar.renamePlaceholder')}
-                    onRenameChange={setRenameDraft}
-                    onRenameCommit={commitRename}
-                    onRenameCancel={cancelRename}
-                    recentActions={
-                      renamingId === c.id
-                        ? undefined
-                        : {
-                            pinLabel: t('sidebar.pinChat'),
-                            renameLabel: t('sidebar.renameChat'),
-                            moveLabel: t('sidebar.moveToProject'),
-                            deleteLabel: t('sidebar.deleteChat'),
-                            onPin: () => onPinRecent(c.id),
-                            onRename: () => startRename(c),
-                            onMove: () => onMoveRecentToProject(c.id),
-                            onDelete: () => onDeleteRecent(c.id),
-                          }
-                    }
-                  />
-                ))}
-              </div>
+              {showPinnedSection && showRecentSection && <div className="sidebar-section-divider" />}
+
+              {showRecentSection && (
+                <>
+                  <p className="sidebar-section-label">{t('sidebar.recent')}</p>
+                  <div className="space-y-0.5 px-0.5 pb-1.5">
+                    {!searching && recent.length === 0 && (
+                      <p className="px-2.5 py-1 text-xs text-muted-foreground">{t('sidebar.emptyRecent')}</p>
+                    )}
+                    {recent.map((c) => (
+                      <ChatListItem
+                        key={c.id}
+                        active={c.id === activeId}
+                        label={chatLabel(c, fallback)}
+                        onSelect={() => selectChat(c.id)}
+                        collapsed={false}
+                        renaming={renamingId === c.id}
+                        renameValue={renameDraft}
+                        renamePlaceholder={t('sidebar.renamePlaceholder')}
+                        onRenameChange={setRenameDraft}
+                        onRenameCommit={commitRename}
+                        onRenameCancel={cancelRename}
+                        recentActions={rowActionsFor(c)}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </SidebarNavCard>
 
             <SidebarNavCard className="mt-0.5 shrink-0">
@@ -487,13 +629,17 @@ export function ChatSidebar({
                   <div className="sidebar-section-divider mb-1" />
                   <div className="space-y-2 px-1 pb-2">
                     {conversationsWithFiles.length === 0 && (
-                      <p className="px-2 py-1 text-xs text-muted-foreground">{t('sidebar.emptyDocuments')}</p>
+                      <p className="px-2 py-1 text-xs text-muted-foreground">
+                        {searching && allWithFiles.length > 0
+                          ? t('sidebar.noSearchResults')
+                          : t('sidebar.emptyDocuments')}
+                      </p>
                     )}
                     {conversationsWithFiles.map((c) => (
                       <div key={c.id} className="min-w-0">
                         <button
                           type="button"
-                          onClick={() => onSelect(c.id)}
+                          onClick={() => selectChat(c.id)}
                           className="w-full truncate px-2 py-0.5 text-left text-xs font-semibold text-foreground/90 hover:text-foreground"
                           title={chatLabel(c, fallback)}
                         >
@@ -540,5 +686,6 @@ export function ChatSidebar({
         )}
       </div>
     </aside>
+    </>
   );
 }
