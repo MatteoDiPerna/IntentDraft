@@ -12,7 +12,7 @@
 | Layer        | Scelta                                                                   |
 | ------------ | ------------------------------------------------------------------------ |
 | **Frontend** | Vite, React, TypeScript, Radix UI, Tailwind — adattato da template sopra |
-| **Backend**  | API **Node.js** (Fastify o Express) + **Prisma** + **MySQL**             |
+| **Backend**  | API **Node.js** (Fastify o Express) + **Prisma** + **PostgreSQL (Supabase)** |
 | **Repo**     | Monorepo consigliato: `frontend/` + `backend/` (+ `docs/`)               |
 
 **Motivazione (founder + engineer):**
@@ -27,7 +27,7 @@
 
 ## Decisione 2 — Sessioni (OQ-014)
 
-**Cookie httpOnly `Secure` (in prod) + tabella MySQL `sessions`.**
+**Cookie httpOnly `Secure` (in prod) + tabella `idt_sess` (8 caratteri, vedi `database-design.md` §2.1).**
 
 | Criterio                   | Sessioni server-side                 | Solo JWT stateless               |
 | -------------------------- | ------------------------------------ | -------------------------------- |

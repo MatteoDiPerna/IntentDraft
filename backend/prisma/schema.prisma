@@ -1,0 +1,147 @@
+// PostgreSQL (Supabase) — nomi tabella fisici a 8 caratteri (idt_*)
+// docs/product/architecture/database-design.md §2.1
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Locale {
+  it
+  en
+}
+
+enum AuthProvider {
+  local
+  google
+}
+
+enum ConversationStatus {
+  active
+  archived
+}
+
+enum MessageRole {
+  user
+  assistant
+  system
+}
+
+enum ScanStatus {
+  pending
+  ok
+  rejected
+}
+
+enum PromptFeedback {
+  useful
+  not_useful
+}
+
+model User {
+  id           String       @id @default(uuid()) @db.Uuid
+  email        String       @unique @db.VarChar(255)
+  passwordHash String?      @map("password_hash") @db.VarChar(255)
+  displayName  String?      @map("display_name") @db.VarChar(120)
+  locale       Locale       @default(it)
+  authProvider AuthProvider @default(local) @map("auth_provider")
+  googleSub    String?      @unique @map("google_sub") @db.VarChar(255)
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sessions      Session[]
+  conversations Conversation[]
+  uploadedFiles UploadedFile[]
+
+  @@map("idt_user")
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("idt_sess")
+}
+
+model Conversation {
+  id        String             @id @default(uuid()) @db.Uuid
+  userId    String             @map("user_id") @db.Uuid
+  title     String             @default("") @db.VarChar(200)
+  status    ConversationStatus @default(active)
+  metadata  Json?
+  aiState   Json?              @map("ai_state")
+  createdAt DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages        Message[]
+  uploadedFiles   UploadedFile[]
+  promptArtifacts PromptArtifact[]
+
+  @@index([userId, updatedAt(sort: Desc)])
+  @@map("idt_conv")
+}
+
+model Message {
+  id             String      @id @default(uuid()) @db.Uuid
+  conversationId String      @map("conversation_id") @db.Uuid
+  role           MessageRole
+  content        String      @db.Text
+  metadata       Json?
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  conversation    Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  promptArtifacts PromptArtifact[]
+  uploadedFiles   UploadedFile[]
+
+  @@index([conversationId, createdAt])
+  @@map("idt_msgs")
+}
+
+model UploadedFile {
+  id             String     @id @default(uuid()) @db.Uuid
+  userId         String     @map("user_id") @db.Uuid
+  conversationId String?    @map("conversation_id") @db.Uuid
+  messageId      String?    @map("message_id") @db.Uuid
+  originalName   String     @map("original_name") @db.VarChar(255)
+  mimeType       String     @map("mime_type") @db.VarChar(127)
+  sizeBytes      BigInt     @map("size_bytes")
+  storagePath    String     @map("storage_path") @db.VarChar(512)
+  scanStatus     ScanStatus @default(pending) @map("scan_status")
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversation Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  message      Message?      @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId])
+  @@index([userId])
+  @@map("idt_file")
+}
+
+model PromptArtifact {
+  id             String          @id @default(uuid()) @db.Uuid
+  conversationId String          @map("conversation_id") @db.Uuid
+  messageId      String?         @map("message_id") @db.Uuid
+  bodyMarkdown   String          @map("body_markdown") @db.Text
+  sections       Json?
+  version        Int             @default(1)
+  feedback       PromptFeedback?
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message      Message?     @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt(sort: Desc)])
+  @@map("idt_prmt")
+}

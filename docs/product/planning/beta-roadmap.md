@@ -99,7 +99,7 @@ flowchart LR
 
 - [ ] FOUND-010 — Monorepo `frontend/` (Vite) + `backend/` (Node API) + lint — **P0** _(FE: **[X]** vedi [`frontend-roadmap.md`](frontend-roadmap.md))_
 - [ ] FOUND-011 — Prisma + MySQL + `.env.example` — **P0**
-- [ ] FOUND-012 — Migrazioni schema v1 (`users`, `sessions`, …) — **P0**
+- [ ] FOUND-012 — Migrazioni schema v1 (`idt_user`, `idt_sess`, …) — **P0**
 - [ ] FOUND-013 — `POST/GET` auth (register, login, logout, me) — **P0** — FR-021
 - [X] FOUND-014 — Route protette + pagine login/register (**UI mock**) — **P0**
 - [X] FOUND-015 — i18n IT/EN (minimo navigazione + auth) — **P0** — FR-024

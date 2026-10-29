@@ -15,7 +15,8 @@
 | **Backend (Route Handlers)** | Validazione, auth, accesso MySQL, storage file locale, (futuro) proxy Anthropic     |
 | **MySQL**                    | Persistenza utenti, sessioni, conversazioni, messaggi, metadati file, prompt        |
 
-**Output prodotto:** testo prompt (`prompt_artifacts.body_markdown`) — nessuna esecuzione LLM nel prodotto (OQ-008 **Accepted**).
+**Output prodotto:** testo prompt (`idt_prmt.body_markdown`) — nessuna esecuzione LLM nel prodotto (OQ-008 **Accepted**).  
+**Tabelle DB:** nomi fisici a 8 caratteri — vedi [`database-design.md`](database-design.md) §2.1.
 
 ---
 
@@ -25,11 +26,11 @@ Meccanismo target: **cookie di sessione httpOnly** dopo login; middleware Next.j
 
 | #      | Operazione                   | FE                        | BE                                                  | DB                                | Priorità fase iniziale |
 | ------ | ---------------------------- | ------------------------- | --------------------------------------------------- | --------------------------------- | ---------------------- |
-| OP-A01 | Registrazione email/password | Form + validazione client | `POST /api/auth/register` hash password, crea user  | INSERT `users`                    | **P0**                 |
-| OP-A02 | Login                        | Form                      | `POST /api/auth/login` verifica hash, crea sessione | SELECT `users`, INSERT `sessions` | **P0**                 |
-| OP-A03 | Logout                       | Pulsante                  | `POST /api/auth/logout` invalida sessione           | DELETE `sessions`                 | **P0**                 |
+| OP-A01 | Registrazione email/password | Form + validazione client | `POST /api/auth/register` hash password, crea user  | INSERT `idt_user`                    | **P0**                 |
+| OP-A02 | Login                        | Form                      | `POST /api/auth/login` verifica hash, crea sessione | SELECT `idt_user`, INSERT `idt_sess` | **P0**                 |
+| OP-A03 | Logout                       | Pulsante                  | `POST /api/auth/logout` invalida sessione           | DELETE `idt_sess`                 | **P0**                 |
 | OP-A04 | Sessione corrente            | Bootstrap app / layout    | `GET /api/auth/me`                                  | SELECT user by session            | **P0**                 |
-| OP-A05 | Cambio lingua UI             | Selector IT/EN            | `PATCH /api/users/me` `{ locale }`                  | UPDATE `users.locale`             | **P1**                 |
+| OP-A05 | Cambio lingua UI             | Selector IT/EN            | `PATCH /api/users/me` `{ locale }`                  | UPDATE `idt_user.locale`             | **P1**                 |
 
 **Collaborazione FE↔BE:** ogni OP-A01–A04 richiede entrambi; FE non accede a MySQL; BE restituisce errori strutturati `{ code, message }` traducibili lato FE.
 
@@ -44,10 +45,10 @@ Finché Claude non è integrato, `POST .../messages` può persistere il messaggi
 | OP-C01 | Lista conversazioni    | Sidebar / home   | `GET /api/conversations`               | SELECT by `user_id` | **P0**   |
 | OP-C02 | Nuova conversazione    | Pulsante “Nuova” | `POST /api/conversations`              | INSERT              | **P0**   |
 | OP-C03 | Dettaglio + messaggi   | Pagina chat      | `GET /api/conversations/:id`           | SELECT messages     | **P0**   |
-| OP-C04 | Invio messaggio user   | Composer         | `POST /api/conversations/:id/messages` | INSERT `messages`   | **P0**   |
+| OP-C04 | Invio messaggio user   | Composer         | `POST /api/conversations/:id/messages` | INSERT `idt_msgs`   | **P0**   |
 | OP-C05 | Archivia conversazione | Menu             | `PATCH /api/conversations/:id`         | UPDATE status       | **P2**   |
 
-**Futuro (motore AI — fase tardiva):** stessa `OP-C04` invocherà orchestrator → Anthropic → INSERT message assistant + `prompt_artifacts`.
+**Futuro (motore AI — fase tardiva):** stessa `OP-C04` invocherà orchestrator → Anthropic → INSERT message assistant + `idt_prmt`.
 
 ---
 
@@ -55,7 +56,7 @@ Finché Claude non è integrato, `POST .../messages` può persistere il messaggi
 
 | #      | Operazione                    | FE              | BE                                                     | DB                        | Priorità         |
 | ------ | ----------------------------- | --------------- | ------------------------------------------------------ | ------------------------- | ---------------- |
-| OP-P01 | Visualizza ultimo prompt      | Pannello editor | Incluso in GET conversation o `GET .../prompts/latest` | SELECT `prompt_artifacts` | **P1** (dopo AI) |
+| OP-P01 | Visualizza ultimo prompt      | Pannello editor | Incluso in GET conversation o `GET .../prompts/latest` | SELECT `idt_prmt` | **P1** (dopo AI) |
 | OP-P02 | Salva modifica manuale prompt | Editor          | `PUT /api/prompts/:id`                                 | UPDATE body               | **P1**           |
 | OP-P03 | Rigenera prompt               | Pulsante        | `POST /api/conversations/:id/regenerate`               | INSERT nuova versione     | **Fase AI**      |
 | OP-P04 | Copia negli appunti           | Solo FE         | —                                                      | —                         | **P1** (FR-010)  |
@@ -66,7 +67,7 @@ Finché Claude non è integrato, `POST .../messages` può persistere il messaggi
 
 | #      | Operazione                   | FE                    | BE                                            | DB / FS                                | Priorità |
 | ------ | ---------------------------- | --------------------- | --------------------------------------------- | -------------------------------------- | -------- |
-| OP-F01 | Upload file in conversazione | Input file + progress | `POST /api/conversations/:id/files` multipart | INSERT `uploaded_files` + scrivi disco | **P0**   |
+| OP-F01 | Upload file in conversazione | Input file + progress | `POST /api/conversations/:id/files` multipart | INSERT `idt_file` + scrivi disco | **P0**   |
 | OP-F02 | Lista file conversazione     | Lista allegati        | `GET /api/conversations/:id/files`            | SELECT                                 | **P0**   |
 | OP-F03 | Elimina file                 | Icona delete          | `DELETE /api/files/:id`                       | DELETE + rimuovi file FS               | **P1**   |
 | OP-F04 | Download file                | Link                  | `GET /api/files/:id/download`                 | Stream FS, check ownership             | **P1**   |
@@ -105,7 +106,7 @@ sequenceDiagram
   U->>FE: Upload file
   FE->>API: POST .../files multipart
   API->>FS: write file
-  API->>DB: INSERT uploaded_files
+  API->>DB: INSERT idt_file
   U->>FE: Send message
   FE->>API: POST .../messages
   API->>DB: INSERT message user

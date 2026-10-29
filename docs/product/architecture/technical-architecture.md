@@ -2,7 +2,7 @@
 
 **Documento:** `technical-architecture.md`  
 **Versione:** 1.1  
-**Stack:** **Accepted** — **Frontend** Vite/React/TS ([template](https://github.com/luismalamoc/react-typescript-template)) · **Backend** Node API + **Prisma** + **MySQL** · **Auth** cookie + tabella `sessions` (ADR-001)  
+**Stack:** **Accepted** — **Frontend** Vite/React/TS ([template](https://github.com/luismalamoc/react-typescript-template)) · **Backend** Node API + **Prisma** + **PostgreSQL (Supabase)** · **Auth** cookie + tabella `idt_sess` (ADR-001)  
 **LLM:** Anthropic **Claude Sonnet** (OQ-002) — integrazione **fase tardiva**
 
 ---
@@ -87,7 +87,7 @@ Schema DB: `database-design.md`.
 2. `POST /api/conversations` → riga in MySQL.
 3. `POST .../messages` → INSERT messaggio `role=user`.
 4. BE risponde con messaggio stub assistant (opzionale) — **nessuna** chiamata Anthropic.
-5. Upload → file su disco + `uploaded_files`.
+5. Upload → file su disco + `idt_file`.
 
 ---
 
@@ -95,7 +95,7 @@ Schema DB: `database-design.md`.
 
 1. Stesso thread persistito.
 2. Orchestrator: `ANALYZE` → `GENERATE` (2 chiamate Sonnet consigliate).
-3. INSERT messaggio assistant + `prompt_artifacts.body_markdown`.
+3. INSERT messaggio assistant + `idt_prmt.body_markdown`.
 4. FE mostra interpretazione + editor prompt; **output = testo** (OQ-008).
 
 ---

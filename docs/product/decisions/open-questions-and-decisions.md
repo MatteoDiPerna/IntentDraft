@@ -14,7 +14,7 @@ Legenda **stato:** `Open` | `Proposed` | `Accepted` | `Deferred`
 | ------ | ---------------------------------------------------------------------------------------------- |
 | OQ-001 | **Vite React TS** (template) + **API Node** + **Prisma/MySQL** (vedi ADR-001)                  |
 | OQ-013 | Template [react-typescript-template](https://github.com/luismalamoc/react-typescript-template) |
-| OQ-014 | Cookie httpOnly + tabella **`sessions`**                                                       |
+| OQ-014 | Cookie httpOnly + tabella **`idt_sess`**                                                       |
 | OQ-015 | **Prisma**                                                                                     |
 | OQ-002 | **Anthropic Claude Sonnet** — integrazione API **fase tardiva**                                |
 | OQ-003 | **C** — Persistenza server + DB (con account)                                                  |
@@ -139,7 +139,7 @@ Legenda **stato:** `Open` | `Proposed` | `Accepted` | `Deferred`
 | Campo         | Valore                                                                     |
 | ------------- | -------------------------------------------------------------------------- |
 | **Stato**     | `Accepted`                                                                 |
-| **Decisione** | Cookie **httpOnly** + tabella MySQL **`sessions`** (revoca e multi-device) |
+| **Decisione** | Cookie **httpOnly** + tabella **`idt_sess`** (revoca e multi-device) |
 | **Doc**       | `database-design.md` §6 · ADR-001                                          |
 
 ### OQ-015 — ORM

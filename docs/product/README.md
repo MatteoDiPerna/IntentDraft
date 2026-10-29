@@ -69,4 +69,4 @@ Indice della specifica beta. Concept sorgente: [`../concept/initial-brainstormin
 
 ---
 
-**Prossimo passo:** backend **FOUND-011** — vedi [`planning/backend-implementation-plan.md`](planning/backend-implementation-plan.md) (fasi B0→B10) e [`planning/beta-roadmap.md`](planning/beta-roadmap.md).
+**Prossimo passo:** [`../../worklog.md`](../../worklog.md) (sequenza operativa) · dettaglio [`planning/backend-implementation-plan.md`](planning/backend-implementation-plan.md) · [`planning/beta-roadmap.md`](planning/beta-roadmap.md).

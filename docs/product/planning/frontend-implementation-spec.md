@@ -121,8 +121,8 @@ UI (pages/components)
 | Lista chat | `conversationStore.byUser` | GET `/api/conversations` + invalidazione |
 | Messaggi thread | Array in conversation | GET `/api/conversations/:id` |
 | File allegati | Blob store locale | Metadati API + download URL |
-| Prompt testo | Campo `promptText` in store | `prompt_artifacts.body_markdown` via API |
-| Pin / cartella progetto | Flag locali | `conversations.metadata` JSON (contratto §8.4) |
+| Prompt testo | Campo `promptText` in store | `idt_prmt.body_markdown` via API |
+| Pin / cartella progetto | Flag locali | `idt_conv.metadata` JSON (contratto §8.4) |
 
 ### 3.4 Sicurezza client
 
@@ -266,7 +266,7 @@ Backend deve consentire origin `http://localhost:5173` con `credentials: true` (
 
 ## 6. Tipi e mapping database
 
-### 6.1 User (allineato a `users`)
+### 6.1 User (allineato a tabella `idt_user`)
 
 ```typescript
 export type Locale = 'it' | 'en';
@@ -317,7 +317,7 @@ export interface ConversationDetail extends ConversationSummary {
 }
 ```
 
-**Mappatura pin/progetto:** finché non esiste tabella progetti, inviare `PATCH /api/conversations/:id` con body `{ metadata: { pinned, inProject } }`. Il backend salva JSON in colonna `metadata` (**da aggiungere in migrazione** — documentare dipendenza FOUND-012b).
+**Mappatura pin/progetto:** finché non esiste tabella progetti, inviare `PATCH /api/conversations/:id` con body `{ metadata: { pinned, inProject } }`. Il backend salva JSON in colonna `idt_conv.metadata` (schema v1 — `database-design.md` §2.1).
 
 ### 6.3 Messaggi
 
@@ -735,7 +735,7 @@ Quando inizierà FOUND-011+, il backend **deve** fornire:
 | -------- | -------- |
 | P0 | Endpoints §8.1, §8.3, §8.4 (stub assistant), §8.6 |
 | P0 | Cookie sessione + CORS credentials |
-| P0 | Colonna `conversations.metadata` JSON **o** equivalente per pin/progetto |
+| P0 | Colonna `idt_conv.metadata` JSON per pin/progetto |
 | P1 | §8.2 PATCH user locale/displayName |
 | P1 | §8.5 prompt artifacts |
 | P1 | Google OAuth §8.1 |
