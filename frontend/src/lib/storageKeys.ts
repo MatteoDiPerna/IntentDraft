@@ -15,7 +15,7 @@ const LEGACY = {
   ui: 'promptpilot_ui_v1',
 } as const;
 
-/** Migrazione one-shot da nome di lavoro PromptPilot (solo browser). */
+/** Migrazione one-shot da chiavi legacy promptpilot_* (solo browser). */
 export function migrateLegacyStorage(): void {
   if (!localStorage.getItem(STORAGE.locale)) {
     const legacyLocale = localStorage.getItem(LEGACY.locale);

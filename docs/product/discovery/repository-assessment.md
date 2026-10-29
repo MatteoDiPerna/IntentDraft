@@ -1,4 +1,4 @@
-# Valutazione della repository — PromptPilot
+# Valutazione della repository — IntentDraft
 
 **Documento:** `repository-assessment.md`  
 **Versione:** 1.1  
@@ -9,7 +9,7 @@
 
 ## 1. Executive summary
 
-**Fatto osservato:** la repository `PromptPilot` è un progetto **greenfield**: esiste controllo versione Git, un README minimale e documentazione di concept in `docs/`. **Non** sono presenti codice applicativo, dipendenze, pipeline CI, test, configurazione di build o infrastruttura di deployment.
+**Fatto osservato:** la repository `intentdraft` è un monorepo **IntentDraft** (frontend + backend + docs): esiste controllo versione Git, un README minimale e documentazione di concept in `docs/`. **Non** sono presenti codice applicativo, dipendenze, pipeline CI, test, configurazione di build o infrastruttura di deployment.
 
 **Raccomandazione:** la fase di implementazione partirà da **setup fondamentale** (stack, struttura repo, integrazione LLM lato server). La progettazione deve proporre un’architettura minima per la beta senza presupporre componenti già implementati.
 
@@ -84,7 +84,7 @@ Il concept funzionale è descritto in:
 | Rischio                           | Gravità           | Note                                                                |
 | --------------------------------- | ----------------- | ------------------------------------------------------------------- |
 | Assenza di codice e contratti API | Alta per timeline | Normale in greenfield; mitigare con architettura e roadmap atomiche |
-| Nome prodotto non definitivo      | Bassa             | README: PromptPilot; brainstorming: AI Prompt Assistant             |
+| Nome prodotto                      | —                 | **IntentDraft** (repo `intentdraft`)                                |
 | README con errori grammaticali    | Bassa             | Non blocca beta; migliorare in fase polish                          |
 | Nessuna CI                        | Media             | Introduzione consigliata con primo PR significativo                 |
 | Decisioni prodotto ancora aperte  | Media             | Registrate in `../decisions/open-questions-and-decisions.md`        |

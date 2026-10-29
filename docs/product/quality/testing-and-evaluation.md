@@ -1,4 +1,4 @@
-# Test e valutazione qualità — PromptPilot (beta)
+# Test e valutazione qualità — IntentDraft (beta)
 
 **Documento:** `testing-and-evaluation.md`  
 **Versione:** 1.0  
@@ -126,9 +126,9 @@ Valutazione **umana primaria**; LLM-as-judge solo supporto opzionale e mai unico
 Per ogni caso EV-*:
 
 1. **Baseline A:** testo utente originale → stesso LLM downstream (manuale o script).  
-2. **Trattamento:** prompt PromptPilot → stesso LLM, stessi parametri.  
+2. **Trattamento:** prompt IntentDraft → stesso LLM, stessi parametri.  
 3. Confronto cieco (ordine random) da 2 revisori su rubric.  
-4. **Successo ipotesi:** PromptPilot vince o pareggia in ≥70% casi su Completezza + Aderenza.
+4. **Successo ipotesi:** IntentDraft vince o pareggia in ≥70% casi su Completezza + Aderenza.
 
 ---
 

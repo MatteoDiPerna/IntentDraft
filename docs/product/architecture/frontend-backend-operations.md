@@ -1,4 +1,4 @@
-# Operazioni frontend ↔ backend — PromptPilot
+# Operazioni frontend ↔ backend — IntentDraft
 
 **Documento:** `frontend-backend-operations.md`  
 **Versione:** 1.0  

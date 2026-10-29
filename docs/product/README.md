@@ -1,4 +1,4 @@
-# Documentazione prodotto — PromptPilot
+# Documentazione prodotto — IntentDraft
 
 Indice della specifica beta. Concept sorgente: [`../concept/initial-brainstorming.md`](../concept/initial-brainstorming.md).
 
@@ -8,7 +8,7 @@ Indice della specifica beta. Concept sorgente: [`../concept/initial-brainstormin
 - [X] Decisioni founder (`decisions/open-questions-and-decisions.md` v1.2)
 - [X] Requisiti approvati (`requirements/product-requirements.md` v1.1)
 - [X] Frontend fase 1 (`frontend/` + `planning/frontend-roadmap.md`) — **verifica umana**
-- [ ] Backend **FOUND-011+** (Node API + Prisma/MySQL)
+- [ ] Backend **FOUND-011+** (Node API + Prisma/MySQL) — piano: [`planning/backend-implementation-plan.md`](planning/backend-implementation-plan.md)
 - [X] Template UI + ADR stack (`decisions/adr-001-stack-and-auth.md`)
 
 ---
@@ -53,6 +53,7 @@ Indice della specifica beta. Concept sorgente: [`../concept/initial-brainstormin
 | -------------------------- | -------------------------------------------------------------- |
 | Roadmap beta (FOUND, BETA) | [`planning/beta-roadmap.md`](planning/beta-roadmap.md)         |
 | Roadmap solo frontend      | [`planning/frontend-roadmap.md`](planning/frontend-roadmap.md) |
+| Piano implementazione backend | [`planning/backend-implementation-plan.md`](planning/backend-implementation-plan.md) |
 
 ## Quality
 
@@ -68,4 +69,4 @@ Indice della specifica beta. Concept sorgente: [`../concept/initial-brainstormin
 
 ---
 
-**Prossimo passo:** backend **FOUND-011** — vedi [`planning/beta-roadmap.md`](planning/beta-roadmap.md).
+**Prossimo passo:** backend **FOUND-011** — vedi [`planning/backend-implementation-plan.md`](planning/backend-implementation-plan.md) (fasi B0→B10) e [`planning/beta-roadmap.md`](planning/beta-roadmap.md).

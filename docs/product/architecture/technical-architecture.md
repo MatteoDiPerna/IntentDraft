@@ -1,4 +1,4 @@
-# Architettura tecnica — PromptPilot (beta)
+# Architettura tecnica — IntentDraft (beta)
 
 **Documento:** `technical-architecture.md`  
 **Versione:** 1.1  
@@ -156,7 +156,7 @@ ANTHROPIC_API_KEY=   # solo quando si attiva fase AI
 ## 12. Struttura repository proposta
 
 ```
-PromptPilot/
+intentdraft/
   docs/
   scripts/
   prisma/ or drizzle/     # migrazioni MySQL

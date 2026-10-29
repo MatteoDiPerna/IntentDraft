@@ -1,4 +1,4 @@
-# Roadmap verso la prima beta — PromptPilot
+# Roadmap verso la prima beta — IntentDraft
 
 **Documento:** `beta-roadmap.md`  
 **Versione:** 1.1  
@@ -194,7 +194,7 @@ flowchart LR
 - [ ] BETA-082 — Implementare T-ERR, T-SEC — **P0**
 - [ ] BETA-083 — Creare `tests/fixtures/eval/` EV-01..15 — **P1**
 - [ ] BETA-084 — Sessione rubric con 2 revisori — **P1**
-- [ ] BETA-085 — Confronto baseline vs PromptPilot — **P1**
+- [ ] BETA-085 — Confronto baseline vs IntentDraft — **P1**
 - [ ] BETA-086 — Feedback utile/non utile (FR-017) — **P2**
 
 **DoD:** Gate G1–G3 (`testing-and-evaluation.md`).

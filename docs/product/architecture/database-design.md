@@ -1,4 +1,4 @@
-# Progettazione database — PromptPilot
+# Progettazione database — IntentDraft
 
 **Documento:** `database-design.md`  
 **Versione:** 1.0  

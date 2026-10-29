@@ -56,7 +56,7 @@
 
 Task implementazione: **FOUND-040** fork/adapt in `frontend/`; sostituire demo “tasks” con auth + shell chat; **FOUND-041** wiring API backend (CORS + credentials).
 
-**Nota:** il template cita Firebase in README — **non** usare Firebase; auth solo via backend PromptPilot.
+**Nota:** il template cita Firebase in README — **non** usare Firebase; auth solo via backend IntentDraft.
 
 ---
 

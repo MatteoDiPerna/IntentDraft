@@ -1,4 +1,4 @@
-# Roadmap frontend — PromptPilot (fase 1)
+# Roadmap frontend — IntentDraft (fase 1)
 
 **Documento:** `frontend-roadmap.md`  
 **Versione:** 1.2  
@@ -29,7 +29,7 @@ Applicazione Vite/React navigabile in locale con:
 ## FE-0 — Scaffold e template
 
 - [X] FE-001 — Cartella `frontend/` da template (Vite, TS, Tailwind, Radix base) — **P0**
-- [X] FE-002 — `package.json` PromptPilot, script dev/build, path alias `@/` — **P0**
+- [X] FE-002 — `package.json` IntentDraft, script dev/build, path alias `@/` — **P0**
 - [X] FE-003 — Theme light/dark (next-themes) — **P1**
 - [X] FE-004 — README `frontend/README.md` avvio locale — **P1**
 

@@ -1,4 +1,4 @@
-# Requisiti di prodotto — PromptPilot (beta)
+# Requisiti di prodotto — IntentDraft (beta)
 
 **Documento:** `product-requirements.md`  
 **Versione:** 1.1  
@@ -9,7 +9,7 @@
 
 ## 1. Executive summary
 
-PromptPilot è un assistente conversazionale per utenti **non esperti** di prompt engineering. L’utente descrive in linguaggio naturale cosa vuole ottenere; il sistema interpreta l’intento, chiede chiarimenti mirati quando servono, e produce un **prompt strutturato** da usare in un LLM esterno (copia/incolla).
+IntentDraft è un assistente conversazionale per utenti **non esperti** di prompt engineering. L’utente descrive in linguaggio naturale cosa vuole ottenere; il sistema interpreta l’intento, chiede chiarimenti mirati quando servono, e produce un **prompt strutturato** da usare in un LLM esterno (copia/incolla).
 
 **Obiettivo beta:** produrre un **prompt testuale** di qualità (copiabile in un LLM esterno), con flusso conversazionale, **account**, **persistenza su MySQL** e **upload file**. Pagamenti ed hosting cloud **non** fanno parte di questa fase; integrazione **Anthropic Claude Sonnet** in **fase implementativa successiva** alle fondamenta FE/BE.
 
@@ -82,7 +82,7 @@ Attenta a tono e destinatario. Ha bisogno che il sistema chieda **pubblico** e *
 
 ## 7. Proposta di valore
 
-> Tu spieghi cosa vuoi ottenere. PromptPilot trasforma la tua idea in istruzioni chiare per il tuo LLM — chiedendo solo ciò che conta.
+> Tu spieghi cosa vuoi ottenere. IntentDraft trasforma la tua idea in istruzioni chiare per il tuo LLM — chiedendo solo ciò che conta.
 
 Non: “prompt più lunghi”. Sì: intento, vincoli, formato, verificabilità, assunzioni esplicite.
 
@@ -257,7 +257,7 @@ Vedi [`../decisions/open-questions-and-decisions.md`](../decisions/open-question
 | Costo USD/sessione                                  | Tecnico  | Sostenibilità     |
 | Score rubric (aderenza, completezza, no invenzioni) | Qualità  | Go/No-Go          |
 
-Baseline di confronto: richiesta utente incollata direttamente nello stesso LLM **vs** prompt PromptPilot (stesso modello downstream) — metodo in `testing-and-evaluation.md`.
+Baseline di confronto: richiesta utente incollata direttamente nello stesso LLM **vs** prompt IntentDraft (stesso modello downstream) — metodo in `testing-and-evaluation.md`.
 
 ---
 

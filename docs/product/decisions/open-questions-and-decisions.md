@@ -1,4 +1,4 @@
-# Decisioni aperte e registro decisioni — PromptPilot
+# Decisioni aperte e registro decisioni — IntentDraft
 
 **Documento:** `open-questions-and-decisions.md`  
 **Versione:** 1.2  
@@ -20,7 +20,7 @@ Legenda **stato:** `Open` | `Proposed` | `Accepted` | `Deferred`
 | OQ-003 | **C** — Persistenza server + DB (con account)                                                  |
 | OQ-004 | **A** — Prodotto generalista                                                                   |
 | OQ-005 | **A** — Solo uso locale / team (localhost), no hosting ora                                     |
-| OQ-006 | Nome **PromptPilot**                                                                           |
+| OQ-006 | Nome **IntentDraft** (slug repo `intentdraft`)                                                 |
 | OQ-007 | Pagamenti **versione ufficiale v1**, non ora                                                   |
 | OQ-008 | **Solo testo prompt** — no esecuzione task nel prodotto                                        |
 | OQ-009 | **Upload file — Must** in beta                                                                 |
@@ -78,7 +78,7 @@ Legenda **stato:** `Open` | `Proposed` | `Accepted` | `Deferred`
 | Campo         | Valore          |
 | ------------- | --------------- |
 | **Stato**     | `Accepted`      |
-| **Decisione** | **PromptPilot** |
+| **Decisione** | **IntentDraft** (repository e cartella locale: `intentdraft`) |
 
 ### OQ-007 — Pagamenti
 

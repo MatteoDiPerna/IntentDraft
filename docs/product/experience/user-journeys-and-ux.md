@@ -1,4 +1,4 @@
-# User journey e UX — PromptPilot (beta)
+# User journey e UX — IntentDraft (beta)
 
 **Documento:** `user-journeys-and-ux.md`  
 **Versione:** 1.0  
@@ -24,7 +24,7 @@ flowchart LR
   H -->|Nuova richiesta| B
 ```
 
-1. L’utente apre PromptPilot e legge una breve spiegazione (“Descrivi cosa vuoi ottenere; ti aiutiamo a preparare istruzioni per il tuo AI”).
+1. L’utente apre IntentDraft e legge una breve spiegazione (“Descrivi cosa vuoi ottenere; ti aiutiamo a preparare istruzioni per il tuo AI”).
 2. Inserisce testo nel campo principale e invia.
 3. Durante l’analisi: indicatore “Sto analizzando la tua richiesta…”.
 4. Se servono chiarimenti: messaggio assistant con **1–3 domande max per turno**, linguaggio semplice.
@@ -57,7 +57,7 @@ flowchart LR
 
 ### 3.1 Desktop
 
-- **Header:** logo/nome PromptPilot, link “Limiti e privacy”, “Nuova conversazione”.
+- **Header:** logo/nome IntentDraft, link “Limiti e privacy”, “Nuova conversazione”.
 - **Colonna principale (70%):** thread conversazione (bubble user / assistant).
 - **Pannello laterale o sezione sotto (30%):** “Cosa ho capito” sticky quando disponibile.
 - **Zona prompt (full width sotto thread):** editor monospace o sans leggibile, min-height 200px.

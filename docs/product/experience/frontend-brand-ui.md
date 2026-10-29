@@ -1,4 +1,4 @@
-# Sistema UI brand — frontend PromptPilot
+# Sistema UI brand — frontend IntentDraft
 
 **Documento:** `frontend-brand-ui.md`  
 **Versione:** 1.0  

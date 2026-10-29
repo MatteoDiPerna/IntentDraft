@@ -4,7 +4,7 @@
 **Versione:** 1.3  
 **Data:** 2026-10-29  
 **Ultimo aggiornamento checklist:** 2026-10-29 — implementazione agente completata (gate §17 parziale); **test manuali founder → §18**  
-**Nome prodotto (canonico):** **IntentDraft** — sostituisce il nome di lavoro *PromptPilot* (OQ-006 da aggiornare in `open-questions-and-decisions.md` quando il founder approva).
+**Nome prodotto (canonico):** **IntentDraft** — slug repo/cartella `intentdraft` (OQ-006 aggiornato in `open-questions-and-decisions.md`).
 **Audience:** agente AI / sviluppatore che completa il frontend **prima** e **durante** l’integrazione backend  
 **Fonti:** tutta la cartella `docs/` (requirements, architecture, UX, ADR-001, roadmap FE, assessment repo) + codice attuale in `frontend/`
 
@@ -37,7 +37,7 @@ Completare la **struttura frontend** dell’app web **IntentDraft** in modo che:
 | **Tagline (EN)** | From your intent to a draft your AI can follow. |
 | **Slug tecnico** | `intentdraft` (package npm, chiavi storage, email demo) |
 
-**Rebrand obbligatorio in fase agente (§17 Fase 0):** testi UI (i18n), `index.html`, README frontend, `package.json`, riferimenti visibili in Limiti/privacy, copy auth. **Non** rinominare la cartella repo `PromptPilot/` salvo richiesta founder. Chiavi `localStorage` / Zustand: migrare a prefisso `intentdraft_*` con lettura one-shot delle chiavi legacy `promptpilot_*` per non perdere sessioni demo.
+**Rebrand (§17 Fase 0 — completato):** testi UI (i18n), `index.html`, README, `package.json`, cartella repo `intentdraft/`, remote GitHub `intentdraft`. Chiavi `localStorage` / Zustand: prefisso `intentdraft_*` con lettura one-shot delle chiavi legacy `promptpilot_*` per non perdere sessioni demo.
 
 ### 1.4 Estensione richiesta dal founder (non ancora in FR ufficiali)
 
