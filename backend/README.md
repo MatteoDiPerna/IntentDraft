@@ -47,6 +47,17 @@ ANTHROPIC_MODEL=claude-sonnet-4-20250514
 
 Flusso: **ANALYZE** (IntentModel JSON) → domande o **GENERATE** (PromptArtifact) → persistenza `idt_prmt` versionata. Log: solo token/model, mai contenuto messaggi (NFR-005).
 
+### Rate limit (B10, NFR-003)
+
+Scope separati: **`/api/auth/*`** (default 30 req / 15 min per IP) e **`POST /api/conversations/:id/messages`** (40 req / min). Disabilitato in `NODE_ENV=test`. Env: `RATE_LIMIT_*` in `.env.example`.
+
+### CI
+
+```bash
+npm run ci              # lint + build + test:unit
+npm run test:integration  # richiede DATABASE_URL
+```
+
 ### Schema: `db:push` vs migrazioni
 
 | Scenario | Comando |

@@ -4,6 +4,7 @@
   "description": "IntentDraft monorepo — frontend + backend",
   "scripts": {
     "dev:all": "concurrently -n fe,be -c blue,green \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "ci": "npm run ci --prefix backend && npm run build --prefix frontend && npm run test --prefix frontend",
     "pm2:start": "pm2 start ecosystem.config.cjs",
     "restart": "pm2 restart intentdraft --update-env",
     "pm2:restart": "pm2 restart intentdraft --update-env",

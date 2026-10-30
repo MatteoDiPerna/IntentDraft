@@ -13,6 +13,12 @@ export function errorHandler(error: FastifyError, _request: FastifyRequest, repl
     );
   }
 
+  if (error.statusCode === 429 || error.code === 'FST_ERR_RATE_LIMIT') {
+    return reply.status(429).send(
+      errorPayload(new AppError(429, 'RATE_LIMITED', 'Too many requests. Please try again later.')),
+    );
+  }
+
   if (error.code === 'FST_REQ_FILE_TOO_LARGE') {
     return reply
       .status(400)

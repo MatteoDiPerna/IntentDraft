@@ -23,6 +23,14 @@ const envSchema = z.object({
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-20250514'),
   LLM_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
   LLM_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(4096),
+  RATE_LIMIT_ENABLED: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
+  RATE_LIMIT_AUTH_MAX: z.coerce.number().int().positive().default(30),
+  RATE_LIMIT_AUTH_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
+  RATE_LIMIT_MESSAGES_MAX: z.coerce.number().int().positive().default(40),
+  RATE_LIMIT_MESSAGES_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -42,5 +50,8 @@ export function loadEnv(): Env {
     throw new Error(`Invalid environment:\n${msg}`);
   }
   cached = parsed.data;
+  if (cached.NODE_ENV === 'test') {
+    cached = { ...cached, RATE_LIMIT_ENABLED: false, LLM_ENABLED: false };
+  }
   return cached;
 }

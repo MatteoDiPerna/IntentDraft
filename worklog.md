@@ -20,11 +20,12 @@
 | **Backend B7** | Motore mock server (`mockEngine`), orchestrator, M4 UX API; Playwright `smoke-api.spec.ts` |
 | **Backend B8** | Google OAuth routes + redirect errori; richiede credenziali Google in `.env` |
 | **Backend B9** | Anthropic client, orchestrator LLM ANALYZE/GENERATE, fallback mock, test T-CONV/T-PROMPT |
+| **Backend B10** | Rate limit auth/messaggi, CI GitHub Actions, test unit/integration, runbook segreti |
 | **Dev admin** | `DEV_ADMIN_*` + seed all’avvio (solo development) |
 | **Schema DB** | Definito in doc + `backend/prisma/schema.prisma` — tabelle fisiche **`idt_*`** (8 caratteri). Vedi [`docs/product/architecture/database-design.md`](docs/product/architecture/database-design.md) §2.1 |
 | **Commit recente** | Frontend checklist + test; backend scaffold (verificare `git log`) |
 
-**Non ancora implementato sul backend:** hardening CI (B10).
+**Non ancora implementato sul backend:** deploy cloud (Blocco 11 / INF — rinviato).
 
 ---
 
@@ -148,10 +149,10 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ### Blocco 10 — Hardening & CI (B10)
 
-43. [ ] Rate limit su auth e messaggi (NFR-003).
-44. [ ] Suite integration backend con DB test.
-45. [ ] CI: lint + test + build `frontend/` e `backend/` su PR.
-46. [ ] Runbook rotazione segreti.
+43. [x] Rate limit su auth e messaggi (NFR-003).
+44. [x] Suite integration backend con DB test (`test:integration`, Postgres in CI).
+45. [x] CI: lint + test + build `frontend/` e `backend/` su PR (`.github/workflows/ci.yml`).
+46. [x] Runbook rotazione segreti (`docs/ops/secrets-rotation-runbook.md`).
 
 ---
 
@@ -202,7 +203,7 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ## Dove riprendere **adesso**
 
-**Prossima azione consigliata:** **Blocco 10 — Hardening & CI (B10)** oppure test manuali B9 (§ sotto). Per LLM reale: `LLM_ENABLED=true` + `ANTHROPIC_API_KEY` in `backend/.env`.
+**Prossima azione consigliata:** test manuali B9–B10 (§ sotto), oppure **Blocco 11 (INF deploy)** quando pronto. LLM Claude: più tardi (`LLM_ENABLED=true` + chiave).
 
 Dopo ogni blocco: `npm run build` in `backend/`, commit atomico, aggiornare le checkbox in questo file.
 
@@ -309,6 +310,20 @@ Prerequisiti: stack API mode; utente loggato.
 - **B7-M04 — Rigenera / Salta:** Rigenera cambia il markdown; Salta in chiarimenti produce prompt con assunzione aggiuntiva.
 
 - **B7-M05 — E2E opzionale:** Con backend attivo e FE `VITE_USE_MOCK=false`, `npx playwright test smoke-api.spec.ts --project=smoke-api`.
+
+---
+
+## Test manuali — Blocco 10 (Hardening & CI, B10)
+
+- **B10-M01 — Rate limit auth:** Da stesso IP, >30 login/register in 15 min → `429` / `RATE_LIMITED` (JSON coerente con API).
+
+- **B10-M02 — Rate limit messaggi:** Burst oltre soglia configurata su `POST .../messages` → `429`.
+
+- **B10-M03 — CI locale:** `cd backend && npm run ci`; root `npm run ci` (backend + build/test frontend).
+
+- **B10-M04 — GitHub Actions:** Push/PR su `main` → workflow **CI** verde (unit + integration con Postgres service).
+
+- **B10-M05 — Runbook:** Leggere [`docs/ops/secrets-rotation-runbook.md`](docs/ops/secrets-rotation-runbook.md) e verificare che i secret non siano in git.
 
 ---
 

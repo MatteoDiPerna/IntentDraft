@@ -304,10 +304,15 @@ Prima di `pm2 start`, non tenere `npm run dev` aperto sulle stesse porte (**3001
 
 | Suite | Comando | Cosa copre |
 | ----- | ------- | ----------- |
-| Backend unit | `cd backend && npm run test` | env, password hashing |
-| Backend integration | stesso comando (con `DATABASE_URL`) | auth, conversations, messages, files |
-| Frontend unit | `cd frontend && npm run test` | client API |
+| Backend unit | `cd backend && npm run test:unit` | mock engine, LLM decide, env |
+| Backend integration | `cd backend && npm run test:integration` | auth, CRUD, file, rate limit (serve `DATABASE_URL`) |
+| Backend CI locale | `cd backend && npm run ci` | lint + build + unit |
+| Monorepo CI | `npm run ci` (root) | backend CI + frontend build/test |
 | Frontend E2E | `cd frontend && npx playwright install chromium && npm run test:e2e` | smoke navigazione, responsive |
+
+**GitHub Actions:** [`.github/workflows/ci.yml`](.github/workflows/ci.yml) — su ogni PR/push su `main`: lint/build/test unit; job **integration** con PostgreSQL 16 + `prisma migrate deploy`.
+
+**Operazioni:** rotazione segreti → [`docs/ops/secrets-rotation-runbook.md`](docs/ops/secrets-rotation-runbook.md).
 
 Rubric qualità prompt e casi T-* (futuro LLM): [`docs/product/quality/testing-and-evaluation.md`](docs/product/quality/testing-and-evaluation.md).
 

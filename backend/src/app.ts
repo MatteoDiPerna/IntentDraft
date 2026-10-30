@@ -12,6 +12,7 @@ import { fileRoutes } from './modules/files/routes.js';
 import { promptRoutes } from './modules/prompts/routes.js';
 import { userRoutes } from './modules/users/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
+import { registerScopeRateLimit } from './plugins/rateLimitScopes.js';
 import { AppError, errorPayload } from './lib/errors.js';
 
 export async function buildServer(options?: { env?: ReturnType<typeof loadEnv> }) {
@@ -44,10 +45,19 @@ export async function buildServer(options?: { env?: ReturnType<typeof loadEnv> }
   });
 
   await app.register(healthRoutes);
-  await app.register(authRoutes, { env });
-  await app.register(googleAuthRoutes, { env });
+
+  await app.register(async (authScope) => {
+    await registerScopeRateLimit(authScope, env, 'auth');
+    await authScope.register(authRoutes, { env });
+    await authScope.register(googleAuthRoutes, { env });
+  });
+
   await app.register(conversationRoutes, { env });
-  await app.register(messageRoutes, { env });
+
+  await app.register(async (messageScope) => {
+    await registerScopeRateLimit(messageScope, env, 'messages');
+    await messageScope.register(messageRoutes, { env });
+  });
   await app.register(fileRoutes, { env });
   await app.register(userRoutes, { env });
   await app.register(promptRoutes, { env });
