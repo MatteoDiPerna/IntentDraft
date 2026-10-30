@@ -2,6 +2,7 @@ import { API } from '@/api/endpoints';
 import { request } from '@/api/client';
 import type { PromptPort } from '@/adapters/types';
 import type { PromptArtifact } from '@/types/prompt';
+import { useConversationStore } from '@/store/conversationStore';
 
 export const apiPromptAdapter: PromptPort = {
   async getLatest(_userId, conversationId) {
@@ -11,15 +12,17 @@ export const apiPromptAdapter: PromptPort = {
       return null;
     }
   },
-  async saveBody(_userId, _conversationId, bodyMarkdown) {
-    // Requires prompt id from latest — simplified until BE wired in UI
-    void bodyMarkdown;
+  async saveBody(userId, conversationId, bodyMarkdown) {
+    useConversationStore.getState().updatePromptText(userId, conversationId, bodyMarkdown);
+    const latest = await apiPromptAdapter.getLatest(userId, conversationId);
+    if (!latest?.id) return;
+    await request<PromptArtifact>('PUT', API.prompts.one(latest.id), {
+      body: { bodyMarkdown },
+    });
   },
-  async submitFeedback(_userId, _conversationId, useful) {
-    try {
-      await request('POST', API.prompts.feedback('latest'), { body: { useful } });
-    } catch {
-      /* optional endpoint */
-    }
+  async submitFeedback(userId, conversationId, useful) {
+    const latest = await apiPromptAdapter.getLatest(userId, conversationId);
+    if (!latest?.id) return;
+    await request('POST', API.prompts.feedback(latest.id), { body: { useful } });
   },
 };

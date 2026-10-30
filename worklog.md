@@ -16,10 +16,11 @@
 | **Backend B3** | CRUD conversazioni BE-C01…C05, test integrazione; FE hydrate + adapter API (IF-04) |
 | **Backend B4** | POST messaggi stub (BE-M01), titolo auto, test integrazione; FE sync thread + load detail (IF-05 parziale) |
 | **Backend B5** | Upload file BE-F01…F04, `@fastify/multipart`, FS `UPLOAD_DIR`; FE preview/download con cookie (M3) |
+| **Backend B6** | Profilo/password (BE-U01/U02), prompt API (BE-P01/P02/P05), stub regenerate/skip; FE Settings + debounce prompt |
 | **Schema DB** | Definito in doc + `backend/prisma/schema.prisma` — tabelle fisiche **`idt_*`** (8 caratteri). Vedi [`docs/product/architecture/database-design.md`](docs/product/architecture/database-design.md) §2.1 |
 | **Commit recente** | Frontend checklist + test; backend scaffold (verificare `git log`) |
 
-**Non ancora implementato sul backend:** orchestrator (B7), LLM (B9); settings/prompt API (B6).
+**Non ancora implementato sul backend:** orchestrator mock server (B7), LLM (B9).
 
 ---
 
@@ -104,10 +105,10 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ### Blocco 6 — Profilo, prompt API, settings (B6)
 
-26. [ ] `PATCH /api/users/me`, `POST /api/users/me/password`.
-27. [ ] `GET .../prompts/latest`, `PUT /api/prompts/:id`, feedback stub su `idt_prmt.feedback`.
-28. [ ] Endpoint `regenerate` / `skip-clarification` (stub o delega a B7).
-29. [ ] **Verifica FE:** pagina Settings in API mode.
+26. [x] `PATCH /api/users/me`, `POST /api/users/me/password`.
+27. [x] `GET .../prompts/latest`, `PUT /api/prompts/:id`, feedback stub su `idt_prmt.feedback`.
+28. [x] Endpoint `regenerate` / `skip-clarification` (regenerate → `501` fino a B7; skip → `204` no-op).
+29. [ ] **Verifica FE:** pagina Settings in API mode (test manuali § sotto).
 
 ---
 
@@ -197,7 +198,7 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ## Dove riprendere **adesso**
 
-**Prossima azione consigliata:** **Blocco 6 — Profilo, prompt API, settings (B6)** oppure test manuali a fine checklist. Milestone **M3** (auth + chat + file) coperta da B3–B5.
+**Prossima azione consigliata:** **Blocco 7 — Motore conversazione lato server (B7 / M4)** oppure test manuali a fine checklist.
 
 Dopo ogni blocco: `npm run build` in `backend/`, commit atomico, aggiornare le checkbox in questo file.
 
@@ -268,3 +269,23 @@ Prerequisiti come B3; chat con almeno un messaggio user (per allegati al messagg
 - **B5-M06 — Persistenza F5:** Dopo upload, F5 su `/app`: allegati ancora listati su chat/messaggio (`GET /api/conversations/:id` include `files`).
 
 - **B5-M07 — Test automatico:** `backend/tests/integration/files.test.ts` (T-FILE-01) verde; build FE/BE ok.
+
+---
+
+## Test manuali — Blocco 6 (Settings & prompt API, B6)
+
+Prerequisiti come B3; account locale con password (`hasPassword: true`).
+
+- **B6-M01 — Profilo:** In `/app/settings` cambia display name e salva. Network: `PATCH /api/users/me` → `200` `{ user }`. Nome aggiornato in header/UI; Supabase `idt_user.display_name` allineato.
+
+- **B6-M02 — Lingua:** Toggle IT/EN in preferenze. `PATCH` con `{ locale }`; i18n cambia subito; dopo F5 la lingua resta quella scelta (`idt_user.locale`).
+
+- **B6-M03 — Password:** Cambia password (corrente + nuova + conferma). `POST /api/users/me/password` → `204`. Logout e login con nuova password ok; vecchia rifiutata.
+
+- **B6-M04 — Account Google/mock:** Account senza password mostra messaggio «no password»; form cambio password nascosto (comportamento atteso).
+
+- **B6-M05 — Prompt API (se esiste `idt_prmt`):** Con prompt in DB per una chat, modifica testo risultato: dopo ~600 ms debounce, `PUT /api/prompts/:id`. Feedback utile/non utile → `POST .../feedback` → `204` e colonna `feedback` in `idt_prmt`.
+
+- **B6-M06 — Rigenera (atteso B7):** Pulsante Rigenera in API mode → `501 NOT_IMPLEMENTED` (toast errore) finché non completi B7.
+
+- **B6-M07 — Test automatici:** `users.test.ts` e `prompts.test.ts` verdi; build FE/BE ok.

@@ -96,6 +96,19 @@ export function ChatPage() {
       setPromptBaseline(conv.promptText);
     }
   }, [conv?.id, conv?.phase, conv?.promptText]);
+
+  const promptSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!user || appConfig.useMock || !conv?.id || !conv.promptText?.trim()) return;
+    if (promptSaveTimerRef.current) clearTimeout(promptSaveTimerRef.current);
+    promptSaveTimerRef.current = setTimeout(() => {
+      void ports.prompts.saveBody(user.id, conv.id, conv.promptText);
+    }, 600);
+    return () => {
+      if (promptSaveTimerRef.current) clearTimeout(promptSaveTimerRef.current);
+    };
+  }, [user, conv?.id, conv?.promptText, ports.prompts]);
+
   const busy = conv?.phase === 'analyzing' || conv?.phase === 'generating';
   const recoverableError = conv?.phase === 'error_recoverable';
   const isEmptyChat = !conv || conv.messages.length === 0;

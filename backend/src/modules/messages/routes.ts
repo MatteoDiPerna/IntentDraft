@@ -37,4 +37,26 @@ export async function messageRoutes(app: FastifyInstance, opts: { env: Env }) {
 
     return reply.status(201).send(result);
   });
+
+  app.post('/api/conversations/:id/regenerate', async (request) => {
+    const params = conversationIdParamSchema.safeParse(request.params);
+    if (!params.success) {
+      throw new AppError(400, 'VALIDATION_ERROR', 'Invalid conversation id');
+    }
+    throw new AppError(
+      501,
+      'NOT_IMPLEMENTED',
+      'Prompt regeneration requires the conversation engine (B7)',
+    );
+  });
+
+  app.post('/api/conversations/:id/skip-clarification', async (request, reply) => {
+    const params = conversationIdParamSchema.safeParse(request.params);
+    if (!params.success) {
+      throw new AppError(400, 'VALIDATION_ERROR', 'Invalid conversation id');
+    }
+    void request.user;
+    void params.data.id;
+    return reply.status(204).send();
+  });
 }

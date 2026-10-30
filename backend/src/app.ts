@@ -8,6 +8,8 @@ import { authRoutes } from './modules/auth/routes.js';
 import { conversationRoutes } from './modules/conversations/routes.js';
 import { messageRoutes } from './modules/messages/routes.js';
 import { fileRoutes } from './modules/files/routes.js';
+import { promptRoutes } from './modules/prompts/routes.js';
+import { userRoutes } from './modules/users/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
 import { AppError, errorPayload } from './lib/errors.js';
 
@@ -45,6 +47,8 @@ export async function buildServer(options?: { env?: ReturnType<typeof loadEnv> }
   await app.register(conversationRoutes, { env });
   await app.register(messageRoutes, { env });
   await app.register(fileRoutes, { env });
+  await app.register(userRoutes, { env });
+  await app.register(promptRoutes, { env });
 
   return { app, env };
 }
