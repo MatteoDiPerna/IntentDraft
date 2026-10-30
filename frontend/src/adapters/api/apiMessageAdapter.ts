@@ -1,7 +1,7 @@
 import { API } from '@/api/endpoints';
 import { request } from '@/api/client';
 import type { MessagePort } from '@/adapters/types';
-import type { SendMessageResponse } from '@/types/api';
+import type { SendMessageResponse, UploadedFileDto } from '@/types/api';
 import { loadConversationDetailFromApi } from '@/adapters/api/apiConversationAdapter';
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
@@ -20,6 +20,22 @@ function validateFiles(files: File[]): 'size' | 'type' | null {
   return null;
 }
 
+async function uploadFilesForConversation(
+  conversationId: string,
+  files: File[],
+): Promise<string[]> {
+  const ids: string[] = [];
+  for (const f of files) {
+    const form = new FormData();
+    form.append('file', f);
+    const res = await request<{ file: UploadedFileDto }>('POST', API.conversations.files(conversationId), {
+      formData: form,
+    });
+    ids.push(res.file.id);
+  }
+  return ids;
+}
+
 export const apiMessageAdapter: MessagePort = {
   async send(userId, conversationId, text, _locale, attachmentFiles = []) {
     const trimmed = text.trim();
@@ -27,12 +43,17 @@ export const apiMessageAdapter: MessagePort = {
 
     const fileErr = validateFiles(attachmentFiles);
     if (fileErr) return fileErr;
-    if (attachmentFiles.length > 0) {
-      return 'type';
-    }
+
+    const attachmentIds =
+      attachmentFiles.length > 0
+        ? await uploadFilesForConversation(conversationId, attachmentFiles)
+        : undefined;
 
     await request<SendMessageResponse>('POST', API.conversations.messages(conversationId), {
-      body: { content: trimmed },
+      body: {
+        content: trimmed,
+        ...(attachmentIds?.length ? { attachments: attachmentIds } : {}),
+      },
     });
     await loadConversationDetailFromApi(userId, conversationId);
     return null;

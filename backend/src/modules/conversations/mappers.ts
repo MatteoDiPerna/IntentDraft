@@ -62,6 +62,7 @@ export function toFileDto(file: UploadedFile): UploadedFileDto {
   return {
     id: file.id,
     conversationId: file.conversationId ?? '',
+    messageId: file.messageId,
     originalName: file.originalName,
     mimeType: file.mimeType,
     sizeBytes: Number(file.sizeBytes),

@@ -13,6 +13,12 @@ export function errorHandler(error: FastifyError, _request: FastifyRequest, repl
     );
   }
 
+  if (error.code === 'FST_REQ_FILE_TOO_LARGE') {
+    return reply
+      .status(400)
+      .send(errorPayload(new AppError(400, 'VALIDATION_ERROR', 'File too large')));
+  }
+
   logger.error('Unhandled error', { name: error.name, message: error.message });
   return reply.status(500).send(errorPayload(new AppError(500, 'INTERNAL_ERROR', 'Internal server error')));
 }

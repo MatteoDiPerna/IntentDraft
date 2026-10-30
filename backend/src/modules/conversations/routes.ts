@@ -88,7 +88,7 @@ export async function conversationRoutes(app: FastifyInstance, opts: { env: Env 
       throw new AppError(400, 'VALIDATION_ERROR', 'Invalid conversation id');
     }
 
-    await deleteConversation(request.user!.id, params.data.id);
+    await deleteConversation(request.user!.id, params.data.id, opts.env);
     return reply.status(204).send();
   });
 }

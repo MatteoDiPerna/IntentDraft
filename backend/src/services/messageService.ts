@@ -18,10 +18,6 @@ export async function sendStubMessage(
   locale: Locale,
   options?: { attachmentIds?: string[] },
 ): Promise<SendMessageResponseDto> {
-  if (options?.attachmentIds?.length) {
-    throw new AppError(501, 'NOT_IMPLEMENTED', 'File attachments require file upload (B5)');
-  }
-
   const conv = await prisma.conversation.findFirst({
     where: { id: conversationId, userId },
   });
@@ -30,6 +26,20 @@ export async function sendStubMessage(
   }
 
   const trimmed = content.trim();
+  const attachmentIds = options?.attachmentIds ?? [];
+  if (attachmentIds.length) {
+    const owned = await prisma.uploadedFile.findMany({
+      where: {
+        id: { in: attachmentIds },
+        userId,
+        conversationId,
+      },
+    });
+    if (owned.length !== attachmentIds.length) {
+      throw new AppError(400, 'VALIDATION_ERROR', 'Invalid attachment file ids');
+    }
+  }
+
   const titlePatch =
     !conv.title.trim() && trimmed.length > 0
       ? { title: trimmed.slice(0, AUTO_TITLE_MAX) }
@@ -43,6 +53,13 @@ export async function sendStubMessage(
         content: trimmed,
       },
     });
+
+    if (attachmentIds.length) {
+      await tx.uploadedFile.updateMany({
+        where: { id: { in: attachmentIds } },
+        data: { messageId: userMessage.id },
+      });
+    }
 
     const assistantMessage = await tx.message.create({
       data: {

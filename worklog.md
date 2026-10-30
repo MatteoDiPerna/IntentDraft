@@ -15,10 +15,11 @@
 | **Backend B2** | Auth register/login/logout/me, sessioni cookie, test integrazione |
 | **Backend B3** | CRUD conversazioni BE-C01…C05, test integrazione; FE hydrate + adapter API (IF-04) |
 | **Backend B4** | POST messaggi stub (BE-M01), titolo auto, test integrazione; FE sync thread + load detail (IF-05 parziale) |
+| **Backend B5** | Upload file BE-F01…F04, `@fastify/multipart`, FS `UPLOAD_DIR`; FE preview/download con cookie (M3) |
 | **Schema DB** | Definito in doc + `backend/prisma/schema.prisma` — tabelle fisiche **`idt_*`** (8 caratteri). Vedi [`docs/product/architecture/database-design.md`](docs/product/architecture/database-design.md) §2.1 |
 | **Commit recente** | Frontend checklist + test; backend scaffold (verificare `git log`) |
 
-**Non ancora implementato sul backend:** file (B5), orchestrator (B7), LLM (B9).
+**Non ancora implementato sul backend:** orchestrator (B7), LLM (B9); settings/prompt API (B6).
 
 ---
 
@@ -92,10 +93,10 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ### Blocco 5 — Upload file (B5, FR-023) → **Milestone M3**
 
-22. [ ] `@fastify/multipart` — `POST /api/conversations/:id/files`, salvataggio su `UPLOAD_DIR`, INSERT `idt_file`.
-23. [ ] Allowlist MIME + `MAX_UPLOAD_BYTES`; path sicuro (UUID, no traversal).
-24. [ ] `GET .../files`, `DELETE /api/files/:id`, `GET /api/files/:id/download` (stream).
-25. [ ] **Verifica FE:** upload, anteprima/download, delete; test T-FILE-01.
+22. [x] `@fastify/multipart` — `POST /api/conversations/:id/files`, salvataggio su `UPLOAD_DIR`, INSERT `idt_file`.
+23. [x] Allowlist MIME + `MAX_UPLOAD_BYTES`; path sicuro (UUID, no traversal).
+24. [x] `GET .../files`, `DELETE /api/files/:id`, `GET /api/files/:id/download` (stream).
+25. [ ] **Verifica FE:** upload, anteprima/download, delete; test T-FILE-01 (test manuali § sotto).
 
 **DoD demo persistenza:** M3 — auth + chat + file su Supabase senza mock.
 
@@ -196,7 +197,7 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ## Dove riprendere **adesso**
 
-**Prossima azione consigliata:** **Blocco 5 — Upload file (B5)** oppure test manuali a fine checklist. Milestone **M2** (chat persistita stub) coperta da B3+B4.
+**Prossima azione consigliata:** **Blocco 6 — Profilo, prompt API, settings (B6)** oppure test manuali a fine checklist. Milestone **M3** (auth + chat + file) coperta da B3–B5.
 
 Dopo ogni blocco: `npm run build` in `backend/`, commit atomico, aggiornare le checkbox in questo file.
 
@@ -247,3 +248,23 @@ Prerequisiti come B3; chat vuota selezionata in API mode.
 - **B4-M05 — UX limitata (atteso):** Dopo la risposta stub, `phase` è `idle` e il composer può non essere più visibile con messaggi presenti — comportamento accettabile fino a B7 (motore mock server). Rigenera/skip/chiarimenti restano non implementati o falliscono fino a B6/B7.
 
 - **B4-M06 — Test automatici:** `backend/tests/integration/messages.test.ts` verde con `DATABASE_URL`; build FE/BE ok.
+
+---
+
+## Test manuali — Blocco 5 (Upload file, B5 / M3)
+
+Prerequisiti come B3; chat con almeno un messaggio user (per allegati al messaggio) o composer (invio con file).
+
+- **B5-M01 — Upload su messaggio:** Aggiungi un `.txt` o `.pdf` ≤ 5 MB a un messaggio utente esistente. Network: `POST /api/conversations/:id/files` multipart campo `file` → `201` `{ file }`. Supabase `idt_file` popolata; file su disco in `backend/uploads/<userId>/`.
+
+- **B5-M02 — Upload con invio:** Allega file nel composer e invia messaggio. Prima uno o più POST file, poi POST messages con `attachments: [uuid…]`; gli allegati compaiono sul messaggio user dopo refresh.
+
+- **B5-M03 — Anteprima e download:** Apri anteprima documento dalla sidebar o dal messaggio. Il pannello carica via `GET /api/files/:id/download` con cookie (fetch credenziali). Download salva il file con nome originale.
+
+- **B5-M04 — Elimina allegato:** Rimuovi file da messaggio. `DELETE /api/files/:id` → `204`; scompare da UI e da DB; file rimosso da `UPLOAD_DIR`.
+
+- **B5-M05 — Tipi e dimensioni:** File non in allowlist → toast tipo; file > 5 MB → toast dimensione. POST diretto con MIME non ammesso → `400 VALIDATION_ERROR`.
+
+- **B5-M06 — Persistenza F5:** Dopo upload, F5 su `/app`: allegati ancora listati su chat/messaggio (`GET /api/conversations/:id` include `files`).
+
+- **B5-M07 — Test automatico:** `backend/tests/integration/files.test.ts` (T-FILE-01) verde; build FE/BE ok.

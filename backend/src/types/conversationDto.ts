@@ -48,6 +48,7 @@ export interface PromptArtifactDto {
 export interface UploadedFileDto {
   id: string;
   conversationId: string;
+  messageId?: string | null;
   originalName: string;
   mimeType: string;
   sizeBytes: number;

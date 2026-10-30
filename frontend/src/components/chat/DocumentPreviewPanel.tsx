@@ -5,7 +5,7 @@ import { Download, GripVertical, RotateCcw, X, ZoomIn, ZoomOut } from 'lucide-re
 import { downloadAttachment } from '@/lib/downloadAttachment';
 import { Button } from '@/components/ui/button';
 import { clampDocumentPreviewWidth } from '@/lib/documentPreviewLayout';
-import { getFileBlob } from '@/lib/fileBlobStore';
+import { fetchFileBlob } from '@/lib/fetchFileBlob';
 import { cn } from '@/utils/cn';
 
 GlobalWorkerOptions.workerSrc = new URL(
@@ -149,7 +149,7 @@ export function DocumentPreviewPanel({
 
     let cancelled = false;
     void (async () => {
-      const file = await getFileBlob(fileId);
+      const file = await fetchFileBlob(fileId);
       if (cancelled) return;
       if (!file) {
         setBlobLoading(false);

@@ -199,9 +199,14 @@ export function ChatPage() {
 
   const onMessageFiles = (messageId: string, files: FileList | null) => {
     if (!conv || !files?.length) return;
-    const err = addFiles(user.id, conv.id, messageId, Array.from(files));
-    if (err === 'size') toast(t('chat.fileTooLarge'));
-    else if (err === 'type') toast(t('chat.fileType'));
+    const run = async () => {
+      const err = appConfig.useMock
+        ? addFiles(user.id, conv.id, messageId, Array.from(files))
+        : await ports.files.addFiles(user.id, conv.id, messageId, Array.from(files));
+      if (err === 'size') toast(t('chat.fileTooLarge'));
+      else if (err === 'type') toast(t('chat.fileType'));
+    };
+    void run();
   };
 
   return (
@@ -312,7 +317,10 @@ export function ChatPage() {
                         files={conv.files.filter((f) => f.messageId === m.id)}
                         disabled={busy}
                         onAddFiles={onMessageFiles}
-                        onRemoveFile={(fileId) => removeFile(user.id, conv.id, fileId)}
+                        onRemoveFile={(fileId) => {
+                          if (appConfig.useMock) removeFile(user.id, conv.id, fileId);
+                          else void ports.files.removeFile(user.id, conv.id, fileId);
+                        }}
                         onSubmit={async (messageId, text) => {
                           pendingRetryRef.current = async () => {
                             await ports.messages.editUserMessage(

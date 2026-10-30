@@ -21,6 +21,7 @@ export interface ConversationSummaryDto {
 export interface UploadedFileDto {
   id: string;
   conversationId: string;
+  messageId?: string | null;
   originalName: string;
   mimeType: string;
   sizeBytes: number;

@@ -26,7 +26,7 @@ function dtoToConversation(d: ConversationDetailDto | ConversationSummaryDto): C
     promptText: detail.latestPrompt?.bodyMarkdown ?? '',
     files: (detail.files ?? []).map((f) => ({
       id: f.id,
-      messageId: '',
+      messageId: f.messageId ?? '',
       name: f.originalName,
       size: f.sizeBytes,
       mimeType: f.mimeType,
