@@ -1,6 +1,11 @@
 import type { User } from '@/types/auth';
 import type { PromptArtifact } from '@/types/prompt';
-import type { ChatMessage, ConversationUiPhase } from '@/types/conversation';
+import type {
+  ChatMessage,
+  ClarificationQuestion,
+  ConversationUiPhase,
+  Interpretation,
+} from '@/types/conversation';
 
 export interface ConversationMetadata {
   pinned?: boolean;
@@ -34,6 +39,9 @@ export interface ConversationDetailDto extends ConversationSummaryDto {
   latestPrompt?: PromptArtifact | null;
   files: UploadedFileDto[];
   phase?: ConversationUiPhase;
+  interpretation?: Interpretation | null;
+  pendingQuestions?: ClarificationQuestion[];
+  clarificationTurns?: number;
 }
 
 export interface SendMessageResponse {

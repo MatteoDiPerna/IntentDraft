@@ -20,9 +20,9 @@ function dtoToConversation(d: ConversationDetailDto | ConversationSummaryDto): C
     title: d.title,
     messages: detail.messages ?? [],
     phase: detail.phase ?? 'idle',
-    interpretation: null,
-    pendingQuestions: [],
-    clarificationTurns: 0,
+    interpretation: detail.interpretation ?? null,
+    pendingQuestions: detail.pendingQuestions ?? [],
+    clarificationTurns: detail.clarificationTurns ?? 0,
     promptText: detail.latestPrompt?.bodyMarkdown ?? '',
     files: (detail.files ?? []).map((f) => ({
       id: f.id,

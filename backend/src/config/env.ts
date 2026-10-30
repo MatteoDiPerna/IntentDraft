@@ -15,6 +15,10 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
+  FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+  GOOGLE_CLIENT_ID: z.string().default(''),
+  GOOGLE_CLIENT_SECRET: z.string().default(''),
+  GOOGLE_CALLBACK_URL: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -4,12 +4,12 @@ import type {
   PromptArtifact,
   UploadedFile,
 } from '@prisma/client';
+import { parseAiState } from '../../services/orchestrator/aiState.js';
 import type {
   ChatMessageDto,
   ConversationDetailDto,
   ConversationMetadataDto,
   ConversationSummaryDto,
-  ConversationUiPhaseDto,
   PromptArtifactDto,
   UploadedFileDto,
 } from '../../types/conversationDto.js';
@@ -26,21 +26,6 @@ function parseMetadata(raw: unknown): ConversationMetadataDto {
   };
 }
 
-function parsePhase(raw: unknown): ConversationUiPhaseDto {
-  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return 'idle';
-  const phase = (raw as Record<string, unknown>).phase;
-  const allowed: ConversationUiPhaseDto[] = [
-    'idle',
-    'analyzing',
-    'clarifying',
-    'generating',
-    'prompt_ready',
-    'error_recoverable',
-  ];
-  return allowed.includes(phase as ConversationUiPhaseDto)
-    ? (phase as ConversationUiPhaseDto)
-    : 'idle';
-}
 
 function previewFromMessage(msg: Message | undefined): string | undefined {
   if (!msg?.content) return undefined;
@@ -118,11 +103,15 @@ export function toConversationDetailDto(
   latestMessage?: Message,
 ): ConversationDetailDto {
   const summary = toConversationSummaryDto(conv, latestMessage ?? messages[messages.length - 1]);
+  const ai = parseAiState(conv.aiState);
   return {
     ...summary,
     messages: messages.map(toMessageDto),
     files: files.map(toFileDto),
     latestPrompt: latestPrompt ? toPromptDto(latestPrompt) : null,
-    phase: parsePhase(conv.aiState),
+    phase: ai.phase,
+    interpretation: ai.interpretation,
+    pendingQuestions: ai.pendingQuestions,
+    clarificationTurns: ai.clarificationTurns,
   };
 }

@@ -56,9 +56,25 @@ export interface UploadedFileDto {
   createdAt: string;
 }
 
+export interface InterpretationDto {
+  objective: string;
+  context?: string;
+  audience?: string;
+  assumptions: string[];
+}
+
+export interface ClarificationQuestionDto {
+  id: string;
+  text: string;
+  reason?: string;
+}
+
 export interface ConversationDetailDto extends ConversationSummaryDto {
   messages: ChatMessageDto[];
   latestPrompt?: PromptArtifactDto | null;
   files: UploadedFileDto[];
   phase?: ConversationUiPhaseDto;
+  interpretation?: InterpretationDto | null;
+  pendingQuestions?: ClarificationQuestionDto[];
+  clarificationTurns?: number;
 }

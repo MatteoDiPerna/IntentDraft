@@ -87,13 +87,13 @@ describe.skipIf(!hasDb)('prompts API', () => {
     expect(row?.feedback).toBe('useful');
   });
 
-  it('regenerate returns NOT_IMPLEMENTED until B7', async () => {
+  it('regenerate requires interpretation in ai_state', async () => {
     const res = await app.inject({
       method: 'POST',
       url: `/api/conversations/${conversationId}/regenerate`,
       headers: { cookie },
       payload: {},
     });
-    expect(res.statusCode).toBe(501);
+    expect(res.statusCode).toBe(400);
   });
 });

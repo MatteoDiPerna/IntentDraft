@@ -32,6 +32,11 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
+      name: 'smoke-api',
+      testMatch: /smoke-api\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
       name: 'mobile-iphone',
       testMatch: /responsive\.spec\.ts/,
       use: { ...devices['iPhone 13'], browserName: 'chromium' },

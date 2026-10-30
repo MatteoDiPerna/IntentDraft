@@ -1,0 +1,260 @@
+/** Port of `frontend/src/lib/mockConversationEngine.ts` — keep in sync for M4 parity. */
+import type { ClarificationQuestion, Interpretation } from './types.js';
+import type { Locale } from '../../modules/auth/userDto.js';
+
+const MEDICAL_LEGAL = /\b(cure|medic|diagnos|legal|avvocat|lawsuit|malattia|terapia)\b/i;
+
+function isLinkedInVague(text: string): boolean {
+  return /linkedin|post social/i.test(text) && text.length < 120;
+}
+
+function isMarketingVague(text: string): boolean {
+  return /piano marketing|marketing plan/i.test(text) && !/budget|pubblico|audience|target/i.test(text);
+}
+
+function isNotesRequest(text: string): boolean {
+  return /\b(note|appunti|minutes|riunione|meeting)\b/i.test(text);
+}
+
+export function detectUnsupported(text: string): boolean {
+  return MEDICAL_LEGAL.test(text);
+}
+
+export function buildClarifications(text: string, locale: Locale): ClarificationQuestion[] {
+  if (isLinkedInVague(text)) {
+    return locale === 'it'
+      ? [
+          {
+            id: 'audience',
+            text: 'Chi vuoi raggiungere su LinkedIn (ruolo, settore)?',
+            reason: 'Serve a definire tono e messaggio.',
+          },
+          {
+            id: 'message',
+            text: 'Qual è il messaggio principale in una frase?',
+            reason: 'Evita post troppo generici.',
+          },
+        ]
+      : [
+          {
+            id: 'audience',
+            text: 'Who do you want to reach on LinkedIn (role, industry)?',
+            reason: 'Helps set tone and message.',
+          },
+          {
+            id: 'message',
+            text: 'What is the main message in one sentence?',
+            reason: 'Avoids overly generic posts.',
+          },
+        ];
+  }
+  if (isMarketingVague(text)) {
+    return locale === 'it'
+      ? [
+          {
+            id: 'business',
+            text: 'Che tipo di attività o prodotto promuovi?',
+            reason: 'Personalizza il piano.',
+          },
+          { id: 'goal', text: 'Obiettivo principale (contatti, vendite, notorietà)?' },
+        ]
+      : [
+          { id: 'business', text: 'What business or product are you promoting?' },
+          { id: 'goal', text: 'Main goal (leads, sales, awareness)?' },
+        ];
+  }
+  return [];
+}
+
+export function buildInterpretation(
+  userText: string,
+  answers: string[],
+  locale: Locale,
+): Interpretation {
+  const assumptions: string[] = [];
+  let objective = userText.slice(0, 200);
+  let audience: string | undefined;
+  let context: string | undefined;
+
+  if (isNotesRequest(userText)) {
+    objective =
+      locale === 'it'
+        ? 'Organizzare appunti/chiarezza su contenuti di riunione o studio'
+        : 'Organize notes or meeting/study content clearly';
+    context = userText;
+    if (!/lunghezza|length|breve|short/i.test(userText)) {
+      assumptions.push(
+        locale === 'it'
+          ? 'Formato medio (bullet e paragrafi brevi) se non specificato.'
+          : 'Medium format (bullets and short paragraphs) unless specified.',
+      );
+    }
+  } else if (/linkedin/i.test(userText)) {
+    objective =
+      locale === 'it' ? 'Scrivere un post LinkedIn efficace' : 'Write an effective LinkedIn post';
+    context = [userText, ...answers].join('\n');
+    audience =
+      answers[0] ||
+      (locale === 'it' ? 'Professionisti del settore (assunto)' : 'Industry professionals (assumed)');
+    if (!answers[1]) {
+      assumptions.push(
+        locale === 'it' ? 'Messaggio dedotto dal testo iniziale.' : 'Message inferred from initial text.',
+      );
+    }
+  } else {
+    context = [userText, ...answers].filter(Boolean).join('\n');
+  }
+
+  return { objective, context, audience, assumptions };
+}
+
+export function buildPrompt(interpretation: Interpretation, locale: Locale, variant = 0): string {
+  const intro =
+    locale === 'it'
+      ? 'Agisci come assistente esperto. Segui le istruzioni seguenti.'
+      : 'Act as an expert assistant. Follow the instructions below.';
+
+  const sections = [
+    `## ${locale === 'it' ? 'Obiettivo' : 'Objective'}\n${interpretation.objective}`,
+    interpretation.context &&
+      `## ${locale === 'it' ? 'Contesto' : 'Context'}\n${interpretation.context}`,
+    interpretation.audience &&
+      `## ${locale === 'it' ? 'Destinatario' : 'Audience'}\n${interpretation.audience}`,
+    `## ${locale === 'it' ? 'Vincoli' : 'Constraints'}\n- ${locale === 'it' ? 'Non inventare dati o fatti non forniti.' : 'Do not invent facts or data not provided.'}\n- ${locale === 'it' ? 'Segnala le limitazioni se mancano informazioni.' : 'State limitations when information is missing.'}`,
+    interpretation.assumptions.length > 0 &&
+      `## ${locale === 'it' ? 'Assunzioni' : 'Assumptions'}\n${interpretation.assumptions.map((a) => `- ${a}`).join('\n')}`,
+    `## ${locale === 'it' ? 'Formato output' : 'Output format'}\n${locale === 'it' ? 'Testo chiaro, pronto da usare.' : 'Clear, ready-to-use text.'}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
+  if (variant > 0) {
+    return `${intro}\n\n${sections}\n\n<!-- variant ${variant} -->`;
+  }
+  return `${intro}\n\n${sections}`;
+}
+
+export function assistantReplyForQuestions(
+  questions: ClarificationQuestion[],
+  locale: Locale,
+): string {
+  const header =
+    locale === 'it'
+      ? 'Per preparare istruzioni più utili, rispondi (puoi anche usare "Salta"):'
+      : 'To prepare better instructions, please answer (or use Skip):';
+  return `${header}\n\n${questions.map((q, i) => `${i + 1}. ${q.text}`).join('\n')}`;
+}
+
+export interface PipelineInput {
+  locale: Locale;
+  userContents: string[];
+  aiState: {
+    clarificationTurns: number;
+    pendingQuestions: ClarificationQuestion[];
+    interpretation: Interpretation | null;
+  };
+  hasPrompt: boolean;
+  triggerText: string;
+}
+
+export type PipelineResult =
+  | {
+      kind: 'refusal';
+      assistantContent: string;
+      phase: 'idle';
+    }
+  | {
+      kind: 'clarifying';
+      assistantContent: string;
+      pendingQuestions: ClarificationQuestion[];
+      phase: 'clarifying';
+    }
+  | {
+      kind: 'prompt_ready';
+      interpretation: Interpretation;
+      promptMarkdown: string;
+      phase: 'prompt_ready';
+      clarificationTurns: number;
+    };
+
+export function runMessagePipeline(input: PipelineInput): PipelineResult {
+  const { locale, userContents, aiState, hasPrompt, triggerText } = input;
+  const trimmed = triggerText.trim();
+
+  if (detectUnsupported(trimmed)) {
+    return {
+      kind: 'refusal',
+      assistantContent:
+        locale === 'it'
+          ? 'Non posso aiutare con consigli medici o legali. Prova con attività di lavoro o comunicazione.'
+          : "I can't help with medical or legal advice. Try work or communication tasks.",
+      phase: 'idle',
+    };
+  }
+
+  const latest = userContents[0] ?? trimmed;
+  const clarifications = buildClarifications(latest, locale);
+
+  if (userContents.length > 1) {
+    const answers = userContents.slice(1);
+    const interpretation = buildInterpretation(latest, answers, locale);
+    const promptMarkdown = buildPrompt(interpretation, locale, 0);
+    return {
+      kind: 'prompt_ready',
+      interpretation,
+      promptMarkdown,
+      phase: 'prompt_ready',
+      clarificationTurns: aiState.clarificationTurns + 1,
+    };
+  }
+
+  if (clarifications.length > 0 && aiState.clarificationTurns < 2 && !hasPrompt) {
+    return {
+      kind: 'clarifying',
+      assistantContent: assistantReplyForQuestions(clarifications, locale),
+      pendingQuestions: clarifications,
+      phase: 'clarifying',
+    };
+  }
+
+  const answers = userContents.slice(1).map(String);
+  const interpretation = buildInterpretation(latest, answers, locale);
+  const promptMarkdown = buildPrompt(interpretation, locale, 0);
+  return {
+    kind: 'prompt_ready',
+    interpretation,
+    promptMarkdown,
+    phase: 'prompt_ready',
+    clarificationTurns: aiState.clarificationTurns + (clarifications.length ? 1 : 0),
+  };
+}
+
+export function runSkipPipeline(
+  locale: Locale,
+  userContents: string[],
+  clarificationTurns: number,
+): PipelineResult {
+  const latest = userContents[0] ?? '';
+  const interpretation = buildInterpretation(latest, [], locale);
+  interpretation.assumptions.push(
+    locale === 'it'
+      ? 'Dettagli mancanti: scelte ragionevoli per PMI/professionisti.'
+      : 'Missing details filled with reasonable professional defaults.',
+  );
+  const promptMarkdown = buildPrompt(interpretation, locale, 0);
+  return {
+    kind: 'prompt_ready',
+    interpretation,
+    promptMarkdown,
+    phase: 'prompt_ready',
+    clarificationTurns: clarificationTurns + 1,
+  };
+}
+
+export function runRegeneratePipeline(
+  locale: Locale,
+  interpretation: Interpretation,
+): { promptMarkdown: string; variant: number } {
+  const variant = Math.floor(Math.random() * 3) + 1;
+  return { promptMarkdown: buildPrompt(interpretation, locale, variant), variant };
+}

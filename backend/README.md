@@ -86,8 +86,17 @@ cd frontend && cp .env.example .env
 npm run dev
 ```
 
+## Google OAuth (B8)
+
+Imposta in `.env`:
+
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_CALLBACK_URL=http://localhost:3001/api/auth/google/callback` (deve coincidere con Google Cloud Console)
+- `FRONTEND_URL=http://localhost:5173`
+
+In [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → OAuth client (Web): authorized redirect URI = callback sopra.  
+Se le variabili mancano, `GET /api/auth/google` reindirizza a `/#/login?oauth=error&reason=not_configured`.
+
 ## Fase corrente
 
-**B0** — scaffold, health check, Prisma collegato a Supabase.  
-**B1** — schema dominio applicato su Supabase (6 tabelle `idt_*`), migrazione `init_idt_schema`, health `db: true`.  
-**B2** — auth email/password, cookie sessione, `GET/POST /api/auth/*`. Prossimo: **B3** conversazioni.
+Vedi [`../worklog.md`](../worklog.md) — backend fino a **B7** (motore mock server) e **B8** (OAuth Google).

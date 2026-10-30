@@ -64,22 +64,26 @@ describe.skipIf(!hasDb)('messages API (stub)', () => {
     expect(send.statusCode).toBe(201);
     const body = send.json() as {
       userMessage: { role: string; content: string };
-      assistantMessage: { role: string; content: string };
       conversationPhase: string;
+      prompt?: { bodyMarkdown: string };
     };
     expect(body.userMessage.role).toBe('user');
     expect(body.userMessage.content).toBe('Primo messaggio di test');
-    expect(body.assistantMessage.role).toBe('assistant');
-    expect(body.assistantMessage.content).toContain('Motore AI');
-    expect(body.conversationPhase).toBe('idle');
+    expect(body.conversationPhase).toBe('prompt_ready');
+    expect(body.prompt?.bodyMarkdown).toContain('Obiettivo');
 
     const detail = await app.inject({
       method: 'GET',
       url: `/api/conversations/${conversationId}`,
       headers: { cookie },
     });
-    const detailBody = detail.json() as { messages: { role: string }[]; title: string };
-    expect(detailBody.messages).toHaveLength(2);
+    const detailBody = detail.json() as {
+      messages: { role: string }[];
+      title: string;
+      phase: string;
+    };
+    expect(detailBody.messages.length).toBeGreaterThanOrEqual(1);
+    expect(detailBody.phase).toBe('prompt_ready');
     expect(detailBody.title).toBe('Primo messaggio di test');
 
     const row = await prisma.conversation.findUnique({ where: { id: conversationId } });

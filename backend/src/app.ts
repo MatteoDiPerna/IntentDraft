@@ -5,6 +5,7 @@ import multipart from '@fastify/multipart';
 import { loadEnv } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authRoutes } from './modules/auth/routes.js';
+import { googleAuthRoutes } from './modules/auth/googleRoutes.js';
 import { conversationRoutes } from './modules/conversations/routes.js';
 import { messageRoutes } from './modules/messages/routes.js';
 import { fileRoutes } from './modules/files/routes.js';
@@ -44,6 +45,7 @@ export async function buildServer(options?: { env?: ReturnType<typeof loadEnv> }
 
   await app.register(healthRoutes);
   await app.register(authRoutes, { env });
+  await app.register(googleAuthRoutes, { env });
   await app.register(conversationRoutes, { env });
   await app.register(messageRoutes, { env });
   await app.register(fileRoutes, { env });

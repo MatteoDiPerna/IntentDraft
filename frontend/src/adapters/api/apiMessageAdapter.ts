@@ -61,10 +61,12 @@ export const apiMessageAdapter: MessagePort = {
   async editUserMessage() {
     throw new Error('NOT_IMPLEMENTED');
   },
-  async skipClarification(_userId, conversationId) {
+  async skipClarification(userId, conversationId) {
     await request('POST', API.conversations.skipClarification(conversationId));
+    await loadConversationDetailFromApi(userId, conversationId);
   },
-  async regeneratePrompt(_userId, conversationId) {
+  async regeneratePrompt(userId, conversationId) {
     await request('POST', API.conversations.regenerate(conversationId), { body: {} });
+    await loadConversationDetailFromApi(userId, conversationId);
   },
 };

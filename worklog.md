@@ -17,10 +17,12 @@
 | **Backend B4** | POST messaggi stub (BE-M01), titolo auto, test integrazione; FE sync thread + load detail (IF-05 parziale) |
 | **Backend B5** | Upload file BE-F01…F04, `@fastify/multipart`, FS `UPLOAD_DIR`; FE preview/download con cookie (M3) |
 | **Backend B6** | Profilo/password (BE-U01/U02), prompt API (BE-P01/P02/P05), stub regenerate/skip; FE Settings + debounce prompt |
+| **Backend B7** | Motore mock server (`mockEngine`), orchestrator, M4 UX API; Playwright `smoke-api.spec.ts` |
+| **Backend B8** | Google OAuth routes + redirect errori; richiede credenziali Google in `.env` |
 | **Schema DB** | Definito in doc + `backend/prisma/schema.prisma` — tabelle fisiche **`idt_*`** (8 caratteri). Vedi [`docs/product/architecture/database-design.md`](docs/product/architecture/database-design.md) §2.1 |
 | **Commit recente** | Frontend checklist + test; backend scaffold (verificare `git log`) |
 
-**Non ancora implementato sul backend:** orchestrator mock server (B7), LLM (B9).
+**Non ancora implementato sul backend:** LLM Anthropic (B9); hardening CI (B10).
 
 ---
 
@@ -107,19 +109,19 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 26. [x] `PATCH /api/users/me`, `POST /api/users/me/password`.
 27. [x] `GET .../prompts/latest`, `PUT /api/prompts/:id`, feedback stub su `idt_prmt.feedback`.
-28. [x] Endpoint `regenerate` / `skip-clarification` (regenerate → `501` fino a B7; skip → `204` no-op).
+28. [x] Endpoint `regenerate` / `skip-clarification` (stub in B6; logica completa in B7).
 29. [ ] **Verifica FE:** pagina Settings in API mode (test manuali § sotto).
 
 ---
 
 ### Blocco 7 — Motore conversazione lato server (B7) → **Milestone M4**
 
-30. [ ] Portare logica da `frontend/src/lib/mockConversationEngine.ts` → `backend/src/services/orchestrator/mockEngine.ts`.
-31. [ ] `POST .../messages` usa mockEngine; risposta `SendMessageResponse` completa (phase, prompt, interpretation in metadata).
-32. [ ] Regenerate / skip-clarification; refusal medico/legal (FR-012).
-33. [ ] Aggiornare contratto §8.4 se servono campi extra; allineare adapter FE.
-34. [ ] Playwright `e2e/smoke-api.spec.ts` con `VITE_USE_MOCK=false`.
-35. [ ] Spuntare test manuali §18 CHAT in [`frontend-implementation-spec.md`](docs/product/planning/frontend-implementation-spec.md).
+30. [x] Portare logica da `frontend/src/lib/mockConversationEngine.ts` → `backend/src/services/orchestrator/mockEngine.ts`.
+31. [x] `POST .../messages` usa mockEngine; risposta `SendMessageResponse` completa (phase, prompt; stato in `ai_state` + GET detail).
+32. [x] Regenerate / skip-clarification; refusal medico/legal (FR-012).
+33. [x] Contratto esteso: `interpretation`, `pendingQuestions`, `clarificationTurns` su GET conversation; adapter FE allineati.
+34. [x] Playwright `e2e/smoke-api.spec.ts` (skip se backend non raggiungibile).
+35. [ ] Test manuali §18 CHAT (a fine checklist).
 
 **DoD:** stessa UX del mock, dati su Supabase.
 
@@ -127,9 +129,9 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ### Blocco 8 — Google OAuth (B8, opzionale)
 
-36. [ ] `GET /api/auth/google`, callback, utente `authProvider: google`, `hasPassword: false`.
-37. [ ] Redirect errori → `/#/login?oauth=error`.
-38. [ ] Test AUTH-06, AUTH-07 (§18).
+36. [x] `GET /api/auth/google`, callback, utente `authProvider: google`, `hasPassword: false` (richiede env Google).
+37. [x] Redirect errori → `/#/login?oauth=error` (+ `reason` se non configurato).
+38. [ ] Test AUTH-06, AUTH-07 (§18) — manuali dopo configurazione OAuth.
 
 ---
 
@@ -198,7 +200,7 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ## Dove riprendere **adesso**
 
-**Prossima azione consigliata:** **Blocco 7 — Motore conversazione lato server (B7 / M4)** oppure test manuali a fine checklist.
+**Prossima azione consigliata:** **Blocco 9 — LLM Anthropic (B9 / M5)** oppure test manuali a fine checklist. Per Google OAuth: configurare credenziali (§ B8 sotto) prima dei test AUTH-06/07.
 
 Dopo ogni blocco: `npm run build` in `backend/`, commit atomico, aggiornare le checkbox in questo file.
 
@@ -286,6 +288,34 @@ Prerequisiti come B3; account locale con password (`hasPassword: true`).
 
 - **B6-M05 — Prompt API (se esiste `idt_prmt`):** Con prompt in DB per una chat, modifica testo risultato: dopo ~600 ms debounce, `PUT /api/prompts/:id`. Feedback utile/non utile → `POST .../feedback` → `204` e colonna `feedback` in `idt_prmt`.
 
-- **B6-M06 — Rigenera (atteso B7):** Pulsante Rigenera in API mode → `501 NOT_IMPLEMENTED` (toast errore) finché non completi B7.
+- **B6-M06 — Rigenera:** Con chat in `prompt_ready`, Rigenera → `POST .../regenerate` → `200` e nuovo testo prompt (variante mock).
 
 - **B6-M07 — Test automatici:** `users.test.ts` e `prompts.test.ts` verdi; build FE/BE ok.
+
+---
+
+## Test manuali — Blocco 7 (Motore mock API, B7 / M4)
+
+Prerequisiti: stack API mode; utente loggato.
+
+- **B7-M01 — Flusso appunti:** Messaggio «organizza appunti riunione» → prompt copiabile (`prompt_ready`), textarea piena, fase coerente dopo F5 (`ai_state` + `idt_prmt`).
+
+- **B7-M02 — Chiarimenti LinkedIn:** Messaggio vago tipo «post LinkedIn» → risposta assistant con domande, fase `clarifying`; risposta o Salta → prompt finale.
+
+- **B7-M03 — Refusal:** Testo con tema medico/legal (es. «diagnosi medica») → messaggio assistant di rifiuto, nessun prompt.
+
+- **B7-M04 — Rigenera / Salta:** Rigenera cambia il markdown; Salta in chiarimenti produce prompt con assunzione aggiuntiva.
+
+- **B7-M05 — E2E opzionale:** Con backend attivo e FE `VITE_USE_MOCK=false`, `npx playwright test smoke-api.spec.ts --project=smoke-api`.
+
+---
+
+## Test manuali — Blocco 8 (Google OAuth, B8)
+
+**Prerequisito configurazione (tua azione):** Google Cloud Console → OAuth client Web; redirect URI `http://localhost:3001/api/auth/google/callback`; in `backend/.env` e `frontend/.env` imposta `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_URL`, `VITE_GOOGLE_AUTH_START_URL`.
+
+- **B8-M01 — Non configurato:** Senza env Google, «Continua con Google» → redirect login con `oauth=error` (reason `not_configured`).
+
+- **B8-M02 — Login Google (AUTH-06):** Con credenziali ok, login Google → sessione cookie → `/app`, `authProvider: google`, `hasPassword: false` in Settings.
+
+- **B8-M03 — Errore OAuth (AUTH-07):** Simula callback invalido o annulla su Google → redirect `/#/login?oauth=error`.
