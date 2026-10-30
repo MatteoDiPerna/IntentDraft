@@ -5,13 +5,15 @@
   "scripts": {
     "dev:all": "concurrently -n fe,be -c blue,green \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
     "pm2:start": "pm2 start ecosystem.config.cjs",
-    "pm2:restart": "pm2 restart intentdraft-api intentdraft-web",
-    "pm2:restart:api": "pm2 restart intentdraft-api",
-    "pm2:restart:web": "pm2 restart intentdraft-web",
-    "pm2:stop": "pm2 stop intentdraft-api intentdraft-web",
-    "pm2:delete": "pm2 delete intentdraft-api intentdraft-web",
+    "restart": "pm2 restart intentdraft --update-env",
+    "pm2:restart": "pm2 restart intentdraft --update-env",
+    "pm2:restart:api": "pm2 restart intentdraft-api --update-env",
+    "pm2:restart:web": "pm2 restart intentdraft-web --update-env",
+    "pm2:stop": "pm2 stop intentdraft",
+    "pm2:delete": "pm2 delete intentdraft",
     "pm2:logs": "pm2 logs",
-    "pm2:status": "pm2 status"
+    "pm2:status": "pm2 status",
+    "pm2:save": "pm2 save"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

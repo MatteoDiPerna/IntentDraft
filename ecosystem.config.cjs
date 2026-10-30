@@ -1,20 +1,25 @@
 /**
- * PM2 — IntentDraft stack (dev)
+ * PM2 — IntentDraft (dev)
  *
- * Usage (from repo root):
- *   npm run pm2:start
- *   npm run pm2:restart
- *   npm run pm2:stop
- *   npm run pm2:logs
+ * Avvio (dalla root):
+ *   npx pm2 start ecosystem.config.cjs
+ *
+ * Riavvio API + frontend (PM2 nativo, namespace):
+ *   npx pm2 restart intentdraft --update-env
+ *
+ * Oppure:
+ *   npx pm2 restart ecosystem.config.cjs --update-env
  */
 const path = require('path');
 
 const root = __dirname;
+const ns = 'intentdraft';
 
 module.exports = {
   apps: [
     {
       name: 'intentdraft-api',
+      namespace: ns,
       cwd: path.join(root, 'backend'),
       script: path.join(root, 'backend/node_modules/tsx/dist/cli.mjs'),
       args: 'watch src/index.ts',
@@ -29,6 +34,7 @@ module.exports = {
     },
     {
       name: 'intentdraft-web',
+      namespace: ns,
       cwd: path.join(root, 'frontend'),
       script: path.join(root, 'frontend/node_modules/vite/bin/vite.js'),
       args: '',

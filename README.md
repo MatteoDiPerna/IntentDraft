@@ -262,21 +262,32 @@ npm install
 npm run dev:all
 ```
 
-### PM2 (dev — riavvio centralizzato)
+### PM2 (dev — backend + frontend)
 
-Dalla **root** del repo (Windows/macOS/Linux). Carica `backend/.env` via `dotenv` all’avvio API.
+PM2 gestisce nativamente **due processi** nello stesso **namespace** `intentdraft`: `intentdraft-api` (Fastify) e `intentdraft-web` (Vite). Config: [`ecosystem.config.cjs`](ecosystem.config.cjs). L’API carica `backend/.env` via `dotenv` a ogni avvio.
 
-```bash
-npm install          # include pm2 locale
-npm run pm2:start    # intentdraft-api + intentdraft-web
-npm run pm2:status
-npm run pm2:restart  # entrambi (es. dopo cambi .env / OAuth)
-npm run pm2:restart:api
-npm run pm2:logs
-npm run pm2:stop
-```
+| Obiettivo | Comando (dalla root) |
+| -------- | -------------------- |
+| Prima installazione dipendenze | `npm install` |
+| Avvio stack | `pm2 start ecosystem.config.cjs` oppure `npm run pm2:start` |
+| **Riavvio API + frontend** | `pm2 restart intentdraft --update-env` oppure **`npm restart`** |
+| Solo API | `npm run pm2:restart:api` |
+| Solo frontend | `npm run pm2:restart:web` |
+| Stato / log | `pm2 status` · `npm run pm2:logs` |
+| Stop / rimuovi da PM2 | `pm2 stop intentdraft` · `npm run pm2:delete` |
 
-Config: [`ecosystem.config.cjs`](ecosystem.config.cjs). Se usavi `npm run dev` in un terminale separato, fermalo prima di `pm2:start` (porte **3001** e **5173**).
+**Comando `pm2` non trovato** (PowerShell): PM2 è dipendenza del repo, non sempre nel PATH.
+
+1. **Consigliato (globale, una tantum):** `npm install -g pm2` → chiudi e riapri il terminale → se compare un avviso di versione: `pm2 update`.
+2. **Senza globale:** `npx pm2 restart intentdraft --update-env` oppure `npm restart` (usa il PM2 locale di `node_modules`).
+
+PM2 **non** supporta `pm2 restart` senza argomenti: per riavviare entrambi usa il **namespace** `intentdraft` o `pm2 restart ecosystem.config.cjs --update-env`.
+
+Persistenza dopo reboot (opzionale): `pm2 save` · `pm2 startup` (su Windows spesso [pm2-windows-startup](https://www.npmjs.com/package/pm2-windows-startup)).
+
+Prima di `pm2 start`, non tenere `npm run dev` aperto sulle stesse porte (**3001**, **5173**).
+
+**Login Google:** in modalità API il pulsante «Accedi con Google» apre un **popup** (OAuth); al termine la sessione resta sulla pagina di login e si entra in app senza ricaricare tutta la finestra.
 
 ---
 

@@ -1,11 +1,12 @@
 import { randomBytes } from 'node:crypto';
-import type { FastifyInstance, FastifyReply } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { OAuth2Client } from 'google-auth-library';
 import type { Env } from '../../config/env.js';
 import { prisma } from '../../lib/db.js';
 import { createSession, setSessionCookie } from '../../services/sessionService.js';
 
 const OAUTH_STATE_COOKIE = 'oauth_state';
+const OAUTH_POPUP_COOKIE = 'oauth_popup';
 
 function isGoogleConfigured(env: Env): boolean {
   return Boolean(env.GOOGLE_CLIENT_ID.trim() && env.GOOGLE_CLIENT_SECRET.trim());
@@ -19,17 +20,48 @@ function oauthClient(env: Env): OAuth2Client {
   return new OAuth2Client(env.GOOGLE_CLIENT_ID, env.GOOGLE_CLIENT_SECRET, callbackUrl(env));
 }
 
-function redirectLoginError(env: Env, reply: FastifyReply, reason?: string) {
+function queryPopupFlag(request: FastifyRequest): boolean {
+  const query = request.query as { popup?: string };
+  return query.popup === '1' || query.popup === 'true';
+}
+
+function isPopupFlow(request: FastifyRequest): boolean {
+  if (queryPopupFlag(request)) return true;
+  const cookie = request.cookies[OAUTH_POPUP_COOKIE];
+  const unsigned = request.unsignCookie(cookie ?? '');
+  return unsigned.valid && unsigned.value === '1';
+}
+
+function clearOAuthFlowCookies(reply: FastifyReply) {
+  reply.clearCookie(OAUTH_STATE_COOKIE, { path: '/' });
+  reply.clearCookie(OAUTH_POPUP_COOKIE, { path: '/' });
+}
+
+function redirectLoginError(env: Env, reply: FastifyReply, request: FastifyRequest, reason?: string) {
   const query = reason ? `?oauth=error&reason=${encodeURIComponent(reason)}` : '?oauth=error';
+  if (isPopupFlow(request)) {
+    clearOAuthFlowCookies(reply);
+    return reply.redirect(`${env.FRONTEND_URL}/#/auth/google-popup${query}`, 302);
+  }
   return reply.redirect(`${env.FRONTEND_URL}/#/login${query}`, 302);
+}
+
+function redirectLoginSuccess(env: Env, reply: FastifyReply, request: FastifyRequest) {
+  if (isPopupFlow(request)) {
+    clearOAuthFlowCookies(reply);
+    return reply.redirect(`${env.FRONTEND_URL}/#/auth/google-popup?success=1`, 302);
+  }
+  return reply.redirect(`${env.FRONTEND_URL}/#/app`, 302);
 }
 
 export async function googleAuthRoutes(app: FastifyInstance, opts: { env: Env }) {
   const { env } = opts;
 
-  app.get('/api/auth/google', async (_request, reply) => {
+  app.get('/api/auth/google', async (request, reply) => {
+    const popup = queryPopupFlag(request);
+
     if (!isGoogleConfigured(env)) {
-      redirectLoginError(env, reply, 'not_configured');
+      redirectLoginError(env, reply, request, 'not_configured');
       return;
     }
 
@@ -50,18 +82,28 @@ export async function googleAuthRoutes(app: FastifyInstance, opts: { env: Env })
       maxAge: 600,
     });
 
+    if (popup) {
+      reply.setCookie(OAUTH_POPUP_COOKIE, '1', {
+        path: '/',
+        httpOnly: true,
+        sameSite: 'lax',
+        signed: true,
+        maxAge: 600,
+      });
+    }
+
     return reply.redirect(url, 302);
   });
 
   app.get('/api/auth/google/callback', async (request, reply) => {
     if (!isGoogleConfigured(env)) {
-      redirectLoginError(env, reply, 'not_configured');
+      redirectLoginError(env, reply, request, 'not_configured');
       return;
     }
 
     const query = request.query as { code?: string; state?: string; error?: string };
     if (query.error) {
-      redirectLoginError(env, reply, query.error);
+      redirectLoginError(env, reply, request, query.error);
       return;
     }
 
@@ -70,12 +112,12 @@ export async function googleAuthRoutes(app: FastifyInstance, opts: { env: Env })
     reply.clearCookie(OAUTH_STATE_COOKIE, { path: '/' });
 
     if (!query.state || !unsigned.valid || unsigned.value !== query.state) {
-      redirectLoginError(env, reply, 'invalid_state');
+      redirectLoginError(env, reply, request, 'invalid_state');
       return;
     }
 
     if (!query.code) {
-      redirectLoginError(env, reply, 'missing_code');
+      redirectLoginError(env, reply, request, 'missing_code');
       return;
     }
 
@@ -83,7 +125,7 @@ export async function googleAuthRoutes(app: FastifyInstance, opts: { env: Env })
       const client = oauthClient(env);
       const { tokens } = await client.getToken(query.code);
       if (!tokens.id_token) {
-        redirectLoginError(env, reply, 'missing_id_token');
+        redirectLoginError(env, reply, request, 'missing_id_token');
         return;
       }
 
@@ -93,7 +135,7 @@ export async function googleAuthRoutes(app: FastifyInstance, opts: { env: Env })
       });
       const payload = ticket.getPayload();
       if (!payload?.sub || !payload.email) {
-        redirectLoginError(env, reply, 'invalid_profile');
+        redirectLoginError(env, reply, request, 'invalid_profile');
         return;
       }
 
@@ -128,9 +170,9 @@ export async function googleAuthRoutes(app: FastifyInstance, opts: { env: Env })
 
       const sessionId = await createSession(user.id, env);
       setSessionCookie(reply, env, sessionId);
-      return reply.redirect(`${env.FRONTEND_URL}/#/app`, 302);
+      return redirectLoginSuccess(env, reply, request);
     } catch {
-      redirectLoginError(env, reply, 'exchange_failed');
+      redirectLoginError(env, reply, request, 'exchange_failed');
     }
   });
 }

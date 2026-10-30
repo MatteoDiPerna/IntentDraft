@@ -35,9 +35,11 @@ const it = {
     mockNotice: 'Fase demo: i dati restano nel browser (mock).',
     demoLogin: 'Accesso demo (valutazione)',
     demoHint: 'Account demo: demo@intentdraft.local / demo1234',
-    continueWithGoogle: 'Continua con Google',
+    continueWithGoogle: 'Accedi con Google',
     orEmail: 'oppure con email',
     googleError: 'Accesso con Google non riuscito. Riprova o usa email e password.',
+    googlePopupClosing: 'Accesso completato, chiusura in corso…',
+    googlePopupBlocked: 'Il browser ha bloccato la finestra di accesso. Consenti i popup per questo sito.',
     forgotPassword: 'Password dimenticata (presto disponibile)',
   },
   settings: {

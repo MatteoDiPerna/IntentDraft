@@ -33,9 +33,11 @@ const en: TranslationSchema = {
     mockNotice: 'Demo phase: data stays in your browser (mock).',
     demoLogin: 'Demo access (evaluation)',
     demoHint: 'Demo account: demo@intentdraft.local / demo1234',
-    continueWithGoogle: 'Continue with Google',
+    continueWithGoogle: 'Sign in with Google',
     orEmail: 'or with email',
     googleError: 'Google sign-in failed. Try again or use email and password.',
+    googlePopupClosing: 'Sign-in complete, closing…',
+    googlePopupBlocked: 'The browser blocked the sign-in window. Allow popups for this site.',
     forgotPassword: 'Forgot password (coming soon)',
   },
   settings: {

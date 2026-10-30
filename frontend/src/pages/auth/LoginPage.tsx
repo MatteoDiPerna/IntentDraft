@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { AuthPageShell } from '@/components/brand';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +15,8 @@ import { appConfig } from '@/config';
 
 export function LoginPage() {
   const { t } = useTranslation();
-  const { user, status, login, loginDemo, loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
+  const { user, status, login, loginDemo, loginWithGoogle, refreshSession } = useAuth();
   const showError = useApiErrorToast();
   const location = useLocation();
   const [params] = useSearchParams();
@@ -53,14 +55,25 @@ export function LoginPage() {
         )}
       </div>
 
-      <Button
-        type="button"
-        variant="outline"
-        className="brand-btn-outline-glass w-full gap-2"
-        onClick={() => void loginWithGoogle()}
-      >
-        {t('auth.continueWithGoogle')}
-      </Button>
+      <GoogleSignInButton
+        onMockSignIn={async () => {
+          try {
+            await loginWithGoogle();
+          } catch (e) {
+            showError(e, 'auth.googleError');
+            setError('root', { message: t('auth.googleError') });
+          }
+        }}
+        onOAuthSuccess={async () => {
+          await refreshSession();
+          navigate(from, { replace: true });
+        }}
+        onOAuthError={(reason) => {
+          const message =
+            reason === 'popup_blocked' ? t('auth.googlePopupBlocked') : t('auth.googleError');
+          setError('root', { message });
+        }}
+      />
 
       <div className="brand-divider flex items-center gap-3 py-1">
         <span className="h-px flex-1 bg-border" />

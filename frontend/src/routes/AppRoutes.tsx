@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { HomePage } from '@/pages/HomePage';
+import { GoogleOAuthPopupPage } from '@/pages/auth/GoogleOAuthPopupPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { LimitsPage } from '@/pages/LimitsPage';
@@ -17,6 +18,7 @@ const AppRoutes: React.FC = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/google-popup" element={<GoogleOAuthPopupPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/limits" element={<LimitsPage />} />
         <Route

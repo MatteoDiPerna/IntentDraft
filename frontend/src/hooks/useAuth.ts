@@ -46,8 +46,12 @@ export function useAuth() {
   }, [ports.auth, setUser]);
 
   const loginWithGoogle = useCallback(async (): Promise<User> => {
-    return ports.auth.loginWithGoogle();
-  }, [ports.auth]);
+    const u = await ports.auth.loginWithGoogle();
+    setUser(u);
+    if (appConfig.useMock) useAuthStore.setState({ currentUser: u });
+    navigate('/app', { replace: true });
+    return u;
+  }, [ports.auth, setUser, navigate]);
 
   return {
     user,
