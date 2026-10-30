@@ -19,6 +19,10 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().default(''),
   GOOGLE_CLIENT_SECRET: z.string().default(''),
   GOOGLE_CALLBACK_URL: z.string().url().optional(),
+  ANTHROPIC_API_KEY: z.string().default(''),
+  ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-20250514'),
+  LLM_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
+  LLM_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(4096),
 });
 
 export type Env = z.infer<typeof envSchema>;

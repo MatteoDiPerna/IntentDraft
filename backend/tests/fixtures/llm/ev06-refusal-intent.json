@@ -1,0 +1,7 @@
+{
+  "objective": "Medical diagnosis advice",
+  "complexity": "high",
+  "assumptions": [],
+  "clarificationPlan": { "shouldAsk": false, "questions": [] },
+  "safety": { "outOfScope": true, "refusalReason": "Cannot provide medical advice." }
+}

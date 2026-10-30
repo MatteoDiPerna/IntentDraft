@@ -1,0 +1,17 @@
+{
+  "objective": "Create a marketing plan",
+  "complexity": "medium",
+  "assumptions": [],
+  "clarificationPlan": {
+    "shouldAsk": true,
+    "questions": [
+      {
+        "id": "business",
+        "userFacingText": "What product or business are you promoting?",
+        "impact": "critical",
+        "optionalSkip": true
+      }
+    ]
+  },
+  "safety": { "outOfScope": false }
+}

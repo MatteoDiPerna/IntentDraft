@@ -4,11 +4,13 @@ import { AppError } from '../lib/errors.js';
 import type { Locale } from '../modules/auth/userDto.js';
 import { toMessageDto, toPromptDto } from '../modules/conversations/mappers.js';
 import type { SendMessageResponseDto } from '../types/messageDto.js';
+import { loadEnv } from '../config/env.js';
 import {
-  runMessagePipeline,
-  runRegeneratePipeline,
-  runSkipPipeline,
-} from './orchestrator/mockEngine.js';
+  runMessagePipelineAsync,
+  runRegeneratePipelineAsync,
+  runSkipPipelineAsync,
+} from './orchestrator/pipeline.js';
+import { toLlmAppError } from './llm/llmErrors.js';
 import { parseAiState, serializeAiState } from './orchestrator/aiState.js';
 import { defaultAiState, type ConversationAiState } from './orchestrator/types.js';
 
@@ -31,6 +33,7 @@ async function createPromptArtifact(
   conversationId: string,
   bodyMarkdown: string,
   messageId?: string,
+  sections?: { heading: string; content: string }[],
 ) {
   const last = await tx.promptArtifact.findFirst({
     where: { conversationId },
@@ -43,7 +46,7 @@ async function createPromptArtifact(
       messageId: messageId ?? null,
       bodyMarkdown,
       version,
-      sections: [],
+      sections: sections ?? [],
     },
   });
 }
@@ -75,17 +78,26 @@ export async function orchestrateSendMessage(
   const promptCount = await prisma.promptArtifact.count({ where: { conversationId } });
   const hasPrompt = promptCount > 0 || aiState.phase === 'prompt_ready';
 
-  const pipeline = runMessagePipeline({
-    locale,
-    userContents: [...userContentsFromMessages(priorMessages), trimmed],
-    aiState: {
-      clarificationTurns: aiState.clarificationTurns,
-      pendingQuestions: aiState.pendingQuestions,
-      interpretation: aiState.interpretation,
-    },
-    hasPrompt,
-    triggerText: trimmed,
-  });
+  const env = loadEnv();
+  let pipeline;
+  try {
+    pipeline = await runMessagePipelineAsync(
+      {
+        locale,
+        userContents: [...userContentsFromMessages(priorMessages), trimmed],
+        aiState: {
+          clarificationTurns: aiState.clarificationTurns,
+          pendingQuestions: aiState.pendingQuestions,
+          interpretation: aiState.interpretation,
+        },
+        hasPrompt,
+        triggerText: trimmed,
+      },
+      env,
+    );
+  } catch (err) {
+    throw toLlmAppError(err);
+  }
 
   const titlePatch =
     !conv.title.trim() && trimmed.length > 0
@@ -129,6 +141,7 @@ export async function orchestrateSendMessage(
         conversationId,
         pipeline.promptMarkdown,
         userRow.id,
+        pipeline.promptSections,
       );
       nextState = {
         phase: 'prompt_ready',
@@ -171,14 +184,31 @@ export async function orchestrateSkipClarification(
     orderBy: { createdAt: 'asc' },
   });
   const aiState = parseAiState(conv.aiState);
-  const pipeline = runSkipPipeline(locale, userContentsFromMessages(messages), aiState.clarificationTurns);
+  const env = loadEnv();
+  let pipeline;
+  try {
+    pipeline = await runSkipPipelineAsync(
+      env,
+      locale,
+      userContentsFromMessages(messages),
+      aiState.clarificationTurns,
+    );
+  } catch (err) {
+    throw toLlmAppError(err);
+  }
 
   if (pipeline.kind !== 'prompt_ready') {
     throw new AppError(500, 'INTERNAL_ERROR', 'Skip pipeline failed');
   }
 
   const promptArtifact = await prisma.$transaction(async (tx) => {
-    const artifact = await createPromptArtifact(tx, conversationId, pipeline.promptMarkdown);
+    const artifact = await createPromptArtifact(
+      tx,
+      conversationId,
+      pipeline.promptMarkdown,
+      undefined,
+      pipeline.kind === 'prompt_ready' ? pipeline.promptSections : undefined,
+    );
     const nextState: ConversationAiState = {
       phase: 'prompt_ready',
       interpretation: pipeline.interpretation,
@@ -215,10 +245,31 @@ export async function orchestrateRegenerate(
     throw new AppError(400, 'VALIDATION_ERROR', 'No interpretation to regenerate from');
   }
 
-  const { promptMarkdown } = runRegeneratePipeline(locale, aiState.interpretation);
+  const env = loadEnv();
+  const messages = await prisma.message.findMany({
+    where: { conversationId },
+    orderBy: { createdAt: 'asc' },
+  });
+  let regen;
+  try {
+    regen = await runRegeneratePipelineAsync(
+      env,
+      locale,
+      userContentsFromMessages(messages),
+      aiState.interpretation,
+    );
+  } catch (err) {
+    throw toLlmAppError(err);
+  }
 
   const promptArtifact = await prisma.$transaction(async (tx) => {
-    const artifact = await createPromptArtifact(tx, conversationId, promptMarkdown);
+    const artifact = await createPromptArtifact(
+      tx,
+      conversationId,
+      regen.promptMarkdown,
+      undefined,
+      regen.promptSections,
+    );
     await tx.conversation.update({
       where: { id: conversationId },
       data: {

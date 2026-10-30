@@ -175,6 +175,7 @@ export type PipelineResult =
       promptMarkdown: string;
       phase: 'prompt_ready';
       clarificationTurns: number;
+      promptSections?: { heading: string; content: string }[];
     };
 
 export function runMessagePipeline(input: PipelineInput): PipelineResult {

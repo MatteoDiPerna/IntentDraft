@@ -19,10 +19,12 @@
 | **Backend B6** | Profilo/password (BE-U01/U02), prompt API (BE-P01/P02/P05), stub regenerate/skip; FE Settings + debounce prompt |
 | **Backend B7** | Motore mock server (`mockEngine`), orchestrator, M4 UX API; Playwright `smoke-api.spec.ts` |
 | **Backend B8** | Google OAuth routes + redirect errori; richiede credenziali Google in `.env` |
+| **Backend B9** | Anthropic client, orchestrator LLM ANALYZE/GENERATE, fallback mock, test T-CONV/T-PROMPT |
+| **Dev admin** | `DEV_ADMIN_*` + seed all’avvio (solo development) |
 | **Schema DB** | Definito in doc + `backend/prisma/schema.prisma` — tabelle fisiche **`idt_*`** (8 caratteri). Vedi [`docs/product/architecture/database-design.md`](docs/product/architecture/database-design.md) §2.1 |
 | **Commit recente** | Frontend checklist + test; backend scaffold (verificare `git log`) |
 
-**Non ancora implementato sul backend:** LLM Anthropic (B9); hardening CI (B10).
+**Non ancora implementato sul backend:** hardening CI (B10).
 
 ---
 
@@ -137,10 +139,10 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ### Blocco 9 — LLM Anthropic (B9) → **Milestone M5 / beta Must**
 
-39. [ ] `LLM_ENABLED`, client Anthropic server-side only (NFR-001).
-40. [ ] Orchestrator ANALYZE / GENERATE — [`docs/product/ai/ai-prompt-engine-design.md`](docs/product/ai/ai-prompt-engine-design.md).
-41. [ ] Persistenza `idt_prmt` versionata; retry 429/503; no content in log (NFR-005).
-42. [ ] Fixture e test T-CONV, T-PROMPT in [`docs/product/quality/testing-and-evaluation.md`](docs/product/quality/testing-and-evaluation.md).
+39. [x] `LLM_ENABLED`, client Anthropic server-side only (NFR-001).
+40. [x] Orchestrator ANALYZE / GENERATE — [`docs/product/ai/ai-prompt-engine-design.md`](docs/product/ai/ai-prompt-engine-design.md).
+41. [x] Persistenza `idt_prmt` versionata; retry 429/503; no content in log (NFR-005).
+42. [x] Fixture e test T-CONV, T-PROMPT in [`docs/product/quality/testing-and-evaluation.md`](docs/product/quality/testing-and-evaluation.md).
 
 ---
 
@@ -200,7 +202,7 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ## Dove riprendere **adesso**
 
-**Prossima azione consigliata:** **Blocco 9 — LLM Anthropic (B9 / M5)** oppure test manuali a fine checklist. Per Google OAuth: configurare credenziali (§ B8 sotto) prima dei test AUTH-06/07.
+**Prossima azione consigliata:** **Blocco 10 — Hardening & CI (B10)** oppure test manuali B9 (§ sotto). Per LLM reale: `LLM_ENABLED=true` + `ANTHROPIC_API_KEY` in `backend/.env`.
 
 Dopo ogni blocco: `npm run build` in `backend/`, commit atomico, aggiornare le checkbox in questo file.
 
@@ -307,6 +309,26 @@ Prerequisiti: stack API mode; utente loggato.
 - **B7-M04 — Rigenera / Salta:** Rigenera cambia il markdown; Salta in chiarimenti produce prompt con assunzione aggiuntiva.
 
 - **B7-M05 — E2E opzionale:** Con backend attivo e FE `VITE_USE_MOCK=false`, `npx playwright test smoke-api.spec.ts --project=smoke-api`.
+
+---
+
+## Test manuali — Blocco 9 (LLM Anthropic, B9 / M5)
+
+Prerequisiti: API mode; `LLM_ENABLED=true` e chiave Anthropic valida in `backend/.env`; riavvio API.
+
+- **B9-M01 — Mock fallback:** Con `LLM_ENABLED=false`, invio messaggio → stesso comportamento M4 (mock), nessuna chiamata esterna.
+
+- **B9-M02 — ANALYZE semplice:** Messaggio chiaro (es. appunti riunione) → prompt generato senza domande intermedie (T-CONV-01).
+
+- **B9-M03 — Chiarimenti:** Richiesta vaga marketing → almeno una domanda assistant, poi risposta → prompt (T-CONV-02).
+
+- **B9-M04 — Refusal:** Tema medico/legal → rifiuto, nessun `idt_prmt` (T-SEC-01).
+
+- **B9-M05 — Rigenera / Salta:** Con LLM attivo, rigenera e salta producono nuova versione in `idt_prmt`.
+
+- **B9-M06 — Errori provider:** Chiave invalida o rate limit → UI errore / 503 `LLM_UNAVAILABLE` (T-ERR-01).
+
+- **B9-M07 — Test automatici:** `cd backend && npm run test` (unit `llm/*` + integrazione esistenti).
 
 ---
 

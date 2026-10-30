@@ -1,0 +1,8 @@
+{
+  "objective": "Organize meeting notes clearly",
+  "taskSummary": "User wants structured meeting notes",
+  "complexity": "low",
+  "assumptions": [],
+  "clarificationPlan": { "shouldAsk": false, "questions": [] },
+  "safety": { "outOfScope": false }
+}

@@ -35,6 +35,18 @@ npm run db:push    # prima sync schema su Supabase (vedi database-design.md §2.
 npm run dev        # http://localhost:3001
 ```
 
+### LLM Anthropic (B9)
+
+Solo **server-side** (`ANTHROPIC_API_KEY` — mai nel frontend). Con `LLM_ENABLED=false` (default) l’orchestrator usa il **mock engine** (M4).
+
+```env
+LLM_ENABLED=true
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
+```
+
+Flusso: **ANALYZE** (IntentModel JSON) → domande o **GENERATE** (PromptArtifact) → persistenza `idt_prmt` versionata. Log: solo token/model, mai contenuto messaggi (NFR-005).
+
 ### Schema: `db:push` vs migrazioni
 
 | Scenario | Comando |
@@ -64,7 +76,7 @@ curl http://localhost:3001/api/health
 | `npm run db:generate` | `prisma generate` |
 | `npm run db:push` | Sync schema su Supabase (dev) |
 | `npm run db:migrate` | Migrazioni versionate |
-| `npm run db:seed` | Seed (placeholder) |
+| `npm run db:seed` | Utente admin dev (`DEV_ADMIN_*`, solo development) |
 
 ## Frontend insieme
 

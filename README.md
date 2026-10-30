@@ -84,13 +84,13 @@ Sequenza operativa e milestone: [`worklog.md`](worklog.md).
 | **M2** | Chat persistita (messaggi stub) | ✅ |
 | **M3** | Upload file + download | ✅ (backend + FE adapter; verifica E2E manuale consigliata) |
 | **M4** | UX mock su API (orchestrator server) | ⏳ |
-| **M5** | LLM Claude in produzione | ⏳ |
+| **M5** | LLM Claude in produzione | ✅ (flag `LLM_ENABLED`) |
 | **M6** | Deploy cloud + readiness globale | 📋 documentato, non implementato |
 
 **Modalità demo consigliata oggi**
 
 - **Solo UI / flusso AI completo:** `frontend` con `VITE_USE_MOCK=true` (default).
-- **Stack reale auth + DB + file:** `VITE_USE_MOCK=false` + backend su `:3001` — thread e allegati su Supabase; risposte assistant ancora placeholder fino a B7/B9.
+- **Stack reale auth + DB + file:** `VITE_USE_MOCK=false` + backend su `:3001` — thread e allegati su Supabase; motore mock di default, **Claude** con `LLM_ENABLED=true`.
 
 ---
 
@@ -236,6 +236,15 @@ npm run dev       # http://localhost:3001
 ```
 
 Verifica: `curl http://localhost:3001/api/health` → `{"ok":true,"db":true}`.
+
+**Account admin di sviluppo** (solo `NODE_ENV=development`): creato/aggiornato all’avvio API e con `npm run db:seed` in `backend/`. Default in [`backend/.env.example`](backend/.env.example):
+
+| Campo | Valore default |
+| ----- | -------------- |
+| Email | `admin@intentdraft.local` |
+| Password | `IntentDraft-Dev-Admin!` |
+
+Personalizza con `DEV_ADMIN_EMAIL`, `DEV_ADMIN_PASSWORD` in `backend/.env`. Disabilita con `DEV_ADMIN_ENABLED=false`. In produzione non viene creato alcun admin automatico.
 
 Dettaglio Supabase e migrazioni: [`backend/README.md`](backend/README.md).
 

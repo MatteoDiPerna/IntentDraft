@@ -1,10 +1,11 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import 'dotenv/config';
+import { loadEnv } from '../src/config/env.js';
+import { ensureDevAdminUser } from '../src/services/devAdminSeed.js';
+import { prisma } from '../src/lib/db.js';
 
 async function main() {
-  // Dev seed (phase B2+): create test user here.
-  await prisma.user.count();
+  const env = loadEnv();
+  await ensureDevAdminUser(env);
 }
 
 main()

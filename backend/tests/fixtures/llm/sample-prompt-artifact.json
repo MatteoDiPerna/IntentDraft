@@ -1,0 +1,8 @@
+{
+  "title": "Meeting notes prompt",
+  "bodyMarkdown": "## Obiettivo\nOrganize meeting notes.\n\n## Assunzioni\n- Medium length bullets.",
+  "sections": [
+    { "heading": "Obiettivo", "content": "Organize meeting notes." },
+    { "heading": "Assunzioni", "content": "- Medium length bullets." }
+  ]
+}
