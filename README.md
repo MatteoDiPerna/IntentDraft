@@ -262,6 +262,22 @@ npm install
 npm run dev:all
 ```
 
+### PM2 (dev — riavvio centralizzato)
+
+Dalla **root** del repo (Windows/macOS/Linux). Carica `backend/.env` via `dotenv` all’avvio API.
+
+```bash
+npm install          # include pm2 locale
+npm run pm2:start    # intentdraft-api + intentdraft-web
+npm run pm2:status
+npm run pm2:restart  # entrambi (es. dopo cambi .env / OAuth)
+npm run pm2:restart:api
+npm run pm2:logs
+npm run pm2:stop
+```
+
+Config: [`ecosystem.config.cjs`](ecosystem.config.cjs). Se usavi `npm run dev` in un terminale separato, fermalo prima di `pm2:start` (porte **3001** e **5173**).
+
 ---
 
 ## Test e qualità
@@ -300,7 +316,8 @@ IntentDraft/
 ├── backend/           # Fastify + Prisma + moduli REST
 ├── docs/              # Concept, product spec, architecture, AI design
 ├── worklog.md         # Diario operativo e milestone
-└── package.json       # dev:all (concurrently)
+├── ecosystem.config.cjs  # PM2: api + web
+└── package.json       # dev:all, pm2:*
 ```
 
 ---
