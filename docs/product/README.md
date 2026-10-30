@@ -33,6 +33,7 @@ Indice della specifica beta. Concept sorgente: [`../concept/initial-brainstormin
 | Architettura FE/BE, fasi              | [`architecture/technical-architecture.md`](architecture/technical-architecture.md)           |
 | Schema MySQL / ER                     | [`architecture/database-design.md`](architecture/database-design.md)                         |
 | Operazioni API e collaborazione FE/BE | [`architecture/frontend-backend-operations.md`](architecture/frontend-backend-operations.md) |
+| Deploy cloud (guida operativa)        | [`architecture/cloud-deployment-guide.md`](architecture/cloud-deployment-guide.md)           |
 
 ## AI
 

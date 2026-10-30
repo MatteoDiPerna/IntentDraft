@@ -16,6 +16,7 @@ import { usePorts } from '@/providers/PortsProvider';
 import { useConversationStore } from '@/store/conversationStore';
 import { useToast } from '@/components/ui/toast';
 import { appConfig } from '@/config';
+import { loadConversationDetailFromApi } from '@/adapters/api/apiConversationAdapter';
 import { isRecoverableApiError } from '@/api/client';
 import { formatMessageTime } from '@/lib/formatMessageTime';
 import {
@@ -67,14 +68,22 @@ export function ChatPage() {
 
   useEffect(() => {
     if (!user) return;
-    if (list.length === 0) createConversation(user.id);
-  }, [list.length, createConversation, user?.id, user]);
+    if (list.length === 0) {
+      if (appConfig.useMock) createConversation(user.id);
+      else void ports.conversations.create(user.id);
+    }
+  }, [list.length, createConversation, ports.conversations, user?.id, user]);
 
   useEffect(() => {
     void i18n.changeLanguage(locale);
   }, [locale, i18n]);
 
   const conv = active;
+
+  useEffect(() => {
+    if (!user || appConfig.useMock || !conv?.id) return;
+    void loadConversationDetailFromApi(user.id, conv.id);
+  }, [user, conv?.id]);
 
   useEffect(() => {
     setDraft('');
@@ -209,12 +218,24 @@ export function ChatPage() {
       <ChatSidebar
         conversations={list}
         activeId={conv?.id}
-        onNewChat={() => createConversation(user.id)}
+        onNewChat={() => {
+          if (appConfig.useMock) createConversation(user.id);
+          else void ports.conversations.create(user.id);
+        }}
         onSelect={(id) => setActive(user.id, id)}
         onDeleteRecent={(id) => setDeleteTargetId(id)}
-        onPinRecent={(id) => togglePin(user.id, id)}
-        onMoveRecentToProject={(id) => toggleInProject(user.id, id)}
-        onRenameRecent={(id, title) => renameConversation(user.id, id, title)}
+        onPinRecent={(id) => {
+          if (appConfig.useMock) togglePin(user.id, id);
+          else void ports.conversations.togglePin(user.id, id);
+        }}
+        onMoveRecentToProject={(id) => {
+          if (appConfig.useMock) toggleInProject(user.id, id);
+          else void ports.conversations.toggleInProject(user.id, id);
+        }}
+        onRenameRecent={(id, title) => {
+          if (appConfig.useMock) renameConversation(user.id, id, title);
+          else void ports.conversations.rename(user.id, id, title);
+        }}
         onOpenDocument={(conversationId, file) => {
           setActive(user.id, conversationId);
           openDocumentPreview({
@@ -567,7 +588,10 @@ export function ChatPage() {
         confirmLabel={t('sidebar.deleteChat')}
         cancelLabel={t('chat.cancel')}
         onConfirm={() => {
-          if (deleteTargetId) deleteConversation(user.id, deleteTargetId);
+          if (deleteTargetId) {
+            if (appConfig.useMock) deleteConversation(user.id, deleteTargetId);
+            else void ports.conversations.delete(user.id, deleteTargetId);
+          }
           setDeleteTargetId(null);
         }}
         onCancel={() => setDeleteTargetId(null)}

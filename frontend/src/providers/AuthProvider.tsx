@@ -14,6 +14,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useConversationStore } from '@/store/conversationStore';
 import type { User } from '@/types/auth';
 import { appConfig } from '@/config';
+import { hydrateConversationsFromApi } from '@/adapters/api/apiConversationAdapter';
 
 export type AuthStatus = 'loading' | 'authenticated' | 'anonymous';
 
@@ -36,6 +37,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus('loading');
     try {
       const sessionUser = await ports.auth.getSession();
+      if (sessionUser && !appConfig.useMock) {
+        await hydrateConversationsFromApi(sessionUser.id);
+      }
       setUser(sessionUser);
       if (appConfig.useMock && sessionUser) {
         useAuthStore.setState({ currentUser: sessionUser });

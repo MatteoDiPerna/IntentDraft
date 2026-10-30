@@ -19,7 +19,7 @@ export interface UserPort {
 
 export interface ConversationPort {
   list(userId: string): Conversation[];
-  create(userId: string): string;
+  create(userId: string): Promise<string>;
   setActive(userId: string, conversationId: string): void;
   getActive(userId: string): Conversation | null;
   rename(userId: string, conversationId: string, title: string): Promise<void>;

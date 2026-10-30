@@ -9,7 +9,7 @@ export const mockConversationAdapter: ConversationPort = {
   list(userId) {
     return s().list(userId);
   },
-  create(userId) {
+  async create(userId) {
     return s().createConversation(userId);
   },
   setActive(userId, conversationId) {

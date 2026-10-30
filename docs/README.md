@@ -61,5 +61,6 @@ Indice dettagliato: [`product/README.md`](product/README.md).
 | [`../frontend/`](../frontend/) | UI Vite/React (adapter API pronti, mock default) |
 | [`../worklog.md`](../worklog.md) | **Worklog** — prossimi passi ordinati per lo sviluppatore |
 | [`../backend/`](../backend/) | API Fastify + Prisma (PostgreSQL / Supabase) |
+| [`product/architecture/cloud-deployment-guide.md`](product/architecture/cloud-deployment-guide.md) | Guida deploy localhost → cloud |
 | [`product/planning/backend-implementation-plan.md`](product/planning/backend-implementation-plan.md) | Piano backend demo → beta AI |
 | [`../scripts/`](../scripts/)   | Utility repo (es. allineamento tabelle Markdown) |

@@ -1,6 +1,6 @@
 # Worklog — IntentDraft (PromptPilot)
 
-**Ultimo aggiornamento:** 2026-10-29  
+**Ultimo aggiornamento:** 2026-10-30  
 **Scopo:** sequenza operativa per riprendere lo sviluppo full-stack da dove ci siamo fermati.
 
 ---
@@ -13,10 +13,12 @@
 | **Backend B0** | Fastify, health, errori JSON, env zod, Prisma + Supabase connesso |
 | **Backend B1** | 6 tabelle `idt_*` su Supabase, migrazione `init_idt_schema`, health `db: true` |
 | **Backend B2** | Auth register/login/logout/me, sessioni cookie, test integrazione |
+| **Backend B3** | CRUD conversazioni BE-C01…C05, test integrazione; FE hydrate + adapter API (IF-04) |
+| **Backend B4** | POST messaggi stub (BE-M01), titolo auto, test integrazione; FE sync thread + load detail (IF-05 parziale) |
 | **Schema DB** | Definito in doc + `backend/prisma/schema.prisma` — tabelle fisiche **`idt_*`** (8 caratteri). Vedi [`docs/product/architecture/database-design.md`](docs/product/architecture/database-design.md) §2.1 |
 | **Commit recente** | Frontend checklist + test; backend scaffold (verificare `git log`) |
 
-**Non ancora implementato sul backend:** CRUD conversazioni, messaggi, file, orchestrator, LLM (auth B2 ok).
+**Non ancora implementato sul backend:** file (B5), orchestrator (B7), LLM (B9).
 
 ---
 
@@ -69,12 +71,12 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ### Blocco 3 — Conversazioni CRUD (B3, FR-022)
 
-13. [ ] Modulo `src/modules/conversations/` — `GET/POST /api/conversations`, `GET/PATCH/DELETE /api/conversations/:id`.
-14. [ ] Scope rigoroso `user_id` da sessione; 404 se conversazione altrui.
-15. [ ] DTO allineati a `frontend/src/types/api.ts` (`ConversationSummaryDto`, `ConversationDetailDto`, `metadata` per pin/progetto).
-16. [ ] Titolo auto dal primo messaggio user (in B4 o qui se messaggi già presenti).
-17. [ ] **Fix frontend:** `apiConversationAdapter` — `create()` async con id reale; `hydrateConversationsFromApi` al bootstrap auth (IF-04).
-18. [ ] **Verifica FE:** sidebar lista, nuova chat, rename, pin, delete, refresh pagina.
+13. [x] Modulo `src/modules/conversations/` — `GET/POST /api/conversations`, `GET/PATCH/DELETE /api/conversations/:id`.
+14. [x] Scope rigoroso `user_id` da sessione; 404 se conversazione altrui.
+15. [x] DTO allineati a `frontend/src/types/api.ts` (`ConversationSummaryDto`, `ConversationDetailDto`, `metadata` per pin/progetto).
+16. [x] Titolo auto dal primo messaggio user (POST messaggi, max 48 caratteri).
+17. [x] **Fix frontend:** `apiConversationAdapter` — `create()` async con id reale; `hydrateConversationsFromApi` al bootstrap auth (IF-04).
+18. [ ] **Verifica FE:** sidebar lista, nuova chat, rename, pin, delete, refresh pagina (test manuali § sotto).
 
 **Riferimenti:** piano backend §8 BE-C01…C05.
 
@@ -82,9 +84,9 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ### Blocco 4 — Messaggi stub (B4, FOUND-021)
 
-19. [ ] `POST /api/conversations/:id/messages` — validazione lunghezza (`MAX_MESSAGE_CHARS`), INSERT `idt_msgs` user.
-20. [ ] Risposta stub assistant (testo fisso) + aggiornamento `idt_conv.updated_at`.
-21. [ ] **Verifica FE:** invio messaggio in API mode (thread persistito dopo F5); accettare UX limitata fino a B7.
+19. [x] `POST /api/conversations/:id/messages` — validazione lunghezza (`MAX_MESSAGE_CHARS`), INSERT `idt_msgs` user.
+20. [x] Risposta stub assistant (testo fisso) + aggiornamento `idt_conv.updated_at`.
+21. [ ] **Verifica FE:** invio messaggio in API mode (thread persistito dopo F5); accettare UX limitata fino a B7 (test manuali § sotto).
 
 ---
 
@@ -147,6 +149,22 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 
 ---
 
+### Blocco 11 — Deploy cloud & utenti globali (INF, post-funzionale) -- evitalo per ora.. TO DO In the future
+
+**Quando:** dopo **M3** (minimo) e idealmente insieme a **B10**; go-live pubblico solo con **M4–M5** se serve LLM in prod.  
+**Guida unica:** [`docs/product/architecture/cloud-deployment-guide.md`](docs/product/architecture/cloud-deployment-guide.md) (provider, costi, env, GDPR, **multi-utente da reti globali** §9).
+
+47. [ ] **INF-001** — Preparazione repo: `Dockerfile` backend, `.dockerignore`, `frontend/.env.production.example` (§12 Fase 0).
+48. [ ] **INF-002** — Ambiente **staging** cloud: dominio, Supabase staging, API + volume upload, FE su CDN, smoke auth/cookie cross-subdomain (§12 Fase 1).
+49. [ ] **INF-003** — **Produzione beta:** secret CI, monitoring su `/api/health`, privacy/OQ-012 (§12 Fase 2).
+50. [ ] **INF-004** — **Accesso globale:** CDN edge per `frontend/dist`; API dietro proxy/WAF (es. Cloudflare); rate limit **per IP e per sessione** (NFR-003); download file via storage + CDN quando si scala (§9).
+51. [ ] **INF-005** — Verifica isolamento **multi-utente** (già B3/B3-M06): ogni tenant logico = `user_id`; nessun dato cross-account sotto carico da reti diverse.
+52. [ ] **INF-006** — Piano evolutivo multi-regione (solo se metriche latenza lo richiedono): object storage replicato, read replica DB, eventuale seconda region API — documentare decisione in guida §9.3.
+
+**Nota:** multi-tenant **organizzazioni/team** (workspace condivisi) resta **fuori scope** beta (OQ-007); qui si intende **molti utenti singoli** da Internet mondiale.
+
+---
+
 ## Milestone (riepilogo)
 
 | ID | Descrizione | Blocchi |
@@ -157,6 +175,7 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 | **M3** | + File | 5 |
 | **M4** | UX mock su API | 7 |
 | **M5** | Claude Sonnet | 9 |
+| **M6** | Deploy cloud staging/prod + readiness globale | 10–11 |
 
 ---
 
@@ -171,12 +190,13 @@ Spunta ogni voce solo quando verificata (build ok + prova manuale o test indicat
 | [`docs/product/planning/beta-roadmap.md`](docs/product/planning/beta-roadmap.md) | FOUND / BETA roadmap storica |
 | [`backend/README.md`](backend/README.md) | Setup Supabase |
 | [`frontend/README.md`](frontend/README.md) | Mock vs API, script test |
+| [`docs/product/architecture/cloud-deployment-guide.md`](docs/product/architecture/cloud-deployment-guide.md) | Deploy localhost → cloud, costi, provider, utenti globali |
 
 ---
 
 ## Dove riprendere **adesso**
 
-**Prossima azione consigliata:** verifica manuale FE punto 12 (IF-01…03), poi **Blocco 3 — Conversazioni CRUD (B3)** dal punto 13.
+**Prossima azione consigliata:** **Blocco 5 — Upload file (B5)** oppure test manuali a fine checklist. Milestone **M2** (chat persistita stub) coperta da B3+B4.
 
 Dopo ogni blocco: `npm run build` in `backend/`, commit atomico, aggiornare le checkbox in questo file.
 
@@ -187,3 +207,43 @@ Dopo ogni blocco: `npm run build` in `backend/`, commit atomico, aggiornare le c
 - Non committare `backend/.env` né segreti Supabase.
 - Dopo cambi schema: `npm run db:push` o migrate + rigenerare client (`prisma generate`).
 - Allineare sempre API al §8 frontend spec; in caso di breaking change, aggiornare spec + adapter FE nello stesso PR.
+
+---
+
+## Test manuali — Blocco 3 (Conversazioni CRUD, B3)
+
+Prerequisiti: backend su `:3001` con `db: true`, frontend con `VITE_USE_MOCK=false` e `VITE_API_URL=http://localhost:3001`, utente registrato e loggato su `/app`.
+
+- **B3-M01 — Hydrate sidebar (IF-04):** Dopo login, la sidebar mostra le chat esistenti senza azioni extra. In Supabase Table Editor verifica righe in `idt_conv` per il tuo `user_id`; i titoli devono corrispondere. F5 su `/app`: stessa lista, cookie di sessione invariato.
+
+- **B3-M02 — Nuova chat:** Clic «Nuova chat» crea una conversazione vuota e la seleziona. In DevTools → Network compare `POST /api/conversations` con `201` e un UUID in risposta. Un secondo click su «Nuova chat» non deve creare duplicati vuoti se esiste già una chat recente senza messaggi.
+
+- **B3-M03 — Rinomina:** Dal menu della chat, rinomina (es. «Prova API»). Network: `PATCH /api/conversations/:id` con `{ title }` e `200`. Il titolo resta dopo F5 e in Supabase la colonna `title` di `idt_conv` è aggiornata.
+
+- **B3-M04 — Pin e progetto:** Fissa una chat e spostane un’altra in «Progetto». Network: `PATCH` con `{ metadata: { pinned: true } }` o `{ inProject: true }`. Dopo F5 le sezioni Fissate/Progetti restano corrette; in DB `metadata` JSON su `idt_conv` riflette i flag.
+
+- **B3-M05 — Elimina:** Elimina una chat confermando la modale. Network: `DELETE /api/conversations/:id` → `204`. La voce sparisce dalla sidebar; F5 non la ripresenta. La riga scompare da `idt_conv` (cascade su `idt_msgs` se presenti).
+
+- **B3-M06 — Isolamento utente:** Con due account (A e B), crea una chat con A e copia l’UUID dall’URL o dalla risposta POST. Loggato come B, apri DevTools e `GET /api/conversations/<uuid-A>`: deve essere `404 NOT_FOUND`, non i dati di A.
+
+- **B3-M07 — Dettaglio vuoto:** `GET /api/conversations/:id` (cookie valido) su chat senza messaggi: `200` con `messages: []`, `files: []`, `phase: "idle"`, `latestPrompt: null`. Coerente con contratto §8.3 per chat appena create.
+
+- **B3-M08 — Build automatici:** Da repo root, `cd backend && npm run build && npm run test` e `cd frontend && npm run build` senza errori. Opzionale: verifica che i test integrazione `conversations.test.ts` siano verdi sul tuo `DATABASE_URL`.
+
+---
+
+## Test manuali — Blocco 4 (Messaggi stub, B4)
+
+Prerequisiti come B3; chat vuota selezionata in API mode.
+
+- **B4-M01 — Invio messaggio:** Scrivi un testo nel composer e invia. Network: `POST /api/conversations/:id/messages` → `201` con `userMessage` e `assistantMessage`. In UI compaiono il tuo messaggio e la risposta stub («Motore AI non ancora collegato…»). In Supabase `idt_msgs` ha due righe (user + assistant) per quella conversazione.
+
+- **B4-M02 — Persistenza dopo F5:** Dopo l’invio, ricarica `/app`. Il thread (user + assistant) resta visibile nella chat attiva; la sidebar mostra titolo auto dal primo messaggio (primi ~48 caratteri). `GET /api/conversations/:id` restituisce `messages` con length ≥ 2.
+
+- **B4-M03 — Titolo sidebar:** Su chat con titolo vuoto, il primo invio aggiorna il titolo in sidebar senza PATCH manuale. Verifica colonna `title` su `idt_conv` allineata al testo troncato.
+
+- **B4-M04 — Validazione:** Prova invio solo spazi (bloccato lato FE) o contenuto oltre `MAX_MESSAGE_CHARS` (blocco FE; opzionale POST diretto → `400 VALIDATION_ERROR`). Allegati nel composer in API mode: toast tipo file fino a B5 (upload non implementato).
+
+- **B4-M05 — UX limitata (atteso):** Dopo la risposta stub, `phase` è `idle` e il composer può non essere più visibile con messaggi presenti — comportamento accettabile fino a B7 (motore mock server). Rigenera/skip/chiarimenti restano non implementati o falliscono fino a B6/B7.
+
+- **B4-M06 — Test automatici:** `backend/tests/integration/messages.test.ts` verde con `DATABASE_URL`; build FE/BE ok.
