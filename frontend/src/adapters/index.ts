@@ -12,6 +12,8 @@ import { apiConversationAdapter } from '@/adapters/api/apiConversationAdapter';
 import { apiMessageAdapter } from '@/adapters/api/apiMessageAdapter';
 import { apiFileAdapter } from '@/adapters/api/apiFileAdapter';
 import { apiPromptAdapter } from '@/adapters/api/apiPromptAdapter';
+import { mockAdminAdapter } from '@/adapters/mock/mockAdminAdapter';
+import { apiAdminAdapter } from '@/adapters/api/apiAdminAdapter';
 
 const mockPorts: AppPorts = {
   auth: mockAuthAdapter,
@@ -20,6 +22,7 @@ const mockPorts: AppPorts = {
   messages: mockMessageAdapter,
   files: mockFileAdapter,
   prompts: mockPromptAdapter,
+  admin: mockAdminAdapter,
 };
 
 const apiPorts: AppPorts = {
@@ -29,6 +32,7 @@ const apiPorts: AppPorts = {
   messages: apiMessageAdapter,
   files: apiFileAdapter,
   prompts: apiPromptAdapter,
+  admin: apiAdminAdapter,
 };
 
 export function getPorts(): AppPorts {

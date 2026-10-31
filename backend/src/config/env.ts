@@ -31,6 +31,10 @@ const envSchema = z.object({
   RATE_LIMIT_AUTH_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
   RATE_LIMIT_MESSAGES_MAX: z.coerce.number().int().positive().default(40),
   RATE_LIMIT_MESSAGES_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+  RATE_LIMIT_ADMIN_MAX: z.coerce.number().int().positive().default(120),
+  RATE_LIMIT_ADMIN_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
+  LLM_USD_PER_1M_INPUT: z.coerce.number().nonnegative().default(0),
+  LLM_USD_PER_1M_OUTPUT: z.coerce.number().nonnegative().default(0),
 });
 
 export type Env = z.infer<typeof envSchema>;

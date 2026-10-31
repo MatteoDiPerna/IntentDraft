@@ -155,6 +155,8 @@ export interface PipelineInput {
   };
   hasPrompt: boolean;
   triggerText: string;
+  userId?: string;
+  conversationId?: string | null;
 }
 
 export type PipelineResult =

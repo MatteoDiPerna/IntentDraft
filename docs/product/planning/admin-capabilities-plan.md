@@ -3,7 +3,7 @@
 **Documento:** `admin-capabilities-plan.md`  
 **Versione:** 2.0 (2026-10-31)  
 **Audience:** agente di implementazione (backend + frontend + DB)  
-**Stato:** RBAC parziale in codice; **console admin non implementata**
+**Stato:** RBAC + console admin implementati (fasi A1–A10, v2.0 runbook)
 
 ---
 

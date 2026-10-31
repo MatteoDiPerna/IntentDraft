@@ -9,7 +9,15 @@ import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { LimitsPage } from '@/pages/LimitsPage';
 import { ChatPage } from '@/pages/chat/ChatPage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
+import { AdminLayout } from '@/pages/admin/AdminLayout';
+import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
+import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
+import { AdminUserDetailPage } from '@/pages/admin/AdminUserDetailPage';
+import { AdminUsagePage } from '@/pages/admin/AdminUsagePage';
+import { AdminPromptsPage } from '@/pages/admin/AdminPromptsPage';
+import { AdminPlatformPage } from '@/pages/admin/AdminPlatformPage';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { AdminRoute } from '@/components/auth/AdminRoute';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const AppRoutes: React.FC = () => {
@@ -45,6 +53,25 @@ const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/app/admin"
+          element={
+            <ProtectedRoute>
+              <AdminRoute>
+                <ErrorBoundary>
+                  <AdminLayout />
+                </ErrorBoundary>
+              </AdminRoute>
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="users/:id" element={<AdminUserDetailPage />} />
+          <Route path="usage" element={<AdminUsagePage />} />
+          <Route path="prompts" element={<AdminPromptsPage />} />
+          <Route path="platform" element={<AdminPlatformPage />} />
+        </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </React.Suspense>

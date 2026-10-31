@@ -42,6 +42,11 @@ Tutte le **tabelle fisiche** in PostgreSQL hanno nome **esattamente 8 caratteri*
 | Messaggi chat      | **`idt_msgs`** | `Message`        |
 | File caricati      | **`idt_file`** | `UploadedFile`   |
 | Artifact prompt    | **`idt_prmt`** | `PromptArtifact` |
+| Eventi uso LLM     | **`idt_usag`** | `LlmUsageEvent`  |
+| Audit admin        | **`idt_adlg`** | `AdminAuditLog`  |
+| Template prompt    | **`idt_ptpl`** | `PlatformPromptTemplate` |
+| Config piattaforma | **`idt_conf`** | `PlatformConfig` |
+| Consenso cookie    | **`idt_cook`** | `CookieConsentLog` |
 
 Nei documenti operativi e nelle API REST si usano ancora i concetti *user*, *conversation*, *message*; negli INSERT/SELECT e in Supabase Table Editor compaiono i nomi **`idt_*`**.
 
@@ -140,6 +145,7 @@ erDiagram
 | `locale`          | ENUM `it`,`en` DEFAULT `it`      | Preferenza UI                 |
 | `auth_provider`   | ENUM `local`,`google`            |                               |
 | `role`            | ENUM `user`,`admin` DEFAULT `user` | RBAC; admin da seed dev     |
+| `status`          | ENUM `active`,`disabled` DEFAULT `active` | Login bloccato se `disabled` |
 | `google_sub`      | VARCHAR(255) UNIQUE NULL         | Subject Google                |
 | `created_at`      | TIMESTAMPTZ                      |                               |
 | `updated_at`      | TIMESTAMPTZ                      |                               |

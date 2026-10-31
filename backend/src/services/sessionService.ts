@@ -57,6 +57,10 @@ export async function findUserBySessionId(sessionId: string): Promise<DbUser | n
     await prisma.session.delete({ where: { id: sessionId } }).catch(() => undefined);
     return null;
   }
+  if (session.user.status === 'disabled') {
+    await prisma.session.delete({ where: { id: sessionId } }).catch(() => undefined);
+    return null;
+  }
   return session.user;
 }
 

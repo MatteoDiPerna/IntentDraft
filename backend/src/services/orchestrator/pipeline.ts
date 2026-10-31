@@ -27,9 +27,10 @@ export async function runSkipPipelineAsync(
   locale: Locale,
   userContents: string[],
   clarificationTurns: number,
+  usage?: { userId: string; conversationId?: string | null },
 ): Promise<PipelineResult> {
   if (shouldUseLlm(env)) {
-    return llmRunSkipPipeline(env, locale, userContents, clarificationTurns);
+    return llmRunSkipPipeline(env, locale, userContents, clarificationTurns, usage);
   }
   return runSkipPipeline(locale, userContents, clarificationTurns);
 }
@@ -39,9 +40,10 @@ export async function runRegeneratePipelineAsync(
   locale: Locale,
   userContents: string[],
   interpretation: Interpretation,
+  usage?: { userId: string; conversationId?: string | null },
 ): Promise<{ promptMarkdown: string; promptSections?: { heading: string; content: string }[] }> {
   if (shouldUseLlm(env)) {
-    const out = await llmRunRegeneratePipeline(env, locale, userContents, interpretation);
+    const out = await llmRunRegeneratePipeline(env, locale, userContents, interpretation, usage);
     return { promptMarkdown: out.promptMarkdown, promptSections: out.sections };
   }
   const { promptMarkdown } = runRegeneratePipeline(locale, interpretation);

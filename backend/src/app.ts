@@ -12,6 +12,10 @@ import { fileRoutes } from './modules/files/routes.js';
 import { promptRoutes } from './modules/prompts/routes.js';
 import { userRoutes } from './modules/users/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
+import { adminRoutes } from './modules/admin/routes.js';
+import { consentRoutes } from './modules/consent/routes.js';
+import { createRequireAuth } from './middleware/requireAuth.js';
+import { requireAdmin } from './middleware/requireAdmin.js';
 import { registerScopeRateLimit } from './plugins/rateLimitScopes.js';
 import { AppError, errorPayload } from './lib/errors.js';
 
@@ -61,6 +65,18 @@ export async function buildServer(options?: { env?: ReturnType<typeof loadEnv> }
   await app.register(fileRoutes, { env });
   await app.register(userRoutes, { env });
   await app.register(promptRoutes, { env });
+  await app.register(consentRoutes, { env });
+
+  const requireAuth = createRequireAuth(env);
+  await app.register(
+    async (adminScope) => {
+      await registerScopeRateLimit(adminScope, env, 'admin');
+      adminScope.addHook('preHandler', requireAuth);
+      adminScope.addHook('preHandler', requireAdmin);
+      await adminScope.register(adminRoutes, { env });
+    },
+    { prefix: '/api/admin' },
+  );
 
   return { app, env };
 }

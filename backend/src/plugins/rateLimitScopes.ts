@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import type { Env } from '../config/env.js';
 import { AppError } from '../lib/errors.js';
 
-export type RateLimitScope = 'auth' | 'messages';
+export type RateLimitScope = 'auth' | 'messages' | 'admin';
 
 export async function registerScopeRateLimit(
   app: FastifyInstance,
@@ -12,9 +12,18 @@ export async function registerScopeRateLimit(
 ): Promise<void> {
   if (!env.RATE_LIMIT_ENABLED) return;
 
-  const max = scope === 'auth' ? env.RATE_LIMIT_AUTH_MAX : env.RATE_LIMIT_MESSAGES_MAX;
+  const max =
+    scope === 'auth'
+      ? env.RATE_LIMIT_AUTH_MAX
+      : scope === 'messages'
+        ? env.RATE_LIMIT_MESSAGES_MAX
+        : env.RATE_LIMIT_ADMIN_MAX;
   const timeWindow =
-    scope === 'auth' ? env.RATE_LIMIT_AUTH_WINDOW_MS : env.RATE_LIMIT_MESSAGES_WINDOW_MS;
+    scope === 'auth'
+      ? env.RATE_LIMIT_AUTH_WINDOW_MS
+      : scope === 'messages'
+        ? env.RATE_LIMIT_MESSAGES_WINDOW_MS
+        : env.RATE_LIMIT_ADMIN_WINDOW_MS;
 
   await app.register(rateLimit, {
     max,

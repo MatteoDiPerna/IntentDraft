@@ -92,6 +92,8 @@ export async function orchestrateSendMessage(
         },
         hasPrompt,
         triggerText: trimmed,
+        userId,
+        conversationId,
       },
       env,
     );
@@ -192,6 +194,7 @@ export async function orchestrateSkipClarification(
       locale,
       userContentsFromMessages(messages),
       aiState.clarificationTurns,
+      { userId, conversationId },
     );
   } catch (err) {
     throw toLlmAppError(err);
@@ -257,6 +260,7 @@ export async function orchestrateRegenerate(
       locale,
       userContentsFromMessages(messages),
       aiState.interpretation,
+      { userId, conversationId },
     );
   } catch (err) {
     throw toLlmAppError(err);

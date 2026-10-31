@@ -30,4 +30,21 @@ export const API = {
     one: (id: string) => `/api/prompts/${id}`,
     feedback: (id: string) => `/api/prompts/${id}/feedback`,
   },
+  consent: {
+    cookie: '/api/consent/cookie',
+  },
+  admin: {
+    health: '/api/admin/health',
+    metricsOverview: '/api/admin/metrics/overview',
+    users: '/api/admin/users',
+    user: (id: string) => `/api/admin/users/${id}`,
+    userUsage: (id: string) => `/api/admin/users/${id}/usage`,
+    userForceReset: (id: string) => `/api/admin/users/${id}/force-password-reset`,
+    usageExport: '/api/admin/usage/export',
+    promptTemplates: '/api/admin/prompt-templates',
+    promptTemplate: (key: string) => `/api/admin/prompt-templates/${encodeURIComponent(key)}`,
+    promptDryRun: '/api/admin/prompt-templates/dry-run',
+    platformSettings: '/api/admin/platform/settings',
+    complianceLegal: '/api/admin/compliance/legal',
+  },
 } as const;

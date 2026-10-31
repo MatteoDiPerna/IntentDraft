@@ -73,6 +73,10 @@ export async function authRoutes(app: FastifyInstance, opts: { env: Env }) {
       throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid email or password');
     }
 
+    if (user.status === 'disabled') {
+      throw new AppError(403, 'ACCOUNT_DISABLED', 'This account has been disabled');
+    }
+
     const sessionId = await createSession(user.id, env);
     setSessionCookie(reply, env, sessionId);
     return reply.send({ user: toUserDto(user) });

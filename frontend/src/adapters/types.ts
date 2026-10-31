@@ -1,4 +1,11 @@
 import type { Locale, User } from '@/types/auth';
+import type {
+  AdminMetricsOverview,
+  AdminPlatformSettings,
+  AdminPromptTemplateGroup,
+  AdminUserDetail,
+  AdminUsersListResponse,
+} from '@/types/admin';
 import type { Conversation } from '@/types/conversation';
 import type { PromptArtifact } from '@/types/prompt';
 import type { ConversationMetadata } from '@/types/api';
@@ -75,6 +82,30 @@ export interface PromptPort {
   ): Promise<void>;
 }
 
+export interface AdminPort {
+  getMetricsOverview(days?: number): Promise<AdminMetricsOverview>;
+  listUsers(params: { page?: number; pageSize?: number; q?: string }): Promise<AdminUsersListResponse>;
+  getUser(id: string): Promise<AdminUserDetail>;
+  patchUser(id: string, patch: { role?: 'user' | 'admin'; status?: 'active' | 'disabled' }): Promise<void>;
+  forcePasswordReset(id: string): Promise<{ devResetUrl?: string }>;
+  exportUsageCsv(params: { from?: string; to?: string }): Promise<Blob>;
+  listPromptTemplates(): Promise<{ groups: AdminPromptTemplateGroup[] }>;
+  putPromptTemplate(
+    key: string,
+    body: { provider?: string; body: string; activate?: boolean },
+  ): Promise<void>;
+  dryRunPrompt(input: { userText: string; locale: 'it' | 'en' }): Promise<{ promptMarkdown: string }>;
+  getPlatformSettings(): Promise<AdminPlatformSettings>;
+  putPlatformSettings(overrides: Record<string, unknown>): Promise<void>;
+  getLegalContent(): Promise<{ pages: { page: string; locale: string; markdown: string }[] }>;
+  putLegalContent(input: {
+    page: 'limits' | 'privacy' | 'terms';
+    locale: 'it' | 'en';
+    markdown: string;
+  }): Promise<void>;
+  recordCookieConsent(choice: 'accepted' | 'rejected'): Promise<void>;
+}
+
 export interface AppPorts {
   auth: AuthPort;
   user: UserPort;
@@ -82,4 +113,5 @@ export interface AppPorts {
   messages: MessagePort;
   files: FilePort;
   prompts: PromptPort;
+  admin: AdminPort;
 }

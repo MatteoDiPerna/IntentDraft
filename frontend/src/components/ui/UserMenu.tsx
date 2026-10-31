@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, LogOut, Settings } from 'lucide-react';
+import { ChevronDown, LogOut, Settings, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { SettingsMenu } from '@/components/ui/SettingsMenu';
@@ -64,6 +64,17 @@ export function UserMenu() {
           userOpen ? 'block' : 'hidden',
         )}
       >
+        {user.role === 'admin' && (
+          <Link
+            to="/app/admin"
+            role="menuitem"
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
+            onClick={() => setUserOpen(false)}
+          >
+            <Shield className="h-4 w-4" aria-hidden />
+            {t('nav.admin')}
+          </Link>
+        )}
         <Link
           to="/app/settings"
           role="menuitem"

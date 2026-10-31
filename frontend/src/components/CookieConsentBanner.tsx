@@ -4,12 +4,15 @@ import { Link } from 'react-router-dom';
 import { GlassPanel } from '@/components/brand';
 import { Button } from '@/components/ui/button';
 import { STORAGE } from '@/lib/storageKeys';
+import { appConfig } from '@/config';
+import { usePorts } from '@/providers/PortsProvider';
 
 type ConsentChoice = 'accepted' | 'rejected';
 
 /** Mock cookie banner — stores choice locally; session cookies still work regardless. */
 export function CookieConsentBanner() {
   const { t } = useTranslation();
+  const ports = usePorts();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -20,6 +23,9 @@ export function CookieConsentBanner() {
   const save = (choice: ConsentChoice) => {
     localStorage.setItem(STORAGE.cookieConsent, choice);
     setVisible(false);
+    if (!appConfig.useMock) {
+      void ports.admin.recordCookieConsent(choice).catch(() => undefined);
+    }
   };
 
   if (!visible) return null;

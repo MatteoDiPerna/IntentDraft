@@ -25,6 +25,16 @@ enum UserRole {
   admin
 }
 
+enum UserStatus {
+  active
+  disabled
+}
+
+enum CookieConsentChoice {
+  accepted
+  rejected
+}
+
 enum ConversationStatus {
   active
   archived
@@ -55,13 +65,18 @@ model User {
   locale       Locale       @default(it)
   authProvider AuthProvider @default(local) @map("auth_provider")
   role         UserRole     @default(user)
+  status       UserStatus   @default(active)
   googleSub    String?      @unique @map("google_sub") @db.VarChar(255)
   createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  sessions      Session[]
-  conversations Conversation[]
-  uploadedFiles UploadedFile[]
+  sessions              Session[]
+  conversations         Conversation[]
+  uploadedFiles         UploadedFile[]
+  llmUsageEvents        LlmUsageEvent[]
+  adminAuditLogs        AdminAuditLog[]        @relation("AdminAuditActor")
+  promptTemplatesEdited PlatformPromptTemplate[]
+  cookieConsents        CookieConsentLog[]
 
   @@map("idt_user")
 }
@@ -150,4 +165,78 @@ model PromptArtifact {
 
   @@index([conversationId, createdAt(sort: Desc)])
   @@map("idt_prmt")
+}
+
+model LlmUsageEvent {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  conversationId String?  @map("conversation_id") @db.Uuid
+  phase          String   @db.VarChar(32)
+  provider       String   @db.VarChar(32)
+  model          String   @db.VarChar(127)
+  inputTokens    Int      @map("input_tokens")
+  outputTokens   Int      @map("output_tokens")
+  usdEstimate    Decimal? @map("usd_estimate") @db.Decimal(10, 6)
+  latencyMs      Int?     @map("latency_ms")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt])
+  @@map("idt_usag")
+}
+
+model AdminAuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  adminUserId String   @map("admin_user_id") @db.Uuid
+  action      String   @db.VarChar(64)
+  targetType  String   @map("target_type") @db.VarChar(32)
+  targetId    String?  @map("target_id") @db.VarChar(255)
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  adminUser User @relation("AdminAuditActor", fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId, createdAt(sort: Desc)])
+  @@map("idt_adlg")
+}
+
+model PlatformPromptTemplate {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @db.VarChar(64)
+  provider  String   @db.VarChar(32)
+  body      String   @db.Text
+  version   Int      @default(1)
+  active    Boolean  @default(false)
+  updatedBy String?  @map("updated_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  updatedByUser User? @relation(fields: [updatedBy], references: [id], onDelete: SetNull)
+
+  @@unique([key, provider, version])
+  @@index([key, provider, active])
+  @@map("idt_ptpl")
+}
+
+model PlatformConfig {
+  key       String   @id @db.VarChar(64)
+  value     Json
+  updatedBy String?  @map("updated_by") @db.Uuid
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("idt_conf")
+}
+
+model CookieConsentLog {
+  id        String              @id @default(uuid()) @db.Uuid
+  userId    String?             @map("user_id") @db.Uuid
+  choice    CookieConsentChoice
+  createdAt DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@map("idt_cook")
 }

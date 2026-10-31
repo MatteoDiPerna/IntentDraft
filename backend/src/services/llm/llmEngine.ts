@@ -1,11 +1,12 @@
 import type { Env } from '../../config/env.js';
 import type { Locale } from '../../modules/auth/userDto.js';
+import { recordLlmUsage } from '../../modules/admin/services/usageRecorder.js';
 import {
   detectUnsupported,
   type PipelineInput,
   type PipelineResult,
 } from '../orchestrator/mockEngine.js';
-import { createAnthropicClient } from './anthropicClient.js';
+import { createAnthropicClient, type LlmMessageClient } from './anthropicClient.js';
 import { decideEngineStep } from './decide.js';
 import { extractJsonFromModelText } from './extractJson.js';
 import { intentModelSchema, promptArtifactSchema, type IntentModel } from './intentModel.js';
@@ -17,22 +18,69 @@ import {
   refusalMessage,
   artifactSections,
 } from './mapIntent.js';
+import { getActivePromptBody } from './platformPrompts.js';
 import {
   analyzeSystemPrompt,
   formatUserTranscript,
   generateSystemPrompt,
 } from './promptTemplates.js';
 
-async function callAnalyze(env: Env, locale: Locale, userContents: string[]): Promise<IntentModel> {
-  const client = createAnthropicClient(env);
-  const system = analyzeSystemPrompt(locale);
-  const user = `Conversation transcript (chronological):\n${formatUserTranscript(userContents)}`;
+type UsageCtx = { userId?: string; conversationId?: string | null };
+
+async function resolveAnalyzeSystem(locale: Locale): Promise<string> {
+  const custom = await getActivePromptBody('analyze_system');
+  return custom ?? analyzeSystemPrompt(locale);
+}
+
+async function resolveGenerateSystem(locale: Locale): Promise<string> {
+  const custom = await getActivePromptBody('generate_system');
+  return custom ?? generateSystemPrompt(locale);
+}
+
+async function completeRecorded(
+  env: Env,
+  ctx: UsageCtx | undefined,
+  phase: string,
+  client: LlmMessageClient,
+  system: string,
+  user: string,
+) {
+  const started = Date.now();
   const completion = await client.complete(system, user);
+  if (ctx?.userId) {
+    await recordLlmUsage(env, {
+      userId: ctx.userId,
+      conversationId: ctx.conversationId,
+      phase,
+      provider: 'anthropic',
+      model: completion.model,
+      inputTokens: completion.inputTokens,
+      outputTokens: completion.outputTokens,
+      latencyMs: Date.now() - started,
+    });
+  }
+  return completion;
+}
+
+async function callAnalyze(
+  env: Env,
+  locale: Locale,
+  userContents: string[],
+  ctx?: UsageCtx,
+): Promise<IntentModel> {
+  const client = createAnthropicClient(env);
+  const system = await resolveAnalyzeSystem(locale);
+  const user = `Conversation transcript (chronological):\n${formatUserTranscript(userContents)}`;
+  const completion = await completeRecorded(env, ctx, 'ANALYZE', client, system, user);
   try {
     const raw = extractJsonFromModelText(completion.text);
     return intentModelSchema.parse(raw);
   } catch {
-    const repair = await client.complete(
+    const repair = await completeRecorded(
+      env,
+      ctx,
+      'ANALYZE',
+      client,
       system,
       `Fix your previous output to be ONLY valid JSON for the schema. Previous output:\n${completion.text.slice(0, 4000)}`,
     );
@@ -46,10 +94,11 @@ async function callGenerate(
   locale: Locale,
   intent: IntentModel,
   userContents: string[],
+  ctx?: UsageCtx,
   extraNote?: string,
 ): Promise<{ bodyMarkdown: string; sections: { heading: string; content: string }[] }> {
   const client = createAnthropicClient(env);
-  const system = generateSystemPrompt(locale);
+  const system = await resolveGenerateSystem(locale);
   const user = [
     `IntentModel JSON:\n${JSON.stringify(intent, null, 2)}`,
     `Transcript:\n${formatUserTranscript(userContents)}`,
@@ -57,7 +106,7 @@ async function callGenerate(
   ]
     .filter(Boolean)
     .join('\n\n');
-  const completion = await client.complete(system, user);
+  const completion = await completeRecorded(env, ctx, 'GENERATE', client, system, user);
   try {
     const raw = extractJsonFromModelText(completion.text);
     const artifact = promptArtifactSchema.parse(raw);
@@ -67,9 +116,15 @@ async function callGenerate(
   }
 }
 
+function usageFromInput(input: PipelineInput): UsageCtx | undefined {
+  if (!input.userId) return undefined;
+  return { userId: input.userId, conversationId: input.conversationId };
+}
+
 export async function llmRunMessagePipeline(input: PipelineInput, env: Env): Promise<PipelineResult> {
   const { locale, userContents, aiState, hasPrompt, triggerText } = input;
   const trimmed = triggerText.trim();
+  const ctx = usageFromInput(input);
 
   if (detectUnsupported(trimmed)) {
     return {
@@ -82,7 +137,7 @@ export async function llmRunMessagePipeline(input: PipelineInput, env: Env): Pro
     };
   }
 
-  const intent = await callAnalyze(env, locale, userContents);
+  const intent = await callAnalyze(env, locale, userContents, ctx);
   const decision = decideEngineStep(intent, aiState.clarificationTurns);
 
   if (decision === 'refuse') {
@@ -103,7 +158,7 @@ export async function llmRunMessagePipeline(input: PipelineInput, env: Env): Pro
     };
   }
 
-  const generated = await callGenerate(env, locale, intent, userContents);
+  const generated = await callGenerate(env, locale, intent, userContents, ctx);
   const interpretation = intentToInterpretation(intent);
   return {
     kind: 'prompt_ready',
@@ -120,8 +175,9 @@ export async function llmRunSkipPipeline(
   locale: Locale,
   userContents: string[],
   clarificationTurns: number,
+  ctx?: UsageCtx,
 ): Promise<PipelineResult> {
-  const intent = await callAnalyze(env, locale, userContents);
+  const intent = await callAnalyze(env, locale, userContents, ctx);
   intent.assumptions.push({
     field: 'skipped',
     text:
@@ -131,7 +187,14 @@ export async function llmRunSkipPipeline(
     reason: 'user_skip',
   });
   intent.clarificationPlan = { shouldAsk: false, questions: [] };
-  const generated = await callGenerate(env, locale, intent, userContents, 'User skipped clarification questions.');
+  const generated = await callGenerate(
+    env,
+    locale,
+    intent,
+    userContents,
+    ctx,
+    'User skipped clarification questions.',
+  );
   return {
     kind: 'prompt_ready',
     interpretation: intentToInterpretation(intent),
@@ -147,6 +210,7 @@ export async function llmRunRegeneratePipeline(
   locale: Locale,
   userContents: string[],
   interpretation: { objective: string; context?: string; audience?: string; assumptions: string[] },
+  ctx?: UsageCtx,
 ): Promise<{ promptMarkdown: string; sections: { heading: string; content: string }[] }> {
   const intent: IntentModel = {
     objective: interpretation.objective,
@@ -161,14 +225,19 @@ export async function llmRunRegeneratePipeline(
     clarificationPlan: { shouldAsk: false, questions: [] },
     safety: { outOfScope: false },
   };
-  const generated = await callGenerate(
+  return callGenerate(
     env,
     locale,
     intent,
     userContents,
+    ctx,
     'Regenerate a fresh variant of the prompt with the same intent.',
   );
-  return { promptMarkdown: generated.bodyMarkdown, sections: generated.sections };
 }
 
-// Extend PipelineResult for sections — update mockEngine type
+export async function llmDryRunPipeline(env: Env, locale: Locale, userText: string) {
+  const userContents = [userText];
+  const intent = await callAnalyze(env, locale, userContents);
+  const generated = await callGenerate(env, locale, intent, userContents);
+  return { intentModel: intent, promptMarkdown: generated.bodyMarkdown };
+}
