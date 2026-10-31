@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
+import { ApiError } from '@/api/client';
 import { AuthPageShell } from '@/components/brand';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,13 +25,17 @@ export function ForgotPasswordPage() {
   const {
     register,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<Form>({ resolver: zodResolver(schema) });
 
   const onSubmit = async (data: Form) => {
+    clearErrors();
     try {
       const res = await ports.auth.requestPasswordReset(data.email);
       setSent(true);
+      setDevResetPath(null);
       if (res.devResetUrl) {
         try {
           const url = new URL(res.devResetUrl);
@@ -40,6 +45,14 @@ export function ForgotPasswordPage() {
         }
       }
     } catch (e) {
+      if (e instanceof ApiError && e.code === 'EMAIL_NOT_REGISTERED') {
+        setError('email', { message: t('auth.forgotPasswordEmailUnknown') });
+        return;
+      }
+      if (e instanceof ApiError && e.code === 'PASSWORD_RESET_UNAVAILABLE') {
+        setError('root', { message: t('auth.forgotPasswordGoogleOnly') });
+        return;
+      }
       showError(e);
     }
   };
@@ -70,6 +83,7 @@ export function ForgotPasswordPage() {
             <Input id="email" type="email" autoComplete="email" className="brand-field" {...register('email')} />
             {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
+          {errors.root && <p className="text-sm text-destructive">{errors.root.message}</p>}
           <Button type="submit" className="brand-btn-glow w-full" disabled={isSubmitting}>
             {t('auth.forgotPasswordSubmit')}
           </Button>

@@ -19,7 +19,7 @@ import {
 } from './schemas.js';
 import { toUserDto } from './userMapper.js';
 import { createPasswordResetToken, verifyPasswordResetToken } from '../../services/passwordResetToken.js';
-import { logger } from '../../lib/logger.js';
+import { sendPasswordResetEmail } from '../../services/passwordResetMailService.js';
 
 export async function authRoutes(app: FastifyInstance, opts: { env: Env }) {
   const { env } = opts;
@@ -102,20 +102,32 @@ export async function authRoutes(app: FastifyInstance, opts: { env: Env }) {
 
     const email = parsed.data.email.trim().toLowerCase();
     const user = await prisma.user.findUnique({ where: { email } });
-    const response: { ok: true; devResetUrl?: string } = { ok: true };
 
-    if (user?.passwordHash) {
-      const token = createPasswordResetToken(email, env.SESSION_SECRET);
-      const resetUrl = `${env.FRONTEND_URL.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
-      if (env.NODE_ENV === 'development') {
-        response.devResetUrl = resetUrl;
-        logger.info('Password reset link (development only)', { email, resetUrl });
-      } else {
-        logger.info('Password reset requested (email delivery not configured)', { email });
-      }
+    if (!user) {
+      throw new AppError(
+        404,
+        'EMAIL_NOT_REGISTERED',
+        'No account is registered with this email address',
+      );
     }
 
-    return reply.send(response);
+    if (!user.passwordHash) {
+      throw new AppError(
+        400,
+        'PASSWORD_RESET_UNAVAILABLE',
+        'This account uses Google sign-in and has no password to reset',
+      );
+    }
+
+    const token = createPasswordResetToken(email, env.SESSION_SECRET);
+    const resetUrl = `${env.FRONTEND_URL.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
+    const mail = await sendPasswordResetEmail(env, {
+      email,
+      resetUrl,
+      displayName: user.displayName,
+    });
+
+    return reply.send({ ok: true as const, devResetUrl: mail.devResetUrl });
   });
 
   app.post('/api/auth/reset-password', async (request, reply) => {

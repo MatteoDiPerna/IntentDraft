@@ -1,3 +1,4 @@
+import { ApiError } from '@/api/client';
 import type { AuthPort } from '@/adapters/types';
 import { useAuthStore } from '@/store/authStore';
 import { createId } from '@/lib/ids';
@@ -47,8 +48,21 @@ export const mockAuthAdapter: AuthPort = {
   },
   async requestPasswordReset(email) {
     const normalized = email.trim().toLowerCase();
-    const exists = getState().users.some((u) => u.email === normalized && u.hasPassword !== false);
-    if (!exists) return { ok: true as const };
+    const user = getState().users.find((u) => u.email === normalized);
+    if (!user) {
+      throw new ApiError(
+        404,
+        'EMAIL_NOT_REGISTERED',
+        'No account is registered with this email address',
+      );
+    }
+    if (user.hasPassword === false || user.authProvider === 'google') {
+      throw new ApiError(
+        400,
+        'PASSWORD_RESET_UNAVAILABLE',
+        'This account uses Google sign-in and has no password to reset',
+      );
+    }
     const token = createMockResetToken(normalized);
     const base = typeof window !== 'undefined' ? window.location.origin : '';
     return { ok: true as const, devResetUrl: `${base}/reset-password?token=${encodeURIComponent(token)}` };

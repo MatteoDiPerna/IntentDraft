@@ -80,6 +80,24 @@ describe.skipIf(!hasDb)('auth API', () => {
     expect(me3.statusCode).toBe(200);
   });
 
+  it('forgot-password rejects unknown email and accepts registered user', async () => {
+    const unknown = await app.inject({
+      method: 'POST',
+      url: '/api/auth/forgot-password',
+      payload: { email: 'nobody@intentdraft.local' },
+    });
+    expect(unknown.statusCode).toBe(404);
+    expect((unknown.json() as { error: { code: string } }).error.code).toBe('EMAIL_NOT_REGISTERED');
+
+    const ok = await app.inject({
+      method: 'POST',
+      url: '/api/auth/forgot-password',
+      payload: { email },
+    });
+    expect(ok.statusCode).toBe(200);
+    expect((ok.json() as { ok: boolean }).ok).toBe(true);
+  });
+
   it('rejects duplicate register', async () => {
     const dup = await app.inject({
       method: 'POST',
