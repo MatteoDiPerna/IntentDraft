@@ -1,6 +1,9 @@
 ## Scripts tooling (keep scripts/ tracked; ignore local outputs if any)
 scripts/__pycache__/
 
+## Root monorepo (dev:all, pm2 — npm install in repo root)
+node_modules/
+
 ## Frontend
 frontend/node_modules/
 frontend/dist/
