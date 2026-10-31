@@ -1,10 +1,18 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { loadEnv, resetEnvCache } from '../../../src/config/env.js';
 import { setLlmClientForTests, type LlmMessageClient } from '../../../src/services/llm/anthropicClient.js';
 import { llmRunMessagePipeline } from '../../../src/services/llm/llmEngine.js';
+
+vi.mock('../../../src/services/llm/platformPrompts.js', () => ({
+  getActivePromptBody: async () => null,
+}));
+
+vi.mock('../../../src/modules/admin/services/usageRecorder.js', () => ({
+  recordLlmUsage: async () => undefined,
+}));
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), '../../fixtures/llm');
 
@@ -19,7 +27,8 @@ describe('llmEngine (mocked client)', () => {
   });
 
   function llmTestEnv() {
-    process.env.DATABASE_URL = process.env.DATABASE_URL ?? 'postgresql://localhost:5432/intentdraft_test';
+    process.env.DATABASE_URL =
+      process.env.DATABASE_URL ?? 'postgresql://ci:ci@127.0.0.1:5432/unused';
     process.env.LLM_ENABLED = 'true';
     process.env.ANTHROPIC_API_KEY = 'test-key';
     resetEnvCache();

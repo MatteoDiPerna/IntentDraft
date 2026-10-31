@@ -26,7 +26,8 @@ jobs:
       - name: Backend — lint, build, unit tests
         working-directory: backend
         env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/unused
+          # No Postgres in this job — unit tests must not hit the DB (see tests/integration).
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:1/unused
           NODE_ENV: test
         run: |
           npm ci

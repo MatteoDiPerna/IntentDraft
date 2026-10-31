@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it } from 'vitest';
-import { prisma } from '../../../src/lib/db.js';
-import { writeAdminAudit } from '../../../src/modules/admin/services/auditService.js';
+import { prisma } from '../../src/lib/db.js';
+import { writeAdminAudit } from '../../src/modules/admin/services/auditService.js';
 
 const hasDb = Boolean(process.env.DATABASE_URL);
 
