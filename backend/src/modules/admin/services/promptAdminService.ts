@@ -1,4 +1,3 @@
-import { AppError } from '../../../lib/errors.js';
 import { prisma } from '../../../lib/db.js';
 import { writeAdminAudit } from './auditService.js';
 

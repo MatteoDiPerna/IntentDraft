@@ -225,7 +225,7 @@ export async function llmRunRegeneratePipeline(
     clarificationPlan: { shouldAsk: false, questions: [] },
     safety: { outOfScope: false },
   };
-  return callGenerate(
+  const generated = await callGenerate(
     env,
     locale,
     intent,
@@ -233,6 +233,7 @@ export async function llmRunRegeneratePipeline(
     ctx,
     'Regenerate a fresh variant of the prompt with the same intent.',
   );
+  return { promptMarkdown: generated.bodyMarkdown, sections: generated.sections };
 }
 
 export async function llmDryRunPipeline(env: Env, locale: Locale, userText: string) {

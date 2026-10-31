@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../../../lib/db.js';
 
 export type AdminAuditInput = {
@@ -15,7 +16,7 @@ export async function writeAdminAudit(input: AdminAuditInput): Promise<void> {
       action: input.action,
       targetType: input.targetType,
       targetId: input.targetId ?? null,
-      metadata: input.metadata ?? undefined,
+      metadata: (input.metadata ?? undefined) as Prisma.InputJsonValue | undefined,
     },
   });
 }
