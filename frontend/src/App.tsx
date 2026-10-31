@@ -4,6 +4,7 @@ import AppRoutes from './routes/AppRoutes';
 import { ToastProvider } from './components/ui/toast';
 import { PortsProvider } from './providers/PortsProvider';
 import { AuthProvider } from './providers/AuthProvider';
+import { CookieConsentBanner } from './components/CookieConsentBanner';
 
 const App: React.FC = () => {
   return (
@@ -12,6 +13,7 @@ const App: React.FC = () => {
         <ToastProvider>
           <MainLayout>
             <AppRoutes />
+            <CookieConsentBanner />
           </MainLayout>
         </ToastProvider>
       </AuthProvider>

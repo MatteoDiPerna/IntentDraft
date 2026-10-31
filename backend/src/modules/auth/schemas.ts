@@ -11,5 +11,14 @@ export const loginBodySchema = z.object({
   password: z.string().min(1),
 });
 
+export const forgotPasswordBodySchema = z.object({
+  email: z.string().email(),
+});
+
+export const resetPasswordBodySchema = z.object({
+  token: z.string().min(10),
+  password: z.string().min(6),
+});
+
 export type RegisterBody = z.infer<typeof registerBodySchema>;
 export type LoginBody = z.infer<typeof loginBodySchema>;

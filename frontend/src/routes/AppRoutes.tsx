@@ -4,6 +4,8 @@ import { HomePage } from '@/pages/HomePage';
 import { GoogleOAuthPopupPage } from '@/pages/auth/GoogleOAuthPopupPage';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
+import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { LimitsPage } from '@/pages/LimitsPage';
 import { ChatPage } from '@/pages/chat/ChatPage';
 import { SettingsPage } from '@/pages/settings/SettingsPage';
@@ -20,6 +22,8 @@ const AppRoutes: React.FC = () => {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/google-popup" element={<GoogleOAuthPopupPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/limits" element={<LimitsPage />} />
         <Route
           path="/app"

@@ -15,6 +15,8 @@ Trasformare messaggi utente in:
 
 **Principio beta:** massimo valore via **istruzioni al modello + validazione deterministica leggera**; niente agenti autonomi multi-step esecutivi.
 
+**Contesto prodotto (2026-10):** il motore descritto qui corrisponde alle **Fasi 1 e 3** del flusso end-to-end (intent detection + prompt engineering). La **Fase 2 — model selection** (oggi Claude-only, domani multi-LLM) è documentata in [`llm-routing-strategy.md`](./llm-routing-strategy.md).
+
 ---
 
 ## 2. Schema dati — IntentModel (JSON)

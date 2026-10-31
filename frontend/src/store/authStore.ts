@@ -28,6 +28,7 @@ function toUser(stored: StoredUser): User {
     locale: stored.locale,
     authProvider: stored.authProvider ?? 'local',
     hasPassword: stored.hasPassword ?? true,
+    role: stored.role ?? 'user',
   };
 }
 
@@ -45,6 +46,7 @@ const authImpl: StateCreator<AuthState> = (set, get) => ({
       locale: 'it',
       authProvider: 'local',
       hasPassword: true,
+      role: 'user',
     };
     set({ users: [...get().users, user], currentUser: toUser(user) });
     return true;

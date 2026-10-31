@@ -35,4 +35,12 @@ export const apiAuthAdapter: AuthPort = {
     window.location.href = appConfig.googleAuthStartUrl;
     return new Promise(() => {});
   },
+  async requestPasswordReset(email) {
+    return request<{ ok: true; devResetUrl?: string }>('POST', API.auth.forgotPassword, {
+      body: { email },
+    });
+  },
+  async resetPassword(token, password) {
+    await request('POST', API.auth.resetPassword, { body: { token, password } });
+  },
 };

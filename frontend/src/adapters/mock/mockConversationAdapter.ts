@@ -25,25 +25,22 @@ export const mockConversationAdapter: ConversationPort = {
     s().deleteConversation(userId, conversationId);
   },
   async updateMetadata(userId, conversationId, metadata) {
-    if (metadata.pinned !== undefined) {
-      const list = s().list(userId);
-      const c = list.find((x) => x.id === conversationId);
-      if (c && Boolean(c.pinned) !== metadata.pinned) {
-        s().togglePin(userId, conversationId);
-      }
+    if (metadata.pinned !== undefined && metadata.pinned !== s().list(userId).find((x) => x.id === conversationId)?.pinned) {
+      s().togglePin(userId, conversationId);
     }
-    if (metadata.inProject !== undefined) {
-      const list = s().list(userId);
-      const c = list.find((x) => x.id === conversationId);
-      if (c && Boolean(c.inProject) !== metadata.inProject) {
-        s().toggleInProject(userId, conversationId);
+    if (metadata.projectId !== undefined || metadata.inProject !== undefined) {
+      const projectId =
+        metadata.projectId ??
+        (metadata.inProject === false ? null : metadata.inProject ? 'default' : undefined);
+      if (projectId !== undefined) {
+        s().moveToProject(userId, conversationId, projectId);
       }
     }
   },
   async togglePin(userId, conversationId) {
     s().togglePin(userId, conversationId);
   },
-  async toggleInProject(userId, conversationId) {
-    s().toggleInProject(userId, conversationId);
+  async moveToProject(userId, conversationId, projectId) {
+    s().moveToProject(userId, conversationId, projectId);
   },
 };

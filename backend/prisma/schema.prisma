@@ -20,6 +20,11 @@ enum AuthProvider {
   google
 }
 
+enum UserRole {
+  user
+  admin
+}
+
 enum ConversationStatus {
   active
   archived
@@ -49,6 +54,7 @@ model User {
   displayName  String?      @map("display_name") @db.VarChar(120)
   locale       Locale       @default(it)
   authProvider AuthProvider @default(local) @map("auth_provider")
+  role         UserRole     @default(user)
   googleSub    String?      @unique @map("google_sub") @db.VarChar(255)
   createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)

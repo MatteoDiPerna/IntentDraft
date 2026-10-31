@@ -4,20 +4,24 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { SegmentToggle } from '@/components/ui/SegmentToggle';
 import { useTheme } from '@/components/ui/ThemeProvider';
-import { useAuthStore } from '@/store/authStore';
+import { useAuth } from '@/hooks/useAuth';
+import { useApiErrorToast } from '@/hooks/useApiErrorToast';
+import { usePorts } from '@/providers/PortsProvider';
 import type { Locale } from '@/types/auth';
 import { STORAGE } from '@/lib/storageKeys';
+import { resolveLocale } from '@/lib/resolveLocale';
 import { cn } from '@/utils/cn';
 
 export function SettingsMenu() {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const user = useAuthStore((s) => s.currentUser);
-  const setLocale = useAuthStore((s) => s.setLocale);
+  const { user, setUser: setAuthUser } = useAuth();
+  const ports = usePorts();
+  const showError = useApiErrorToast();
   const { theme, setTheme } = useTheme();
 
-  const locale = (i18n.language === 'en' ? 'en' : 'it') as Locale;
+  const locale = resolveLocale(i18n.language);
 
   const resolvedTheme =
     theme === 'system'
@@ -45,7 +49,11 @@ export function SettingsMenu() {
   const onLocale = (next: Locale) => {
     void i18n.changeLanguage(next);
     localStorage.setItem(STORAGE.locale, next);
-    if (user) setLocale(next);
+    if (!user) return;
+    void ports.user
+      .updateProfile({ locale: next })
+      .then((updated) => setAuthUser(updated))
+      .catch((e) => showError(e));
   };
 
   const onTheme = (next: 'light' | 'dark') => setTheme(next);
@@ -106,7 +114,7 @@ export function SettingsMenu() {
 
 /** Lingua e tema per visitatori non autenticati (home, login). */
 export function GuestSettingsMenu() {
-  const user = useAuthStore((s) => s.currentUser);
+  const { user } = useAuth();
   if (user) return null;
   return <SettingsMenu />;
 }

@@ -5,6 +5,7 @@ import {
   FileSpreadsheet,
   FileText,
   FolderKanban,
+  FolderPlus,
   PanelLeftClose,
   Pin,
   PenSquare,
@@ -16,19 +17,22 @@ import {
 import { useTranslation } from 'react-i18next';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { Button } from '@/components/ui/button';
+import { MoveToProjectModal } from '@/components/chat/MoveToProjectModal';
+import { useProjectStore, DEFAULT_PROJECT_ID } from '@/store/projectStore';
 import { useUiStore } from '@/store/uiStore';
 import type { AttachedFile, Conversation } from '@/types/conversation';
 import { shellHeaderRow } from '@/lib/layout';
 import { cn } from '@/utils/cn';
 
 type ChatSidebarProps = {
+  userId: string;
   conversations: Conversation[];
   activeId: string | undefined;
   onNewChat: () => void;
   onSelect: (id: string) => void;
   onDeleteRecent: (id: string) => void;
   onPinRecent: (id: string) => void;
-  onMoveRecentToProject: (id: string) => void;
+  onMoveToProject: (conversationId: string, projectId: string | null) => void;
   onRenameRecent: (id: string, title: string) => void;
   onOpenDocument: (conversationId: string, file: AttachedFile) => void;
   onAfterSelect?: () => void;
@@ -142,11 +146,11 @@ function ChatListItem({
   recentActions?: {
     pinLabel: string;
     renameLabel: string;
-    moveLabel: string;
+    moveLabel?: string;
     deleteLabel: string;
     onPin: () => void;
     onRename: () => void;
-    onMove: () => void;
+    onMove?: () => void;
     onDelete: () => void;
   };
   renaming?: boolean;
@@ -209,7 +213,7 @@ function ChatListItem({
         onClick={onSelect}
         className={cn(
           'block w-full truncate py-2 pl-3 pr-3 text-left text-sm transition-[padding]',
-          'group-hover:pr-[7.25rem]',
+          recentActions?.onMove ? 'group-hover:pr-[7.25rem]' : 'group-hover:pr-[5.5rem]',
           active ? 'font-medium text-primary' : 'font-medium text-foreground/90',
         )}
       >
@@ -228,9 +232,11 @@ function ChatListItem({
           <RowAction label={recentActions.renameLabel} onClick={recentActions.onRename}>
             <Pencil className="h-3.5 w-3.5" aria-hidden />
           </RowAction>
-          <RowAction label={recentActions.moveLabel} onClick={recentActions.onMove}>
-            <FolderKanban className="h-3.5 w-3.5" aria-hidden />
-          </RowAction>
+          {recentActions.onMove && recentActions.moveLabel ? (
+            <RowAction label={recentActions.moveLabel} onClick={recentActions.onMove}>
+              <FolderKanban className="h-3.5 w-3.5" aria-hidden />
+            </RowAction>
+          ) : null}
           <RowAction label={recentActions.deleteLabel} onClick={recentActions.onDelete} destructive>
             <Trash2 className="h-3.5 w-3.5" aria-hidden />
           </RowAction>
@@ -269,19 +275,23 @@ function CollapsedIconButton({
 }
 
 export function ChatSidebar({
+  userId,
   conversations,
   activeId,
   onNewChat,
   onSelect,
   onDeleteRecent,
   onPinRecent,
-  onMoveRecentToProject,
+  onMoveToProject,
   onRenameRecent,
   onOpenDocument,
   onAfterSelect,
 }: ChatSidebarProps) {
   const { t } = useTranslation();
   const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null);
+  const [projectRenameDraft, setProjectRenameDraft] = useState('');
+  const [moveTargetId, setMoveTargetId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -294,6 +304,15 @@ export function ChatSidebar({
   const setProjectsExpanded = useUiStore((s) => s.setProjectsExpanded);
   const documentsExpanded = useUiStore((s) => s.documentsExpanded);
   const setDocumentsExpanded = useUiStore((s) => s.setDocumentsExpanded);
+  const ensureProjectDefaults = useProjectStore((s) => s.ensureDefaults);
+  const projectFolders = useProjectStore((s) => s.list(userId));
+  const createProject = useProjectStore((s) => s.create);
+  const renameProject = useProjectStore((s) => s.rename);
+  const removeProject = useProjectStore((s) => s.remove);
+
+  useEffect(() => {
+    ensureProjectDefaults(userId, t('sidebar.defaultProject'));
+  }, [ensureProjectDefaults, userId, t]);
 
   const fallback = t('nav.newChat');
   const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -302,6 +321,8 @@ export function ChatSidebar({
     !normalizedQuery || chatLabel(c, fallback).toLowerCase().includes(normalizedQuery);
   const pinned = conversations.filter((c) => c.pinned && matchesQuery(c));
   const inProject = conversations.filter((c) => c.inProject && !c.pinned && matchesQuery(c));
+  const chatsInProject = (projectId: string) =>
+    inProject.filter((c) => (c.projectId ?? DEFAULT_PROJECT_ID) === projectId);
   const recent = conversations.filter((c) => !c.pinned && !c.inProject && matchesQuery(c));
   const allWithFiles = conversations.filter((c) => c.files.length > 0);
   const conversationsWithFiles = allWithFiles.filter(matchesQuery);
@@ -351,15 +372,24 @@ export function ChatSidebar({
     renamingId === c.id
       ? undefined
       : {
-          pinLabel: t('sidebar.pinChat'),
+          pinLabel: c.pinned ? t('sidebar.unpinChat') : t('sidebar.pinChat'),
           renameLabel: t('sidebar.renameChat'),
-          moveLabel: t('sidebar.moveToProject'),
+          moveLabel: c.pinned ? undefined : t('sidebar.moveToProject'),
           deleteLabel: t('sidebar.deleteChat'),
           onPin: () => onPinRecent(c.id),
           onRename: () => startRename(c),
-          onMove: () => onMoveRecentToProject(c.id),
+          onMove: c.pinned ? undefined : () => setMoveTargetId(c.id),
           onDelete: () => onDeleteRecent(c.id),
         };
+
+  const moveTarget = moveTargetId ? conversations.find((c) => c.id === moveTargetId) : undefined;
+
+  const commitProjectRename = () => {
+    if (!renamingProjectId) return;
+    renameProject(userId, renamingProjectId, projectRenameDraft);
+    setRenamingProjectId(null);
+    setProjectRenameDraft('');
+  };
 
   return (
     <>
@@ -520,29 +550,96 @@ export function ChatSidebar({
                     />
                   </button>
                   {projectsOpen && (
-                    <div className="sidebar-tree-branch mx-1 mb-1 space-y-0.5">
-                      <p className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                        {t('sidebar.defaultProject')}
-                      </p>
-                      {!searching && inProject.length === 0 && (
-                        <p className="px-2 py-1 text-xs text-muted-foreground">{t('sidebar.emptyRecent')}</p>
-                      )}
-                      {inProject.map((c) => (
-                        <ChatListItem
-                          key={c.id}
-                          active={c.id === activeId}
-                          label={chatLabel(c, fallback)}
-                          onSelect={() => selectChat(c.id)}
-                          collapsed={false}
-                          renaming={renamingId === c.id}
-                          renameValue={renameDraft}
-                          renamePlaceholder={t('sidebar.renamePlaceholder')}
-                          onRenameChange={setRenameDraft}
-                          onRenameCommit={commitRename}
-                          onRenameCancel={cancelRename}
-                          recentActions={rowActionsFor(c)}
-                        />
-                      ))}
+                    <div className="sidebar-tree-branch mx-1 mb-1 space-y-2">
+                      <div className="flex items-center justify-end px-1">
+                        <button
+                          type="button"
+                          className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                          onClick={() => {
+                            const name = window.prompt(t('sidebar.newProjectPrompt'));
+                            if (name?.trim()) createProject(userId, name.trim());
+                          }}
+                        >
+                          <FolderPlus className="h-3.5 w-3.5" aria-hidden />
+                          {t('sidebar.newProject')}
+                        </button>
+                      </div>
+                      {projectFolders.map((folder) => {
+                        const folderChats = chatsInProject(folder.id);
+                        if (searching && folderChats.length === 0) return null;
+                        return (
+                          <div key={folder.id} className="space-y-0.5">
+                            {renamingProjectId === folder.id ? (
+                              <div className="flex min-w-0 items-center gap-1 px-1 py-0.5">
+                                <input
+                                  type="text"
+                                  value={projectRenameDraft}
+                                  onChange={(e) => setProjectRenameDraft(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') commitProjectRename();
+                                    if (e.key === 'Escape') {
+                                      setRenamingProjectId(null);
+                                      setProjectRenameDraft('');
+                                    }
+                                  }}
+                                  onBlur={() => commitProjectRename()}
+                                  className="min-w-0 flex-1 rounded-md border bg-background px-2 py-1 text-xs outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                                  autoFocus
+                                />
+                              </div>
+                            ) : (
+                              <div className="group/folder flex items-center gap-1 px-2 py-0.5">
+                                <p className="min-w-0 flex-1 truncate text-xs font-medium text-muted-foreground">
+                                  {folder.name}
+                                </p>
+                                <button
+                                  type="button"
+                                  className="rounded p-0.5 text-muted-foreground opacity-0 hover:bg-muted hover:text-foreground group-hover/folder:opacity-100"
+                                  aria-label={t('sidebar.renameProject')}
+                                  onClick={() => {
+                                    setRenamingProjectId(folder.id);
+                                    setProjectRenameDraft(folder.name);
+                                  }}
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </button>
+                                {folder.id !== DEFAULT_PROJECT_ID ? (
+                                  <button
+                                    type="button"
+                                    className="rounded p-0.5 text-muted-foreground opacity-0 hover:bg-muted hover:text-destructive group-hover/folder:opacity-100"
+                                    aria-label={t('sidebar.deleteProject')}
+                                    onClick={() => {
+                                      folderChats.forEach((c) => onMoveToProject(c.id, null));
+                                      removeProject(userId, folder.id);
+                                    }}
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </button>
+                                ) : null}
+                              </div>
+                            )}
+                            {!searching && folderChats.length === 0 && (
+                              <p className="px-2 py-0.5 text-xs text-muted-foreground">{t('sidebar.emptyProject')}</p>
+                            )}
+                            {folderChats.map((c) => (
+                              <ChatListItem
+                                key={c.id}
+                                active={c.id === activeId}
+                                label={chatLabel(c, fallback)}
+                                onSelect={() => selectChat(c.id)}
+                                collapsed={false}
+                                renaming={renamingId === c.id}
+                                renameValue={renameDraft}
+                                renamePlaceholder={t('sidebar.renamePlaceholder')}
+                                onRenameChange={setRenameDraft}
+                                onRenameCommit={commitRename}
+                                onRenameCancel={cancelRename}
+                                recentActions={rowActionsFor(c)}
+                              />
+                            ))}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </>
@@ -686,6 +783,20 @@ export function ChatSidebar({
         )}
       </div>
     </aside>
+      <MoveToProjectModal
+        open={Boolean(moveTarget)}
+        projects={projectFolders}
+        currentProjectId={moveTarget?.projectId ?? null}
+        onSelect={(projectId) => {
+          if (moveTargetId) onMoveToProject(moveTargetId, projectId);
+          setMoveTargetId(null);
+        }}
+        onRemoveFromProject={() => {
+          if (moveTargetId) onMoveToProject(moveTargetId, null);
+          setMoveTargetId(null);
+        }}
+        onClose={() => setMoveTargetId(null)}
+      />
     </>
   );
 }

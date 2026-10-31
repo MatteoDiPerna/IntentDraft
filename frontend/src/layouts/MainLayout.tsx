@@ -14,13 +14,14 @@ interface MainLayoutProps {
 export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const isApp = pathname === '/app' || pathname.startsWith('/app/');
+  const isChatShell = pathname === '/app';
+  const isAppRoute = pathname === '/app' || pathname.startsWith('/app/');
 
   return (
     <div
       className={cn(
         'flex flex-col bg-background',
-        isApp ? 'h-screen overflow-hidden' : 'min-h-screen',
+        isChatShell ? 'h-screen overflow-hidden' : 'min-h-screen',
       )}
     >
       <Helmet>
@@ -32,7 +33,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <main
         className={cn(
           'flex min-h-0 w-full flex-1 flex-col',
-          isApp ? 'overflow-hidden' : `${pageGutter} py-6`,
+          isChatShell ? 'overflow-hidden' : `${pageGutter} overflow-y-auto py-6`,
         )}
       >
         {children}
@@ -40,8 +41,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <footer
         className={cn(
           'brand-inset-divider-top shrink-0 bg-background/60 py-3 text-center text-sm text-muted-foreground backdrop-blur-sm',
-          isApp ? 'px-[30px]' : pageGutter,
-          !isApp && 'mt-auto',
+          isAppRoute ? 'px-[30px]' : pageGutter,
+          !isChatShell && 'mt-auto',
         )}
       >
         <div className="flex flex-col items-center justify-center gap-1 sm:flex-row sm:gap-3">

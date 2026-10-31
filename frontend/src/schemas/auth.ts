@@ -11,5 +11,16 @@ export const registerSchema = z.object({
   password: z.string().min(6),
 });
 
+export const resetPasswordFormSchema = z
+  .object({
+    newPassword: z.string().min(6),
+    confirmPassword: z.string().min(6),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: 'passwordMismatch',
+    path: ['confirmPassword'],
+  });
+
 export type LoginForm = z.infer<typeof loginSchema>;
 export type RegisterForm = z.infer<typeof registerSchema>;
+export type ResetPasswordForm = z.infer<typeof resetPasswordFormSchema>;

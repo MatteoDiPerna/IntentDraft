@@ -15,6 +15,7 @@ import { changePasswordSchema, profileSchema, type ChangePasswordForm, type Prof
 import type { Locale } from '@/types/auth';
 import { useToast } from '@/components/ui/toast';
 import { appConfig } from '@/config';
+import { resolveLocale } from '@/lib/resolveLocale';
 
 export function SettingsPage() {
   const { t, i18n } = useTranslation();
@@ -36,7 +37,7 @@ export function SettingsPage() {
 
   if (!user) return null;
 
-  const locale = (i18n.language === 'en' ? 'en' : 'it') as Locale;
+  const locale = resolveLocale(i18n.language);
   const resolvedTheme =
     theme === 'system'
       ? window.matchMedia('(prefers-color-scheme: dark)').matches

@@ -46,6 +46,7 @@ function emptyConversation(): Conversation {
     updatedAt: now,
     pinned: false,
     inProject: false,
+    projectId: null,
   };
 }
 
@@ -85,7 +86,12 @@ interface ConversationState {
   skipClarification: (userId: string, conversationId: string, locale: Locale) => Promise<void>;
   regeneratePrompt: (userId: string, conversationId: string, locale: Locale) => Promise<void>;
   togglePin: (userId: string, conversationId: string) => void;
-  toggleInProject: (userId: string, conversationId: string) => void;
+  moveToProject: (userId: string, conversationId: string, projectId: string | null) => void;
+  applyMetadata: (
+    userId: string,
+    conversationId: string,
+    metadata: Partial<Pick<Conversation, 'pinned' | 'inProject' | 'projectId'>>,
+  ) => void;
   deleteConversation: (userId: string, conversationId: string) => void;
   renameConversation: (userId: string, conversationId: string, title: string) => void;
   setPhase: (userId: string, conversationId: string, phase: ConversationUiPhase) => void;
@@ -241,6 +247,7 @@ function normalizeConversation(c: Conversation): Conversation {
     files,
     pinned: c.pinned ?? false,
     inProject: c.inProject ?? false,
+    projectId: c.projectId ?? (c.inProject ? 'default' : null),
   };
 }
 
@@ -415,20 +422,28 @@ const conversationImpl: StateCreator<ConversationState> = (set, get) => ({
       togglePin: (userId, conversationId) => {
         const conv = (get().byUser[userId] ?? []).find((c) => c.id === conversationId);
         if (!conv) return;
+        const nextPinned = !normalizeConversation(conv).pinned;
         set(
           patchConversation(get(), userId, conversationId, {
-            pinned: !normalizeConversation(conv).pinned,
+            pinned: nextPinned,
+            ...(nextPinned
+              ? { inProject: false, projectId: null }
+              : {}),
           }),
         );
       },
-      toggleInProject: (userId, conversationId) => {
+      moveToProject: (userId, conversationId, projectId) => {
         const conv = (get().byUser[userId] ?? []).find((c) => c.id === conversationId);
-        if (!conv) return;
+        if (!conv || normalizeConversation(conv).pinned) return;
         set(
           patchConversation(get(), userId, conversationId, {
-            inProject: !normalizeConversation(conv).inProject,
+            inProject: projectId != null,
+            projectId,
           }),
         );
+      },
+      applyMetadata: (userId, conversationId, metadata) => {
+        set(patchConversation(get(), userId, conversationId, metadata));
       },
       deleteConversation: (userId, conversationId) => {
         const list = get().byUser[userId] ?? [];

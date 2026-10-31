@@ -21,7 +21,7 @@ export function useConversationMutations(userId: string) {
   const deleteConversation = useConversationStore((s) => s.deleteConversation);
   const renameConversation = useConversationStore((s) => s.renameConversation);
   const togglePin = useConversationStore((s) => s.togglePin);
-  const toggleInProject = useConversationStore((s) => s.toggleInProject);
+  const moveToProject = useConversationStore((s) => s.moveToProject);
 
   const refreshFromApi = useCallback(async () => {
     if (appConfig.useMock || !userId) return;
@@ -40,9 +40,9 @@ export function useConversationMutations(userId: string) {
       [renameConversation, userId],
     ),
     togglePin: useCallback((id: string) => togglePin(userId, id), [togglePin, userId]),
-    toggleInProject: useCallback(
-      (id: string) => toggleInProject(userId, id),
-      [toggleInProject, userId],
+    moveToProject: useCallback(
+      (id: string, projectId: string | null) => moveToProject(userId, id, projectId),
+      [moveToProject, userId],
     ),
     refreshFromApi,
   };

@@ -40,6 +40,7 @@ Indice della specifica beta. Concept sorgente: [`../concept/initial-brainstormin
 | Doc                        | Path                                                             |
 | -------------------------- | ---------------------------------------------------------------- |
 | IntentModel, flusso motore | [`ai/ai-prompt-engine-design.md`](ai/ai-prompt-engine-design.md) |
+| Routing LLM (fasi 1–3)     | [`ai/llm-routing-strategy.md`](ai/llm-routing-strategy.md)       |
 
 ## Decisions
 
@@ -55,6 +56,7 @@ Indice della specifica beta. Concept sorgente: [`../concept/initial-brainstormin
 | Roadmap beta (FOUND, BETA) | [`planning/beta-roadmap.md`](planning/beta-roadmap.md)         |
 | Roadmap solo frontend      | [`planning/frontend-roadmap.md`](planning/frontend-roadmap.md) |
 | Piano implementazione backend | [`planning/backend-implementation-plan.md`](planning/backend-implementation-plan.md) |
+| Piano console admin (RBAC)    | [`planning/admin-capabilities-plan.md`](planning/admin-capabilities-plan.md)         |
 
 ## Quality
 

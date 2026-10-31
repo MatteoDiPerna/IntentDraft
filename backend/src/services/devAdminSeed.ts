@@ -26,11 +26,13 @@ export async function ensureDevAdminUser(env: Env): Promise<void> {
       passwordHash,
       displayName,
       authProvider: 'local',
+      role: 'admin',
     },
     update: {
       passwordHash,
       displayName,
       authProvider: 'local',
+      role: 'admin',
     },
   });
 

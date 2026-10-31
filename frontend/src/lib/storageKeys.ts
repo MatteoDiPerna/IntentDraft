@@ -5,6 +5,8 @@ export const STORAGE = {
   auth: 'intentdraft_auth_v1',
   conversations: 'intentdraft_conversations_v1',
   ui: 'intentdraft_ui_v1',
+  projects: 'intentdraft_projects_v1',
+  cookieConsent: 'intentdraft_cookie_consent_v1',
 } as const;
 
 const LEGACY = {

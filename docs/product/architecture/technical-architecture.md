@@ -100,15 +100,20 @@ Schema DB: `database-design.md`.
 
 ---
 
-## 7. Integrazione LLM (Anthropic)
+## 7. Motore AI e routing LLM
+
+IntentDraft inserisce un **core product** tra l’utente e l’LLM: interpretazione intento, gap, chiarimenti, prompt engineering. Flusso a tre fasi: Intent & context → model selection → prompt engine (vedi [`../ai/llm-routing-strategy.md`](../ai/llm-routing-strategy.md)).
+
+### 7.1 Integrazione Anthropic (fase attuale)
 
 | Aspetto         | Scelta                                        |
 | --------------- | --------------------------------------------- |
-| Modello         | **Claude Sonnet** (config env)                |
-| Quando          | Dopo FOUND-* e contratti BETA-030+            |
-| Chiamate        | Solo server-side                              |
+| Modello         | **Claude Sonnet** (`ANTHROPIC_MODEL`)         |
+| Chiamate        | Solo server-side (`ANALYZE` / `GENERATE`)     |
 | Dev locale      | `LLM_ENABLED=false` fino a chiave configurata |
-| Retry / timeout | NFR-002 — come da v1.0 doc                    |
+| Retry / timeout | NFR-002                                       |
+
+**Roadmap:** selezione automatica tra più provider (Claude, Gemini, OpenAI) in base a `IntentModel` + policy admin — dettaglio in [`../ai/llm-routing-strategy.md`](../ai/llm-routing-strategy.md) e [`../ai/ai-prompt-engine-design.md`](../ai/ai-prompt-engine-design.md).
 
 ---
 

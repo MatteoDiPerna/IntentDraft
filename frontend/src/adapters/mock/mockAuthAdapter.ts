@@ -1,6 +1,7 @@
 import type { AuthPort } from '@/adapters/types';
 import { useAuthStore } from '@/store/authStore';
 import { createId } from '@/lib/ids';
+import { createMockResetToken, parseMockResetToken } from '@/lib/mockPasswordReset';
 
 function getState() {
   return useAuthStore.getState();
@@ -43,5 +44,21 @@ export const mockAuthAdapter: AuthPort = {
       ),
     });
     return getState().currentUser!;
+  },
+  async requestPasswordReset(email) {
+    const normalized = email.trim().toLowerCase();
+    const exists = getState().users.some((u) => u.email === normalized && u.hasPassword !== false);
+    if (!exists) return { ok: true as const };
+    const token = createMockResetToken(normalized);
+    const base = typeof window !== 'undefined' ? window.location.origin : '';
+    return { ok: true as const, devResetUrl: `${base}/reset-password?token=${encodeURIComponent(token)}` };
+  },
+  async resetPassword(token, password) {
+    const email = parseMockResetToken(token);
+    if (!email) throw new Error('INVALID_TOKEN');
+    const users = getState().users.map((u) =>
+      u.email === email ? { ...u, passwordHash: password } : u,
+    );
+    useAuthStore.setState({ users });
   },
 };

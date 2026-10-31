@@ -28,7 +28,7 @@ export function SegmentToggle<T extends string>({
     >
       <span
         aria-hidden
-        className="absolute inset-y-0.5 rounded-md bg-background shadow-sm transition-[left,width] duration-200 ease-out"
+        className="pointer-events-none absolute inset-y-0.5 rounded-md bg-background shadow-sm transition-[left,width] duration-200 ease-out"
         style={{
           width: `calc(${100 / options.length}% - 2px)`,
           left: `calc(${(index * 100) / options.length}% + 1px)`,

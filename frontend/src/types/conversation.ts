@@ -49,6 +49,7 @@ export interface Conversation {
   updatedAt: string;
   /** ChatGPT-style pinned chats */
   pinned: boolean;
-  /** Chats grouped under the default project folder (mock) */
+  /** Chats grouped under a project folder (mutually exclusive with pinned) */
   inProject: boolean;
+  projectId: string | null;
 }

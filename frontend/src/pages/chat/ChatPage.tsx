@@ -25,13 +25,15 @@ import {
   chatShellPad,
   shellHeaderRow,
 } from '@/lib/layout';
+import { syncTextareaHeight } from '@/lib/autoResizeTextarea';
+import { resolveLocale } from '@/lib/resolveLocale';
 import { cn } from '@/utils/cn';
 
 export function ChatPage() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const ports = usePorts();
-  const locale = user?.locale ?? 'it';
+  const locale = resolveLocale(user?.locale ?? i18n.language);
   const toast = useToast();
   const showApiError = useApiErrorToast();
   const maxChars = appConfig.maxMessageChars;
@@ -46,7 +48,6 @@ export function ChatPage() {
   const addFiles = useConversationStore((s) => s.addFiles);
   const removeFile = useConversationStore((s) => s.removeFile);
   const togglePin = useConversationStore((s) => s.togglePin);
-  const toggleInProject = useConversationStore((s) => s.toggleInProject);
   const deleteConversation = useConversationStore((s) => s.deleteConversation);
   const renameConversation = useConversationStore((s) => s.renameConversation);
   const setPhase = useConversationStore((s) => s.setPhase);
@@ -59,6 +60,9 @@ export function ChatPage() {
   const [promptBaseline, setPromptBaseline] = useState('');
   const setMobileSidebarOpen = useUiStore((s) => s.setMobileSidebarOpen);
   const statusLiveRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
+  const COMPOSER_MIN_PX = 72;
+  const COMPOSER_MAX_PX = Math.round(typeof window !== 'undefined' ? window.innerHeight * 0.4 : 320);
 
   const documentPreview = useUiStore((s) => s.documentPreview);
   const documentPreviewWidth = useUiStore((s) => s.documentPreviewWidth);
@@ -114,6 +118,11 @@ export function ChatPage() {
   const isEmptyChat = !conv || conv.messages.length === 0;
   const showComposer = isEmptyChat || conv?.phase === 'clarifying';
   const showResult = Boolean(conv?.promptText?.trim());
+
+  useEffect(() => {
+    if (!composerRef.current || !showComposer) return;
+    syncTextareaHeight(composerRef.current, COMPOSER_MIN_PX, COMPOSER_MAX_PX);
+  }, [draft, showComposer, COMPOSER_MAX_PX]);
 
   if (!user) return null;
 
@@ -234,6 +243,7 @@ export function ChatPage() {
       )}
 
       <ChatSidebar
+        userId={user.id}
         conversations={list}
         activeId={conv?.id}
         onNewChat={() => {
@@ -246,9 +256,12 @@ export function ChatPage() {
           if (appConfig.useMock) togglePin(user.id, id);
           else void ports.conversations.togglePin(user.id, id);
         }}
-        onMoveRecentToProject={(id) => {
-          if (appConfig.useMock) toggleInProject(user.id, id);
-          else void ports.conversations.toggleInProject(user.id, id);
+        onMoveToProject={(conversationId, projectId) => {
+          if (appConfig.useMock) {
+            useConversationStore.getState().moveToProject(user.id, conversationId, projectId);
+          } else {
+            void ports.conversations.moveToProject(user.id, conversationId, projectId);
+          }
         }}
         onRenameRecent={(id, title) => {
           if (appConfig.useMock) renameConversation(user.id, id, title);
@@ -450,12 +463,14 @@ export function ChatPage() {
               {showComposer ? (
                 <GlassPanel compact className="flex flex-col gap-2 p-3">
                   <Textarea
+                    ref={composerRef}
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                     placeholder={t('chat.placeholder')}
                     disabled={busy}
                     rows={3}
-                    className="min-h-[72px] resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
+                    style={{ maxHeight: COMPOSER_MAX_PX }}
+                    className="min-h-[72px] resize-y overflow-y-auto border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();

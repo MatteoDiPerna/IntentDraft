@@ -10,6 +10,8 @@ export interface AuthPort {
   getSession(): Promise<User | null>;
   loginDemo(): Promise<User>;
   loginWithGoogle(): Promise<User>;
+  requestPasswordReset(email: string): Promise<{ devResetUrl?: string }>;
+  resetPassword(token: string, password: string): Promise<void>;
 }
 
 export interface UserPort {
@@ -30,7 +32,7 @@ export interface ConversationPort {
     metadata: Partial<ConversationMetadata>,
   ): Promise<void>;
   togglePin(userId: string, conversationId: string): Promise<void>;
-  toggleInProject(userId: string, conversationId: string): Promise<void>;
+  moveToProject(userId: string, conversationId: string, projectId: string | null): Promise<void>;
 }
 
 export interface MessagePort {

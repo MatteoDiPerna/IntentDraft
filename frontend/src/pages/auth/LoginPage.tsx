@@ -104,8 +104,10 @@ export function LoginPage() {
           />
           {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
         </div>
-        <p className="text-xs text-muted-foreground">
-          <span className="cursor-default">{t('auth.forgotPassword')}</span>
+        <p className="text-xs">
+          <Link to="/forgot-password" className="text-muted-foreground underline-offset-4 hover:text-primary hover:underline">
+            {t('auth.forgotPassword')}
+          </Link>
         </p>
         {errors.root && <p className="text-sm text-destructive">{errors.root.message}</p>}
         <Button type="submit" className="brand-btn-glow w-full" disabled={isSubmitting}>

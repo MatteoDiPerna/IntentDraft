@@ -11,8 +11,15 @@ import {
   resolveUserFromRequest,
   setSessionCookie,
 } from '../../services/sessionService.js';
-import { loginBodySchema, registerBodySchema } from './schemas.js';
+import {
+  forgotPasswordBodySchema,
+  loginBodySchema,
+  registerBodySchema,
+  resetPasswordBodySchema,
+} from './schemas.js';
 import { toUserDto } from './userMapper.js';
+import { createPasswordResetToken, verifyPasswordResetToken } from '../../services/passwordResetToken.js';
+import { logger } from '../../lib/logger.js';
 
 export async function authRoutes(app: FastifyInstance, opts: { env: Env }) {
   const { env } = opts;
@@ -83,5 +90,54 @@ export async function authRoutes(app: FastifyInstance, opts: { env: Env }) {
       throw new AppError(401, 'UNAUTHORIZED', 'Authentication required');
     }
     return reply.send({ user: toUserDto(dbUser) });
+  });
+
+  app.post('/api/auth/forgot-password', async (request, reply) => {
+    const parsed = forgotPasswordBodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      throw new AppError(400, 'VALIDATION_ERROR', 'Validation failed', {
+        issues: parsed.error.flatten(),
+      });
+    }
+
+    const email = parsed.data.email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({ where: { email } });
+    const response: { ok: true; devResetUrl?: string } = { ok: true };
+
+    if (user?.passwordHash) {
+      const token = createPasswordResetToken(email, env.SESSION_SECRET);
+      const resetUrl = `${env.FRONTEND_URL.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(token)}`;
+      if (env.NODE_ENV === 'development') {
+        response.devResetUrl = resetUrl;
+        logger.info('Password reset link (development only)', { email, resetUrl });
+      } else {
+        logger.info('Password reset requested (email delivery not configured)', { email });
+      }
+    }
+
+    return reply.send(response);
+  });
+
+  app.post('/api/auth/reset-password', async (request, reply) => {
+    const parsed = resetPasswordBodySchema.safeParse(request.body);
+    if (!parsed.success) {
+      throw new AppError(400, 'VALIDATION_ERROR', 'Validation failed', {
+        issues: parsed.error.flatten(),
+      });
+    }
+
+    const email = verifyPasswordResetToken(parsed.data.token, env.SESSION_SECRET);
+    if (!email) {
+      throw new AppError(400, 'INVALID_TOKEN', 'Reset link expired or invalid');
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !user.passwordHash) {
+      throw new AppError(400, 'INVALID_TOKEN', 'Reset link expired or invalid');
+    }
+
+    const passwordHash = await hashPassword(parsed.data.password);
+    await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+    return reply.send({ ok: true });
   });
 }

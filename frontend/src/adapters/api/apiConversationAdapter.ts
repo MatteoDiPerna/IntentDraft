@@ -15,6 +15,8 @@ function isBlankRecentChat(c: Conversation): boolean {
 
 function dtoToConversation(d: ConversationDetailDto | ConversationSummaryDto): Conversation {
   const detail = d as ConversationDetailDto;
+  const projectId = d.metadata?.projectId ?? null;
+  const inProject = Boolean(d.metadata?.inProject ?? projectId);
   return {
     id: d.id,
     title: d.title,
@@ -33,7 +35,8 @@ function dtoToConversation(d: ConversationDetailDto | ConversationSummaryDto): C
     })),
     updatedAt: d.updatedAt,
     pinned: Boolean(d.metadata?.pinned),
-    inProject: Boolean(d.metadata?.inProject),
+    inProject,
+    projectId: inProject ? projectId ?? 'default' : null,
   };
 }
 
@@ -76,27 +79,32 @@ export const apiConversationAdapter: ConversationPort = {
   },
   async updateMetadata(userId, conversationId, metadata) {
     await request('PATCH', API.conversations.one(conversationId), { body: { metadata } });
-    const list = store().list(userId);
-    const c = list.find((x) => x.id === conversationId);
-    if (!c) return;
-    if (metadata.pinned !== undefined && Boolean(c.pinned) !== metadata.pinned) {
-      store().togglePin(userId, conversationId);
-    }
-    if (metadata.inProject !== undefined && Boolean(c.inProject) !== metadata.inProject) {
-      store().toggleInProject(userId, conversationId);
+    store().applyMetadata(userId, conversationId, {
+      ...(metadata.pinned !== undefined ? { pinned: metadata.pinned } : {}),
+      ...(metadata.inProject !== undefined ? { inProject: metadata.inProject } : {}),
+      ...(metadata.projectId !== undefined ? { projectId: metadata.projectId } : {}),
+    });
+    if (metadata.pinned) {
+      store().applyMetadata(userId, conversationId, { inProject: false, projectId: null });
     }
   },
   async togglePin(userId, conversationId) {
     const c = store().list(userId).find((x) => x.id === conversationId);
     if (!c) return;
-    await apiConversationAdapter.updateMetadata(userId, conversationId, { pinned: !c.pinned });
-  },
-  async toggleInProject(userId, conversationId) {
-    const c = store().list(userId).find((x) => x.id === conversationId);
-    if (!c) return;
+    const nextPinned = !c.pinned;
     await apiConversationAdapter.updateMetadata(userId, conversationId, {
-      inProject: !c.inProject,
+      pinned: nextPinned,
+      ...(nextPinned ? { inProject: false, projectId: null } : {}),
     });
+  },
+  async moveToProject(userId, conversationId, projectId) {
+    const c = store().list(userId).find((x) => x.id === conversationId);
+    if (!c || c.pinned) return;
+    await apiConversationAdapter.updateMetadata(userId, conversationId, {
+      inProject: projectId != null,
+      projectId,
+    });
+    store().moveToProject(userId, conversationId, projectId);
   },
 };
 

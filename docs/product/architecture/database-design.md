@@ -139,6 +139,7 @@ erDiagram
 | `display_name`    | VARCHAR(120) NULL                |                               |
 | `locale`          | ENUM `it`,`en` DEFAULT `it`      | Preferenza UI                 |
 | `auth_provider`   | ENUM `local`,`google`            |                               |
+| `role`            | ENUM `user`,`admin` DEFAULT `user` | RBAC; admin da seed dev     |
 | `google_sub`      | VARCHAR(255) UNIQUE NULL         | Subject Google                |
 | `created_at`      | TIMESTAMPTZ                      |                               |
 | `updated_at`      | TIMESTAMPTZ                      |                               |
