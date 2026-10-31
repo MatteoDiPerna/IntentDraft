@@ -223,6 +223,26 @@ erDiagram
 
 **Indici:** INDEX(`conversation_id`, `created_at` DESC)
 
+### 4.7 `idt_usag` (eventi uso LLM)
+
+Registra token/costo per chiamata Anthropic (`ANALYZE` / `GENERATE`). FK `user_id`; `conversation_id` opzionale.
+
+### 4.8 `idt_adlg` (audit admin)
+
+Azioni mutative admin (`USER_ROLE_CHANGE`, `USER_DISABLE`, …) con `metadata` JSON — **senza** contenuto messaggi.
+
+### 4.9 `idt_ptpl` (template prompt piattaforma)
+
+Chiavi `analyze_system`, `generate_system`; versioni incrementali; una attiva per `(key, provider)`.
+
+### 4.10 `idt_conf` (config KV)
+
+Override runtime (es. `features.maintenanceMode`, testi `legal.*`).
+
+### 4.11 `idt_cook` (log consenso cookie)
+
+Scelta `accepted` / `rejected`; `user_id` null per guest.
+
 ---
 
 ## 5. Migrazioni e ORM
@@ -234,9 +254,11 @@ Ordine migrazioni suggerito:
 1. `idt_user`, `idt_sess`  
 2. `idt_conv`, `idt_msgs`  
 3. `idt_file`  
-4. `idt_prmt`
+4. `idt_prmt`  
+5. `User.role` — `20261031140000_add_user_role`  
+6. Admin schema (`idt_usag`, `idt_adlg`, `idt_ptpl`, `idt_conf`, `idt_cook`, `User.status`) — `20261031160000_admin_schema`
 
-Comandi: `npm run db:push` (dev) o `npm run db:migrate` (versionate) in `backend/`.
+Comandi: `npm run db:push` (dev rapido) o `npx prisma migrate deploy` (CI/prod) in `backend/`.
 
 ---
 

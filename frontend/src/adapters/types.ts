@@ -94,7 +94,14 @@ export interface AdminPort {
     key: string,
     body: { provider?: string; body: string; activate?: boolean },
   ): Promise<void>;
-  dryRunPrompt(input: { userText: string; locale: 'it' | 'en' }): Promise<{ promptMarkdown: string }>;
+  dryRunPrompt(input: {
+    userText: string;
+    locale: 'it' | 'en';
+  }): Promise<{ promptMarkdown: string; intentModel?: unknown }>;
+  getCookieConsentSummary(): Promise<{
+    totals: { accepted: number; rejected: number };
+    recent: { id: string; choice: string; userEmail: string | null; createdAt: string }[];
+  }>;
   getPlatformSettings(): Promise<AdminPlatformSettings>;
   putPlatformSettings(overrides: Record<string, unknown>): Promise<void>;
   getLegalContent(): Promise<{ pages: { page: string; locale: string; markdown: string }[] }>;

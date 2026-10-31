@@ -33,7 +33,7 @@ export interface AdminMetricsOverview {
     messagesLast7Days: number;
     promptReadyRate: number;
   };
-  system: { healthOk: boolean; dbOk: boolean; llmEnabled?: boolean };
+  system: { healthOk: boolean; dbOk: boolean; llmEnabled?: boolean; filesRejected?: number };
   llm: {
     callsLast7Days: number;
     inputTokensLast7Days: number;

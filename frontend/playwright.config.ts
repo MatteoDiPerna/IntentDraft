@@ -37,6 +37,11 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
     {
+      name: 'admin-e2e',
+      testMatch: /admin\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
       name: 'mobile-iphone',
       testMatch: /responsive\.spec\.ts/,
       use: { ...devices['iPhone 13'], browserName: 'chromium' },

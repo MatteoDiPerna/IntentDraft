@@ -17,6 +17,7 @@ export function AdminPromptsPage() {
   const [body, setBody] = useState('');
   const [dryRunText, setDryRunText] = useState('');
   const [dryRunOut, setDryRunOut] = useState('');
+  const [dryRunIntent, setDryRunIntent] = useState('');
 
   const load = async () => {
     try {
@@ -52,6 +53,9 @@ export function AdminPromptsPage() {
     try {
       const res = await ports.admin.dryRunPrompt({ userText: dryRunText, locale: 'it' });
       setDryRunOut(res.promptMarkdown);
+      setDryRunIntent(
+        res.intentModel ? JSON.stringify(res.intentModel, null, 2) : '',
+      );
     } catch (e) {
       showError(e);
     }
@@ -85,6 +89,17 @@ export function AdminPromptsPage() {
         <Button type="button" size="sm" variant="outline" onClick={() => void onDryRun()}>
           {t('admin.prompts.dryRun')}
         </Button>
+        {dryRunIntent ? (
+          <>
+            <p className="text-xs font-medium text-muted-foreground">{t('admin.prompts.intentJson')}</p>
+            <textarea
+              readOnly
+              className="brand-field min-h-[120px] w-full rounded-md border bg-muted/30 p-3 font-mono text-xs"
+              value={dryRunIntent}
+            />
+          </>
+        ) : null}
+        <p className="text-xs font-medium text-muted-foreground">{t('admin.prompts.promptMarkdown')}</p>
         <textarea
           readOnly
           className="brand-field min-h-[240px] w-full rounded-md border bg-muted/30 p-3 font-mono text-xs"

@@ -68,6 +68,8 @@ npm run test:integration  # richiede DATABASE_URL
 
 La migrazione iniziale **`20260329220000_init_idt_schema`** è già in repo e marcata *applied* sull’istanza Supabase demo.
 
+Admin console (2026-10): dopo pull, eseguire **`npx prisma migrate deploy`** per applicare `20261031140000_add_user_role` e `20261031160000_admin_schema` (tabelle `idt_usag`, `idt_adlg`, …). Account dev admin: `DEV_ADMIN_*` → [`docs/product/planning/admin-capabilities-plan.md`](../docs/product/planning/admin-capabilities-plan.md) §8.
+
 Verifica:
 
 ```bash

@@ -14,6 +14,7 @@ import { userRoutes } from './modules/users/routes.js';
 import { healthRoutes } from './modules/health/routes.js';
 import { adminRoutes } from './modules/admin/routes.js';
 import { consentRoutes } from './modules/consent/routes.js';
+import { publicRoutes } from './modules/public/routes.js';
 import { createRequireAuth } from './middleware/requireAuth.js';
 import { requireAdmin } from './middleware/requireAdmin.js';
 import { registerScopeRateLimit } from './plugins/rateLimitScopes.js';
@@ -66,6 +67,7 @@ export async function buildServer(options?: { env?: ReturnType<typeof loadEnv> }
   await app.register(userRoutes, { env });
   await app.register(promptRoutes, { env });
   await app.register(consentRoutes, { env });
+  await app.register(publicRoutes);
 
   const requireAuth = createRequireAuth(env);
   await app.register(

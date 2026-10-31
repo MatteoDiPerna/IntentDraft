@@ -33,6 +33,9 @@ export const API = {
   consent: {
     cookie: '/api/consent/cookie',
   },
+  public: {
+    legal: '/api/public/legal',
+  },
   admin: {
     health: '/api/admin/health',
     metricsOverview: '/api/admin/metrics/overview',
@@ -46,5 +49,6 @@ export const API = {
     promptDryRun: '/api/admin/prompt-templates/dry-run',
     platformSettings: '/api/admin/platform/settings',
     complianceLegal: '/api/admin/compliance/legal',
+    complianceCookieConsents: '/api/admin/compliance/cookie-consents',
   },
 } as const;

@@ -63,7 +63,23 @@ export const mockAdminAdapter: AdminPort = {
   },
   async putPromptTemplate() {},
   async dryRunPrompt({ userText }) {
-    return { promptMarkdown: `# Mock prompt\n\n${userText}` };
+    return {
+      promptMarkdown: `# Mock prompt\n\n${userText}`,
+      intentModel: { objective: userText, complexity: 'low' },
+    };
+  },
+  async getCookieConsentSummary() {
+    return {
+      totals: { accepted: 1, rejected: 0 },
+      recent: [
+        {
+          id: 'mock-cookie',
+          choice: 'accepted',
+          userEmail: null,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    };
   },
   async getPlatformSettings() {
     return {

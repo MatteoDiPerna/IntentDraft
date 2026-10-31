@@ -18,6 +18,10 @@ export function AdminPlatformPage() {
   const [legalPage, setLegalPage] = useState<'limits' | 'privacy' | 'terms'>('limits');
   const [legalLocale, setLegalLocale] = useState<'it' | 'en'>('it');
   const [legalMarkdown, setLegalMarkdown] = useState('');
+  const [cookieSummary, setCookieSummary] = useState<{
+    totals: { accepted: number; rejected: number };
+    recent: { id: string; choice: string; userEmail: string | null; createdAt: string }[];
+  } | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -28,6 +32,7 @@ export function AdminPlatformPage() {
         const legal = await ports.admin.getLegalContent();
         const row = legal.pages.find((p) => p.page === legalPage && p.locale === legalLocale);
         setLegalMarkdown(row?.markdown ?? '');
+        setCookieSummary(await ports.admin.getCookieConsentSummary());
       } catch (e) {
         showError(e);
       }
@@ -106,6 +111,37 @@ export function AdminPlatformPage() {
           {t('admin.platform.saveLegal')}
         </Button>
       </GlassPanel>
+      {cookieSummary && (
+        <GlassPanel className="space-y-3 p-5">
+          <h2 className="text-sm font-semibold">{t('admin.platform.cookieTitle')}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t('admin.platform.cookieTotals', {
+              accepted: cookieSummary.totals.accepted,
+              rejected: cookieSummary.totals.rejected,
+            })}
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b text-muted-foreground">
+                  <th className="py-2 pr-3">{t('admin.platform.cookieWhen')}</th>
+                  <th className="py-2 pr-3">{t('admin.platform.cookieChoice')}</th>
+                  <th className="py-2">{t('admin.platform.cookieUser')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cookieSummary.recent.map((row) => (
+                  <tr key={row.id} className="border-b border-border/60">
+                    <td className="py-2 pr-3 text-xs">{new Date(row.createdAt).toLocaleString()}</td>
+                    <td className="py-2 pr-3">{row.choice}</td>
+                    <td className="py-2 text-xs text-muted-foreground">{row.userEmail ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </GlassPanel>
+      )}
     </div>
   );
 }

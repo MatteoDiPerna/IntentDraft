@@ -37,6 +37,10 @@ export function AdminDashboardPage() {
       value: `${Math.round(data.conversations.promptReadyRate * 100)}%`,
     },
     { label: t('admin.metrics.dbOk'), value: data.system.dbOk ? 'OK' : '—' },
+    {
+      label: t('admin.metrics.filesRejected'),
+      value: data.system.filesRejected ?? 0,
+    },
   ];
 
   return (

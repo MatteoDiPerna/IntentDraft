@@ -71,13 +71,13 @@ Utenti `role = user` continuano a vedere **solo** i propri dati (`user_id` da se
 | ---- | ----- | ---- |
 | Colonna `User.role` | ✅ | Prisma + DTO backend; tipo FE |
 | `role` in risposta login/me | ✅ | Verificare che FE non ignori il campo negli adapter |
-| Middleware `requireAdmin` | ❌ | Da creare |
-| Modulo `backend/src/modules/admin/` | ❌ | Da creare |
-| Route `/app/admin/*` | ❌ | Da creare |
-| `AdminRoute` / guard FE | ❌ | Da creare |
-| Tabella usage LLM | ❌ | Da creare |
-| Tabella audit admin | ❌ | Da creare |
-| `User.status` (disabilitato) | ❌ | Opzionale fase A5 |
+| Middleware `requireAdmin` | ✅ | `backend/src/middleware/requireAdmin.ts` |
+| Modulo `backend/src/modules/admin/` | ✅ | Route §6.3 + servizi |
+| Route `/app/admin/*` | ✅ | Dashboard, utenti, usage, prompt, piattaforma |
+| `AdminRoute` / guard FE | ✅ | Redirect non-admin → `/app` |
+| Tabella usage LLM | ✅ | `idt_usag` + recorder in `llmEngine` |
+| Tabella audit admin | ✅ | `idt_adlg` + `auditService` |
+| `User.status` (disabilitato) | ✅ | Login `ACCOUNT_DISABLED`, revoke sessioni |
 
 ---
 
@@ -622,13 +622,13 @@ Aggiungere file `backend/tests/integration/admin.test.ts` e `frontend/e2e/admin.
 
 ## 13. Checklist pre-merge (agent)
 
-- [ ] `backend npm run test` pass
-- [ ] `frontend npm run build` pass
-- [ ] `prisma migrate` / `db push` documentato in `backend/README.md` se nuove tabelle
-- [ ] `database-design.md` aggiornato con nuove tabelle §5
-- [ ] i18n IT + EN per stringhe user-facing admin
+- [x] `backend npm run test` pass
+- [x] `frontend npm run build` pass
+- [x] `prisma migrate` / `db push` documentato in `backend/README.md` se nuove tabelle
+- [x] `database-design.md` aggiornato con nuove tabelle §5
+- [x] i18n IT + EN per stringhe user-facing admin
 - [ ] Verifica manuale con account §8
-- [ ] Nessun segreto in commit
+- [x] Nessun segreto in commit
 
 ---
 

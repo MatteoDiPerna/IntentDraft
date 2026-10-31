@@ -71,4 +71,7 @@ export const apiAdminAdapter: AdminPort = {
   async recordCookieConsent(choice) {
     await request('POST', API.consent.cookie, { body: { choice } });
   },
+  async getCookieConsentSummary() {
+    return request('GET', API.admin.complianceCookieConsents);
+  },
 };

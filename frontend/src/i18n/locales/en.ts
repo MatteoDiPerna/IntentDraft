@@ -113,6 +113,7 @@ const en: TranslationSchema = {
       tokensIn7: 'Input tokens (7d)',
       promptReadyRate: 'Prompt-ready rate',
       dbOk: 'Database',
+      filesRejected: 'Rejected files (scan)',
     },
     users: {
       search: 'Search email or name…',
@@ -153,6 +154,8 @@ const en: TranslationSchema = {
       save: 'Save new version',
       dryRun: 'Run dry-run',
       dryRunInput: 'User text',
+      intentJson: 'IntentModel (JSON)',
+      promptMarkdown: 'Prompt markdown',
     },
     platform: {
       envTitle: 'Environment limits (read-only)',
@@ -162,6 +165,11 @@ const en: TranslationSchema = {
       legalTitle: 'Legal copy (markdown)',
       saveLegal: 'Save legal text',
       legalSaved: 'Legal text updated.',
+      cookieTitle: 'Cookie consents',
+      cookieTotals: 'Accepted: {{accepted}} · Rejected: {{rejected}}',
+      cookieWhen: 'When',
+      cookieChoice: 'Choice',
+      cookieUser: 'User',
     },
   },
   sidebar: {

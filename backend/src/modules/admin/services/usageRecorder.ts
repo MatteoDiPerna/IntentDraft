@@ -13,7 +13,7 @@ export type UsageRecordInput = {
   latencyMs?: number | null;
 };
 
-function estimateUsd(
+export function computeUsdEstimate(
   env: Env,
   inputTokens: number,
   outputTokens: number,
@@ -36,7 +36,7 @@ export async function recordLlmUsage(env: Env, input: UsageRecordInput): Promise
       model: input.model,
       inputTokens: input.inputTokens,
       outputTokens: input.outputTokens,
-      usdEstimate: estimateUsd(env, input.inputTokens, input.outputTokens),
+      usdEstimate: computeUsdEstimate(env, input.inputTokens, input.outputTokens),
       latencyMs: input.latencyMs ?? null,
     },
   });

@@ -8,6 +8,15 @@ function legalKey(page: string, locale: string): string {
   return `legal.${page}_${locale}`;
 }
 
+export async function getLegalPage(page: string, locale: string): Promise<string | null> {
+  if (!LEGAL_PAGES.includes(page as (typeof LEGAL_PAGES)[number])) return null;
+  if (!LEGAL_LOCALES.includes(locale as (typeof LEGAL_LOCALES)[number])) return null;
+  const row = await prisma.platformConfig.findUnique({ where: { key: legalKey(page, locale) } });
+  if (!row) return null;
+  const text = String(row.value ?? '').trim();
+  return text.length > 0 ? text : null;
+}
+
 export async function getLegalContent() {
   const keys = LEGAL_PAGES.flatMap((page) =>
     LEGAL_LOCALES.map((locale) => legalKey(page, locale)),
@@ -56,4 +65,26 @@ export async function recordCookieConsent(userId: string | null, choice: 'accept
     data: { userId, choice },
   });
   return { ok: true as const };
+}
+
+export async function getCookieConsentSummary() {
+  const [accepted, rejected, recent] = await Promise.all([
+    prisma.cookieConsentLog.count({ where: { choice: 'accepted' } }),
+    prisma.cookieConsentLog.count({ where: { choice: 'rejected' } }),
+    prisma.cookieConsentLog.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+      include: { user: { select: { email: true } } },
+    }),
+  ]);
+
+  return {
+    totals: { accepted, rejected },
+    recent: recent.map((r) => ({
+      id: r.id,
+      choice: r.choice,
+      userEmail: r.user?.email ?? null,
+      createdAt: r.createdAt.toISOString(),
+    })),
+  };
 }

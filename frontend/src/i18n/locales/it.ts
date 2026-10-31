@@ -115,6 +115,7 @@ const it = {
       tokensIn7: 'Token input (7 gg)',
       promptReadyRate: 'Tasso prompt pronti',
       dbOk: 'Database',
+      filesRejected: 'File rifiutati (scan)',
     },
     users: {
       search: 'Cerca email o nome…',
@@ -155,6 +156,8 @@ const it = {
       save: 'Salva nuova versione',
       dryRun: 'Esegui dry-run',
       dryRunInput: 'Testo utente',
+      intentJson: 'IntentModel (JSON)',
+      promptMarkdown: 'Prompt markdown',
     },
     platform: {
       envTitle: 'Limiti da ambiente (sola lettura)',
@@ -164,6 +167,11 @@ const it = {
       legalTitle: 'Testi legali (markdown)',
       saveLegal: 'Salva testo legale',
       legalSaved: 'Testo legale aggiornato.',
+      cookieTitle: 'Consensi cookie',
+      cookieTotals: 'Accettati: {{accepted}} · Rifiutati: {{rejected}}',
+      cookieWhen: 'Data',
+      cookieChoice: 'Scelta',
+      cookieUser: 'Utente',
     },
   },
   sidebar: {

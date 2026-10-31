@@ -1,10 +1,16 @@
 import type { FastifyInstance } from 'fastify';
 import { AppError } from '../../lib/errors.js';
-import { getLegalContent, putLegalContent } from './services/complianceService.js';
+import {
+  getCookieConsentSummary,
+  getLegalContent,
+  putLegalContent,
+} from './services/complianceService.js';
 import { putLegalBodySchema } from './schemas.js';
 
 export async function registerAdminComplianceRoutes(app: FastifyInstance) {
   app.get('/compliance/legal', async () => getLegalContent());
+
+  app.get('/compliance/cookie-consents', async () => getCookieConsentSummary());
 
   app.put('/compliance/legal', async (request) => {
     const parsed = putLegalBodySchema.safeParse(request.body);

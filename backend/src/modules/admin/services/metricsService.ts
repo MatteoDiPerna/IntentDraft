@@ -22,6 +22,7 @@ export async function buildMetricsOverview(env: Env, days = 7) {
     convWithPrompt,
     usageAgg,
     dbOk,
+    filesRejected,
   ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { createdAt: { gte: since } } }),
@@ -43,6 +44,7 @@ export async function buildMetricsOverview(env: Env, days = 7) {
       _sum: { inputTokens: true, outputTokens: true, usdEstimate: true },
     }),
     pingDatabase(),
+    prisma.uploadedFile.count({ where: { scanStatus: 'rejected' } }),
   ]);
 
   const promptReadyRate =
@@ -69,6 +71,7 @@ export async function buildMetricsOverview(env: Env, days = 7) {
       healthOk: true,
       dbOk,
       llmEnabled: env.LLM_ENABLED,
+      filesRejected,
     },
     llm: {
       callsLast7Days: usageAgg._count,

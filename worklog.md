@@ -1,6 +1,6 @@
 # Worklog — IntentDraft (PromptPilot)
 
-**Ultimo aggiornamento:** 2026-10-30  
+**Ultimo aggiornamento:** 2026-10-31  
 **Scopo:** sequenza operativa per riprendere lo sviluppo full-stack da dove ci siamo fermati.
 
 ---
@@ -22,6 +22,7 @@
 | **Backend B9** | Anthropic client, orchestrator LLM ANALYZE/GENERATE, fallback mock, test T-CONV/T-PROMPT |
 | **Backend B10** | Rate limit auth/messaggi, CI GitHub Actions, test unit/integration, runbook segreti |
 | **Dev admin** | `DEV_ADMIN_*` + seed all’avvio (solo development) |
+| **Admin console** | Fasi A1–A10: `/api/admin/*`, console `/app/admin`, usage LLM, utenti, legal/cookie — [`admin-capabilities-plan.md`](docs/product/planning/admin-capabilities-plan.md) |
 | **Schema DB** | Definito in doc + `backend/prisma/schema.prisma` — tabelle fisiche **`idt_*`** (8 caratteri). Vedi [`docs/product/architecture/database-design.md`](docs/product/architecture/database-design.md) §2.1 |
 | **Commit recente** | Frontend checklist + test; backend scaffold (verificare `git log`) |
 
