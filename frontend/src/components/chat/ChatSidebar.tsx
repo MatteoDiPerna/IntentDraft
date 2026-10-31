@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { Button } from '@/components/ui/button';
 import { MoveToProjectModal } from '@/components/chat/MoveToProjectModal';
+import { PromptDialog } from '@/components/ui/PromptDialog';
 import { useProjectStore, DEFAULT_PROJECT_ID } from '@/store/projectStore';
 import { useUiStore } from '@/store/uiStore';
 import type { AttachedFile, Conversation } from '@/types/conversation';
@@ -292,6 +293,7 @@ export function ChatSidebar({
   const [renamingProjectId, setRenamingProjectId] = useState<string | null>(null);
   const [projectRenameDraft, setProjectRenameDraft] = useState('');
   const [moveTargetId, setMoveTargetId] = useState<string | null>(null);
+  const [newProjectOpen, setNewProjectOpen] = useState(false);
   const [renameDraft, setRenameDraft] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -555,10 +557,7 @@ export function ChatSidebar({
                         <button
                           type="button"
                           className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-                          onClick={() => {
-                            const name = window.prompt(t('sidebar.newProjectPrompt'));
-                            if (name?.trim()) createProject(userId, name.trim());
-                          }}
+                          onClick={() => setNewProjectOpen(true)}
                         >
                           <FolderPlus className="h-3.5 w-3.5" aria-hidden />
                           {t('sidebar.newProject')}
@@ -783,6 +782,19 @@ export function ChatSidebar({
         )}
       </div>
     </aside>
+      <PromptDialog
+        open={newProjectOpen}
+        title={t('sidebar.newProject')}
+        label={t('sidebar.newProjectPrompt')}
+        confirmLabel={t('sidebar.createProject')}
+        cancelLabel={t('chat.cancel')}
+        layer="above"
+        onConfirm={(name) => {
+          createProject(userId, name);
+          setNewProjectOpen(false);
+        }}
+        onCancel={() => setNewProjectOpen(false)}
+      />
       <MoveToProjectModal
         open={Boolean(moveTarget)}
         projects={projectFolders}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { GlassPanel } from '@/components/brand';
 import { Button } from '@/components/ui/button';
 import { STORAGE } from '@/lib/storageKeys';
 
@@ -25,11 +26,11 @@ export function CookieConsentBanner() {
 
   return (
     <div
-      className="fixed inset-x-0 bottom-0 z-[100] border-t bg-background/95 p-4 shadow-lg backdrop-blur-sm sm:p-5"
+      className="fixed inset-x-0 bottom-0 z-[100] p-4 sm:p-5"
       role="region"
       aria-label={t('cookies.title')}
     >
-      <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <GlassPanel compact className="mx-auto flex max-w-4xl flex-col gap-3 p-4 shadow-lg sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div className="min-w-0 space-y-1 text-sm">
           <p className="font-medium">{t('cookies.title')}</p>
           <p className="text-muted-foreground">{t('cookies.description')}</p>
@@ -47,7 +48,7 @@ export function CookieConsentBanner() {
             {t('cookies.accept')}
           </Button>
         </div>
-      </div>
+      </GlassPanel>
     </div>
   );
 }

@@ -10,16 +10,27 @@ import { cn } from '@/utils/cn';
 export function UserMenu() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [userOpen, setUserOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
+  const setSettingsExclusive = (open: boolean) => {
+    setSettingsOpen(open);
+    if (open) setUserOpen(false);
+  };
+
+  const setUserExclusive = (open: boolean) => {
+    setUserOpen(open);
+    if (open) setSettingsOpen(false);
+  };
+
   useEffect(() => {
-    if (!open) return;
+    if (!userOpen) return;
     const onDoc = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(e.target as Node)) setUserOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'Escape') setUserOpen(false);
     };
     document.addEventListener('mousedown', onDoc);
     document.addEventListener('keydown', onKey);
@@ -27,21 +38,21 @@ export function UserMenu() {
       document.removeEventListener('mousedown', onDoc);
       document.removeEventListener('keydown', onKey);
     };
-  }, [open]);
+  }, [userOpen]);
 
   if (!user) return null;
 
   return (
     <div ref={rootRef} className="relative flex items-center gap-1">
-      <SettingsMenu />
+      <SettingsMenu open={settingsOpen} onOpenChange={setSettingsExclusive} />
       <Button
         type="button"
         variant="ghost"
         size="sm"
         className="gap-1.5 max-w-[12rem]"
-        aria-expanded={open}
+        aria-expanded={userOpen}
         aria-haspopup="menu"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setUserExclusive(!userOpen)}
       >
         <span className="truncate hidden sm:inline">{user.displayName}</span>
         <ChevronDown className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
@@ -50,14 +61,14 @@ export function UserMenu() {
         role="menu"
         className={cn(
           'absolute right-0 top-full z-50 mt-2 w-52 rounded-lg border bg-popover py-1 shadow-md',
-          open ? 'block' : 'hidden',
+          userOpen ? 'block' : 'hidden',
         )}
       >
         <Link
           to="/app/settings"
           role="menuitem"
           className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-muted"
-          onClick={() => setOpen(false)}
+          onClick={() => setUserOpen(false)}
         >
           <Settings className="h-4 w-4" aria-hidden />
           {t('nav.settings')}
@@ -67,7 +78,7 @@ export function UserMenu() {
           role="menuitem"
           className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted"
           onClick={() => {
-            setOpen(false);
+            setUserOpen(false);
             void logout();
           }}
         >

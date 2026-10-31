@@ -12,9 +12,16 @@ import { STORAGE } from '@/lib/storageKeys';
 import { resolveLocale } from '@/lib/resolveLocale';
 import { cn } from '@/utils/cn';
 
-export function SettingsMenu() {
+type SettingsMenuProps = {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function SettingsMenu({ open: controlledOpen, onOpenChange }: SettingsMenuProps = {}) {
   const { t, i18n } = useTranslation();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const rootRef = useRef<HTMLDivElement>(null);
   const { user, setUser: setAuthUser } = useAuth();
   const ports = usePorts();
@@ -44,7 +51,7 @@ export function SettingsMenu() {
       document.removeEventListener('mousedown', onDoc);
       document.removeEventListener('keydown', onKey);
     };
-  }, [open]);
+  }, [open, setOpen]);
 
   const onLocale = (next: Locale) => {
     void i18n.changeLanguage(next);
@@ -67,7 +74,7 @@ export function SettingsMenu() {
         aria-expanded={open}
         aria-haspopup="dialog"
         aria-label={t('nav.settings')}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(!open)}
       >
         <Settings className="h-[1.2rem] w-[1.2rem]" />
       </Button>
